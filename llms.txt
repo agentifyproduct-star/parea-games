@@ -1,0 +1,50 @@
+# Parea Games
+
+> Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to install and no account to make, and you can play against friends in a private room.
+
+A new puzzle for every game arrives at midnight New York time, at that same instant
+everywhere in the world. Everything is free, nothing needs installing, and there is no
+account to make. Streaks are kept in the browser, not on a server.
+
+## Games
+
+- [Shabda](https://pareagames.com/games/shabda/): Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.
+- [Snowman](https://pareagames.com/games/snowman/): Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.
+- [Anagram](https://pareagames.com/games/anagram/): Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.
+
+## Playing together
+
+- [Rooms](https://pareagames.com/room/): start a room, send friends the four-letter code, and everyone
+  plays the same puzzles at the same second. Nobody sees the words until the countdown
+  reaches zero. Scoring counts guesses used first and speed second.
+
+## Questions
+
+### What is Parea Games?
+
+Parea Games is a free word game site with three daily games: Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, and you can play them on your own or against friends in a private room.
+
+### Is it free, and do I need an account?
+
+It is free and there is no account. Nothing to install, no ads, and no sign-up — open the page and play. Your streaks are kept in your own browser, which means your phone and your laptop keep separate records.
+
+### When does the new puzzle arrive?
+
+At midnight New York time, and at that same instant everywhere. A player in London, Mumbai or Sydney gets the new puzzles at the same moment as a player in New York, just at a different hour of their own day.
+
+### How do I play Shabda?
+
+Guess the hidden word in six tries. Each guess has to be a real word; letters in the right place turn green, letters in the word but the wrong place turn amber, and letters that are not in the word go grey. You can play a four, five or six letter board.
+
+### How do I play Snowman?
+
+Call out one letter at a time to uncover a hidden word, knowing only its category. Every wrong letter melts away a piece of the snowman, and you have six wrong guesses before he is a puddle.
+
+### How do I play Anagram?
+
+Two scrambled words arrive each day, one short and one long. Unscramble each within five tries. Everyone gets the same pair, so the day is the same puzzle for everybody.
+
+### Can I play against my friends?
+
+Yes. Start a room, send the four-letter code to your friends, and everybody plays the same puzzles at the same second. Nobody sees the words until the countdown reaches zero, not even the person who started the room. You score on how few guesses you needed first, and how quickly second.
+

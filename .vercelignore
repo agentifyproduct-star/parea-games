@@ -1,0 +1,19 @@
+# Everything the site does not need in order to be played.
+
+# The room server is a running process, not a static file, and pools.json holds
+# every room answer.
+server/
+
+# Test harnesses and generators: the scripts that explain how the daily
+# schedule is built have no business being downloadable.
+_*
+**/_*
+
+# The anagram page loads puzzles.js; this is the same data in the form a person
+# can read, and it is only an input to the generator.
+games/anagram/puzzles.json
+
+# A retired game, kept in the repository, not on the site.
+games/[redacted]/
+
+TODO.md

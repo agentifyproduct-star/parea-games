@@ -1,0 +1,582 @@
+:root {
+  /* Paper, ink and one accent — the same ground the front page stands on. */
+  --bg: #f2f1ec;
+  --surface: #ffffff;
+  --border: #e2e0d8;
+  --text: #16161a;
+  --text-dim: #6a6862;
+  --tile-bg: #e5e2d9;
+  --spent: #d5d2c9;
+  /* Anagram's own accent: indigo, distinct from Shabda's teal and Snowman's
+     green, and deepened here so white type holds up on a light ground. */
+  --accent: #5c63c4;
+  --good: #47875c;
+  --bad: #b4552f;
+  --warn: #c07c2c;
+  --on-colour: #ffffff;
+  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+/* The panels below set `display: flex`, which outranks the `hidden` attribute's
+   UA rule - without this, a hidden banner, the results screen and the "no puzzle"
+   notice all keep their layout and sit on top of the game. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { display: flex; flex-direction: column; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- header ---------- */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+}
+
+.game-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.brand-link, .icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.brand-link:hover, .icon-btn:hover { background: var(--surface); color: var(--text); }
+.header-actions { display: flex; gap: 2px; }
+
+/* ---------- the brand, and the way back ---------- */
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  padding: 6px 8px;
+  font-size: 18px;
+}
+
+.brand-link .arrow { color: var(--text-dim); }
+.brand-link .brand-mark { width: 21px; height: 21px; }
+
+/* Small beside the game's own name, which is the thing being played right now,
+   but on every page so the site has a face wherever you land. */
+.brand-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  text-transform: none;
+}
+
+.brand-name span { font-weight: 500; color: var(--text-dim); letter-spacing: 0; }
+
+/* A phone has room for the game's name or ours, not both in full. */
+@media (max-width: 430px) {
+  .brand-name span { display: none; }
+  /* The mark is the way home too, so the arrow is what gives way first. */
+  .brand-link .arrow { display: none; }
+  .brand-link { gap: 6px; padding-left: 4px; }
+  .game-header h1 { font-size: 19px; letter-spacing: 2px; }
+}
+
+/* ---------- banners ---------- */
+.banner, .notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.banner { color: var(--text); }
+.notice.big { display: block; margin: 40px auto; max-width: 420px; border: 1px solid var(--border); border-radius: 14px; }
+.notice code { color: var(--text); }
+
+/* ---------- today / practice ---------- */
+.modes {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 12px 0;
+}
+
+.mode-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 7px 16px;
+  min-height: 36px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.mode-btn:hover { color: var(--text); }
+
+.mode-btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-colour);
+}
+
+/* Today's pair is the game; practice is the extra. */
+.mode-btn.today { border-color: #cfccc2; color: var(--text); }
+.mode-btn.today[aria-pressed="true"] { border-color: var(--accent); color: var(--on-colour); }
+
+/* ---------- layout ---------- */
+/* A column: the mode pills sit above whichever panel is showing, rather than
+   beside it. */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px 32px;
+}
+
+.play {
+  width: min(460px, 100%);
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The day's summary sits under the finished board rather than replacing it. */
+.results {
+  width: min(460px, 100%);
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.results-heading {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ---------- status ---------- */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.badge {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+
+.badge b { color: var(--text); }
+.slot-label { font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+
+.attempts-row { display: flex; align-items: center; gap: 9px; }
+.attempts-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+.attempts { display: flex; align-items: center; gap: 5px; }
+
+.attempts-left {
+  margin-left: 5px;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.pip.spent { background: var(--spent); }
+
+/* ---------- answer slots ---------- */
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.answer-slot {
+  width: 44px;
+  height: 52px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.answer-slot.empty { border-style: dashed; cursor: default; }
+
+/* Filled in because the word is over, not because you put it there. */
+.answer-slot.filled:disabled { cursor: default; }
+
+/* The finished day: both words, each behind its number. */
+.finished-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.finished-letters { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.finished-letters .answer-slot {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 46px;
+  font-size: 21px;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+/* A word that beat you is shown in the colour of a wrong guess. */
+.answer-slot.missed { border-color: var(--bad); color: var(--bad); }
+.answer-slot.filled { background: var(--surface); border-color: var(--accent); animation: drop .14s ease; }
+
+/* The hinted letter is pinned: marked by the padlock as well as the colour. */
+.answer-slot.locked {
+  border-color: var(--warn);
+  cursor: default;
+  position: relative;
+}
+
+.answer-slot.locked::after {
+  content: "\1F512";
+  position: absolute;
+  right: -2px;
+  top: -8px;
+  font-size: 10px;
+}
+
+@keyframes drop { from { transform: translateY(-6px); opacity: .5; } to { transform: none; opacity: 1; } }
+
+.slots.shake { animation: shake .45s; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+/* ---------- tiles ---------- */
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.tile {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 8px;
+  background: var(--tile-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease;
+}
+
+.tile:hover:not(:disabled) { filter: brightness(1.12); }
+.tile:active:not(:disabled) { transform: scale(.94); }
+
+/* Spent tiles keep their letter but lose their weight, and say "used" to a
+   screen reader, so colour is never doing the work alone. */
+.tile.spent { background: var(--spent); color: #93908a; cursor: default; }
+
+/* ---------- messages ---------- */
+.message {
+  margin: 0;
+  min-height: 20px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.message.warn { color: var(--warn); }
+.message.bad  { color: var(--bad); }
+.message.good { color: var(--good); }
+
+/* ---------- controls ---------- */
+.controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn {
+  padding: 12px 18px;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-small { padding: 7px 14px; min-height: 36px; font-size: 12.5px; }
+.btn-primary { background: var(--accent); color: var(--on-colour); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); flex: 1; min-width: 88px; }
+.btn-submit { width: 100%; }
+.btn:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:disabled { opacity: .4; cursor: default; }
+
+/* ---------- guess history ---------- */
+.history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+
+.past-guess {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 9px;
+  text-decoration: line-through;
+}
+
+/* ---------- reveal ---------- */
+.reveal {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  animation: rise .18s ease;
+}
+
+.reveal.good { border-color: var(--good); }
+.reveal h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+.reveal-word { margin: 0 0 8px; font-size: 26px; font-weight: 800; letter-spacing: 3px; }
+.reveal-def { margin: 0 0 16px; font-size: 13.5px; line-height: 1.55; color: var(--text-dim); }
+
+@keyframes rise { from { transform: translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- results ---------- */
+.results h2 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.results h3 { margin: 8px 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+
+.answer-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.answer-line b { font-size: 17px; letter-spacing: 2px; }
+
+.answer-slot-no {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-colour);
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.answer-outcome { margin-left: auto; font-size: 12.5px; color: var(--text-dim); }
+
+.stat-row { display: flex; gap: 6px; width: 100%; }
+.stat { flex: 1; text-align: center; }
+.stat-num { font-size: 22px; font-weight: 700; }
+.stat-lbl { font-size: 10.5px; color: var(--text-dim); line-height: 1.3; }
+
+.dist { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.dist h4 { margin: 10px 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.dist-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.dist-key { width: 12px; color: var(--text-dim); }
+
+.dist-bar {
+  background: var(--spent);
+  color: var(--text);
+  font-weight: 700;
+  padding: 2px 8px;
+  text-align: right;
+  min-width: 26px;
+  border-radius: 3px;
+}
+
+.dist-bar.current { background: var(--accent); color: var(--on-colour); }
+
+.result-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); text-align: center; }
+
+.next-up { font-size: 13px; color: var(--text-dim); }
+.next-up b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ---------- modals ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 22, 26, .45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal[hidden] { display: none; }
+
+.modal-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 24px 22px;
+  width: min(430px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: rise .18s ease;
+}
+
+/* The first line of the how-to says what the game is, in one sentence, rather
+   than starting straight in on the rules — useful to a player who arrived from
+   a link, and it is the line anything quoting the page will take. */
+.modal-card .lede {
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.modal-card h2 { margin: 0 0 14px; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card h3 { margin: 20px 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card p { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.modal-card p b { color: var(--text); }
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.fine { font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 16px; }
+
+/* ---------- small screens ---------- */
+/* UI-1.1: everything has to work at 360px. Ten 8-letter tiles wrap rather than
+   shrink below the tap-target floor. */
+@media (max-width: 400px) {
+  /* Narrower screens wrap the answer rather than shrinking a tap target below
+     44px, which UI-1.8 sets as the floor. */
+  .answer-slot { width: 44px; height: 48px; font-size: 20px; }
+  .tile { width: 44px; height: 44px; }
+  .game-header h1 { font-size: 19px; letter-spacing: 3px; }
+  .stat-num { font-size: 19px; }
+}
+
+/* UI-2.8 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

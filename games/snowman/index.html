@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Snowman &mdash; Parea Games</title>
+<meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<link rel="stylesheet" href="snowman.css" />
+<link rel="icon" href="../../assets/brand/icon.svg" />
+<link rel="alternate icon" href="../../assets/brand/icon-192.png" />
+<link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
+<!-- seo:start -->
+<link rel="canonical" href="https://pareagames.com/games/snowman/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Parea Games" />
+<meta property="og:title" content="Snowman — Parea Games" />
+<meta property="og:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<meta property="og:url" content="https://pareagames.com/games/snowman/" />
+<meta property="og:image" content="https://pareagames.com/assets/brand/share-snowman.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Snowman — Parea Games" />
+<meta name="twitter:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<meta name="twitter:image" content="https://pareagames.com/assets/brand/share-snowman.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Snowman",
+  "url": "https://pareagames.com/games/snowman/",
+  "description": "Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.",
+  "image": "https://pareagames.com/assets/brand/share-snowman.png",
+  "genre": [
+    "Word game",
+    "Puzzle"
+  ],
+  "gamePlatform": "Web browser",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any modern web browser",
+  "playMode": [
+    "SinglePlayer",
+    "MultiPlayer"
+  ],
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Parea Games",
+    "url": "https://pareagames.com/"
+  }
+}
+</script>
+<!-- seo:end -->
+</head>
+<body>
+  <header class="game-header">
+    <a class="brand-link" href="../../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
+      <span class="arrow" aria-hidden="true">&larr;</span>
+      <img class="brand-mark" src="../../assets/brand/mark.svg" alt="" width="21" height="21" />
+      <span class="brand-name">parea<span> games</span></span>
+    </a>
+    <h1>Snowman</h1>
+    <div class="header-actions">
+      <button id="btn-help"  class="icon-btn" title="How to play" aria-label="How to play">?</button>
+      <button id="btn-stats" class="icon-btn" title="Statistics"  aria-label="Statistics">&#9202;</button>
+      <button id="btn-new"   class="icon-btn" title="New word" aria-label="New word">&#8635;</button>
+    </div>
+  </header>
+
+  <!-- Today's word, then practice at whichever difficulty you fancy -->
+  <div class="levels" role="group" aria-label="Word to play">
+    <button class="level-btn today" data-level="daily"  type="button">Today</button>
+    <button class="level-btn" data-level="easy"   type="button">Easy</button>
+    <button class="level-btn" data-level="medium" type="button">Medium</button>
+    <button class="level-btn" data-level="hard"   type="button">Hard</button>
+  </div>
+
+  <div id="toast-area" class="toast-area" aria-live="polite"></div>
+
+  <main class="game">
+    <section id="stage" class="stage">
+      <!-- The snowman starts whole and loses a piece per wrong guess: hat, scarf,
+           arm, arm, head, and finally the body. Six wrong and there is only a
+           puddle left. -->
+      <svg class="snowman" viewBox="0 0 180 200" role="img"
+           aria-label="A snowman, melting a piece at a time as you guess wrong">
+
+        <ellipse class="puddle" cx="90" cy="178" rx="54" ry="9" />
+        <polygon class="puddle-carrot puddle" points="76,175 96,179 76,182" />
+
+        <g id="part-body" class="part">
+          <circle class="snow" cx="90" cy="150" r="33" />
+          <circle class="snow" cx="90" cy="104" r="26" />
+          <g class="detail">
+            <circle cx="90" cy="94"  r="2.6" />
+            <circle cx="90" cy="105" r="2.6" />
+            <circle cx="90" cy="116" r="2.6" />
+          </g>
+        </g>
+
+        <g id="part-arm-left" class="part twig">
+          <path d="M66 98 L38 84" />
+          <path d="M46 88 L42 79" />
+          <path d="M46 88 L38 90" />
+        </g>
+        <g id="part-arm-right" class="part twig">
+          <path d="M114 98 L142 84" />
+          <path d="M134 88 L138 79" />
+          <path d="M134 88 L142 90" />
+        </g>
+
+        <g id="part-head" class="part">
+          <circle class="snow" cx="90" cy="64" r="19" />
+          <g class="detail">
+            <circle cx="83" cy="59" r="2.4" />
+            <circle cx="97" cy="59" r="2.4" />
+            <circle cx="82" cy="73" r="1.5" />
+            <circle cx="90" cy="75" r="1.5" />
+            <circle cx="98" cy="73" r="1.5" />
+          </g>
+          <polygon class="carrot" points="90,65 110,69 90,71" />
+        </g>
+
+        <g id="part-scarf" class="part scarf">
+          <path d="M71 84 Q90 92 109 84" />
+          <path d="M105 87 Q112 96 108 106" />
+        </g>
+
+        <g id="part-hat" class="part hat">
+          <path class="brim" d="M66 45 H114" />
+          <rect x="76" y="25" width="28" height="20" rx="2" />
+        </g>
+
+        <path class="ground" d="M18 184 H162" />
+      </svg>
+
+      <div class="meta">
+        <div class="chip">Category: <b id="category"></b></div>
+        <div id="lives" class="lives"></div>
+      </div>
+    </section>
+
+    <div id="word" class="word" role="text"></div>
+
+    <div class="tried-row">
+      <span class="tried-label">Guessed</span>
+      <div id="guessed" class="guessed"></div>
+    </div>
+
+    <form id="word-guess" class="word-guess" autocomplete="off">
+      <input id="word-guess-input" type="text" maxlength="24" spellcheck="false"
+             placeholder="Guess the whole word&hellip;" aria-label="Guess the whole word" />
+      <button class="btn btn-ghost" type="submit">Guess</button>
+    </form>
+
+    <div id="keyboard" class="keyboard" role="group" aria-label="Letters"></div>
+
+    <!-- Shown only once today's puzzle is over: practice has no deadline. -->
+    <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
+  </main>
+
+  <!-- How to play -->
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="help-title">How to play</h2>
+<!-- intro:start -->
+      <p class="lede">Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.</p>
+<!-- intro:end -->
+      <p>Same rules as hangman, with a snowman in the middle.</p>
+      <p>Pick letters to uncover the hidden word. Every letter that is not in there melts a
+         bit more of the snowman &mdash; <b>six wrong</b> and all that is left is a puddle.</p>
+      <p>The <b>category</b> above the word is your only clue. Spaces are filled in already,
+         so all you ever have to guess is letters.</p>
+
+      <div class="example">
+        <div class="ex-word">
+          <span class="slot revealed">p</span><span class="slot"></span>
+          <span class="slot revealed">l</span><span class="slot revealed">a</span>
+          <span class="slot revealed">r</span><span class="sep"></span>
+          <span class="slot"></span><span class="slot revealed">e</span>
+          <span class="slot revealed">a</span><span class="slot revealed">r</span>
+        </div>
+        <p>A right letter shows up <b>everywhere</b> it appears &mdash; one <b>A</b> in
+           <b>polar bear</b> gets you both.</p>
+      </div>
+
+      <p>Tapping a letter you already tried costs you nothing. That is a slip, not a guess.</p>
+      <p>Think you have it? Type the whole word in the box. Get it wrong and it costs you a
+         life, same as a wrong letter.</p>
+
+      <h3>Today, and the rest</h3>
+      <p><b>Today</b> is one word for everybody, everywhere, and it is the only one that
+         counts towards your record and your streak. It changes at midnight New York time.</p>
+      <p>Feel like more? <b>Easy</b>, <b>medium</b> and <b>hard</b> deal practice words as often
+         as you like &mdash; they never touch your record. Difficulty comes down to how many
+         different letters a word hides, and how odd they are.</p>
+
+      <p class="fine">
+        No practice word comes back until you have seen every other one at that level.
+      </p>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div id="stats-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="stats-title">Statistics</h2>
+      <p id="st-outcome" class="outcome" hidden></p>
+      <p class="stats-scope">Your <b><span id="st-level">medium</span></b> record</p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-num" id="st-played">0</div><div class="stat-lbl">Played</div></div>
+        <div class="stat"><div class="stat-num" id="st-win">0</div><div class="stat-lbl">Win %</div></div>
+        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl">Current streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl">Max streak</div></div>
+      </div>
+
+      <h3>Wrong guesses per win</h3>
+      <div id="dist" class="dist"></div>
+
+      <div class="modal-actions">
+        <button id="btn-play-again" class="btn btn-primary">Play again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/daily.js"></script>
+  <script src="words.js"></script>
+  <script src="snowman.js"></script>
+</body>
+</html>

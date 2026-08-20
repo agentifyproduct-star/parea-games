@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Anagram tests</title></head>
+<body>
+<!-- 360px wide on purpose: acceptance criterion 8 is checked in the same frame
+     everything else runs in, so the layout is never tested at a kinder size. -->
+<iframe id="f" src="index.html" width="360" height="900" style="border:1px solid #333"></iframe>
+<pre id="out">running</pre>
+<script>
+const results = [];
+const check = (n, c, x) => {
+  results.push((c ? 'PASS ' : 'FAIL ') + n + (x !== undefined && x !== '' ? ' :: ' + x : ''));
+  document.getElementById('out').textContent = results.join(String.fromCharCode(10));
+};
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const press = (w, key) => w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key, bubbles: true }));
+
+let started = false;
+
+document.getElementById('f').addEventListener('load', async () => {
+  if (started) return;
+  started = true;
+
+  const frame = document.getElementById('f');
+  const w = frame.contentWindow;
+  const d = w.document;
+  const A = w.ANAGRAM;
+
+  w.confirm = () => true;                       // a native dialog would block a headless run
+  w.onerror = m => check('no page errors', false, m);
+
+  const el = id => d.getElementById(id);
+  const closeModals = () => d.querySelectorAll('.modal:not([hidden])').forEach(m => (m.hidden = true));
+  const tiles = () => [...d.querySelectorAll('#tray .tile')];
+  const answerSlots = () => [...d.querySelectorAll('#slots .answer-slot')];
+
+  /* Puts a chosen day on the board, so a test can rely on a word's shape rather
+     than on whatever today happens to be. */
+  function useDay(date, slot = 'word1') {
+    const day = A.manifest.days.find(x => x.date === date);
+    A.state.day = day;
+    A.state.puzzleDate = date;
+    A.state.puzzleNumber = day.n;
+    A.save.progress = A.blankProgress(date);
+    A.beginSlot(slot);
+    return day;
+  }
+
+  const typeWord = word => [...word].forEach(c => A.typeLetter(c));
+
+  /* A different wrong guess every time. Rotating the scramble keeps exactly the
+     available letters while giving a new arrangement, so the duplicate guard
+     does not swallow the attempt. */
+  function wrongGuess(slot, n) {
+    const letters = [...A.scrambleFor(slot)];
+    const at = n % letters.length;
+    const rotated = letters.slice(at).concat(letters.slice(0, at)).join('');
+    return rotated === A.wordFor(slot) ? [...rotated].reverse().join('') : rotated;
+  }
+
+  function attempt(slot, n) {
+    A.clearInput();
+    typeWord(wrongGuess(slot, n));
+    return A.submitGuess();
+  }
+  const solveCurrent = () => { typeWord(A.wordFor(A.state.activeSlot)); return A.submitGuess(); };
+
+  await wait(400);
+  closeModals();
+
+  try {
+    // ---------- the manifest ----------
+    const days = A.manifest.days;
+    check('manifest carries at least a 180-day runway', days.length >= 180, days.length + ' days');
+    check('manifest is dated, not indexed by timestamp',
+          days.every(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date)));
+    check('word 1 is 5 to 6 letters throughout', days.every(x => x.w1.length >= 5 && x.w1.length <= 6));
+    check('word 2 is 7 to 8 letters throughout', days.every(x => x.w2.length >= 7 && x.w2.length <= 8));
+    check('every word is lowercase alphabetic',
+          days.every(x => /^[a-z]+$/.test(x.w1) && /^[a-z]+$/.test(x.w2)));
+    check('no word repeats in either slot',
+          new Set(days.map(x => x.w1)).size === days.length &&
+          new Set(days.map(x => x.w2)).size === days.length);
+    check('every day ships a definition for both words',
+          days.every(x => x.d1 && x.d2));
+
+    // ---------- scrambling, swept across the whole manifest (acceptance 7) ----------
+    const sortLetters = s => [...s].sort().join('');
+    let sameAsWord = 0, wrongLetters = 0, longRun = 0;
+    days.forEach(day => {
+      [[day.w1, day.s1, `${day.date}:1`], [day.w2, day.s2, `${day.date}:2`]].forEach(([word, take, seed]) => {
+        const text = w.SCRAMBLE.scramble(word, seed, { take }).text;
+        if (text === word) sameAsWord++;
+        if (sortLetters(text) !== sortLetters(word)) wrongLetters++;
+        if (w.SCRAMBLE.longestKeptRun(word, text) > 2) longRun++;
+      });
+    });
+    check('no scramble equals its source word', sameAsWord === 0, sameAsWord + ' offenders');
+    check('every scramble uses exactly the source letters', wrongLetters === 0);
+    check('no scramble keeps three letters of the word adjacent', longRun === 0, longRun + ' offenders');
+
+    // ---------- determinism across devices and loads (acceptance 1) ----------
+    const day0 = A.manifest.days[0];
+    const first = w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text;
+    const second = w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text;
+    check('the same date yields the same scramble every time', first === second, first);
+    check('a second, independent run agrees',
+          w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text === first);
+    check('a different date yields a different arrangement',
+          w.SCRAMBLE.scramble(day0.w1, `${day0.date}:2`, { take: day0.s1 }).text !== first ||
+          day0.w1.length < 4);
+    check('the puzzle is looked up by date string',
+          A.puzzleFor(day0.date).w1 === day0.w1 && A.puzzleFor('1999-01-01') === null);
+
+    // ---------- tiles, including repeated letters ----------
+    const repeatDay = A.manifest.days.find(x => new Set(x.w1).size < x.w1.length);
+    useDay(repeatDay.date);
+    const answer = A.wordFor('word1');
+    check('tiles match the scrambled word', tiles().length === answer.length, answer.length + ' tiles');
+    check('answer slots match the word length', answerSlots().length === answer.length);
+    check('every slot starts empty', A.currentInput() === '');
+
+    /* The chosen word has a repeated letter: placing it twice has to consume two
+       different tiles, which is the whole reason tiles are tracked by index. */
+    const doubled = [...answer].find((c, i) => answer.indexOf(c) !== i);
+    A.typeLetter(doubled);
+    A.typeLetter(doubled);
+    check('a repeated letter can be placed twice', A.currentInput() === doubled + doubled,
+          `${answer}: ${A.currentInput()}`);
+    check('two distinct tiles were consumed', A.usedTileIndexes().size === 2);
+    A.clearInput();
+    check('clear empties the answer', A.currentInput() === '');
+
+    tiles()[0].click();
+    check('tapping a tile fills the next slot', A.currentInput().length === 1);
+    check('a consumed tile is disabled', tiles()[0].disabled && tiles()[0].classList.contains('spent'));
+    answerSlots()[0].click();
+    check('tapping a placed tile returns it', A.currentInput() === '' && !tiles()[0].disabled);
+
+    // ---------- submitting ----------
+    useDay(repeatDay.date);
+    check('an empty submission is refused and costs nothing',
+          A.submitGuess() === 'empty' && A.progressFor('word1').attemptsUsed === 0);
+
+    A.typeLetter(A.wordFor('word1')[0]);
+    check('a short submission is refused and costs nothing',
+          A.submitGuess() === 'short' && A.progressFor('word1').attemptsUsed === 0);
+
+    /* Swap a tile's letter behind the game's back so the answer no longer uses
+       the letters on offer — the guard that catches a pasted or injected word. */
+    A.clearInput();
+    typeWord(A.wordFor('word1'));
+    const realTiles = A.state.tiles;
+    A.state.tiles = realTiles.map((t, i) => (i === 0 ? { letter: 'z' } : t));
+    const verdict = A.submitGuess();
+    A.state.tiles = realTiles;
+    check('a guess using letters you do not have is refused, at no cost',
+          verdict === 'letters' && A.progressFor('word1').attemptsUsed === 0, verdict);
+
+    // a wrong but well-formed guess
+    useDay(repeatDay.date);
+    const scrambled = A.scrambleFor('word1');
+    typeWord(scrambled);                                  // the scramble itself is never the answer
+    check('a wrong guess is accepted as an attempt', A.submitGuess() === 'wrong');
+    check('the attempt is counted', A.progressFor('word1').attemptsUsed === 1);
+    check('the guess is remembered', A.progressFor('word1').guesses[0] === scrambled);
+    check('the guess is shown in the history', d.querySelectorAll('#history .past-guess').length === 1);
+    check('the input is cleared but the tiles remain',
+          A.currentInput() === '' && tiles().length === scrambled.length);
+    check('an attempt marker is spent', d.querySelectorAll('#attempts .pip.spent').length === 1);
+
+    typeWord(scrambled);
+    check('the same guess twice is refused', A.submitGuess() === 'duplicate');
+    check('a repeat costs no attempt', A.progressFor('word1').attemptsUsed === 1);
+    A.clearInput();
+
+    // ---------- shuffle is free ----------
+    const beforeShuffle = tiles().map(t => t.textContent).sort().join('');
+    A.shuffleTiles();
+    check('shuffle keeps the same letters',
+          tiles().map(t => t.textContent).sort().join('') === beforeShuffle);
+    check('shuffle costs no attempt', A.progressFor('word1').attemptsUsed === 1);
+
+    // ---------- solving, and word 2 unlocking ----------
+    useDay(repeatDay.date);
+    check('word 2 starts locked', A.progressFor('word2').unlocked === false);
+    check('a correct guess is accepted', solveCurrent() === 'correct');
+    check('the word is marked solved', A.progressFor('word1').solved && A.progressFor('word1').resolved);
+    check('the answer and its definition are revealed',
+          !el('reveal').hidden && el('reveal-word').textContent === A.wordFor('word1').toUpperCase() &&
+          el('reveal-def').textContent.length > 0);
+    check('word 2 is unlocked once word 1 resolves', A.progressFor('word2').unlocked === true);
+    A.advance();
+    check('the game advances to word 2', A.state.activeSlot === 'word2');
+    check('word 2 is the longer word', A.wordFor('word2').length >= 7);
+
+    // ---------- hints ----------
+    check('no hint is offered before three wrong attempts', A.hintAvailable() === false);
+    for (let i = 1; i <= 3; i++) attempt('word2', i);
+    check('three wrong attempts are counted', A.progressFor('word2').attemptsUsed === 3);
+    check('the hint is offered after three', A.hintAvailable() === true);
+    check('the hint button is showing', !el('btn-hint').hidden && !el('btn-hint').disabled);
+
+    A.clearInput();
+    A.applyHint();
+    check('the hint reveals the first letter',
+          A.currentInput()[0] === A.wordFor('word2')[0], A.currentInput());
+    check('the hint is recorded', A.progressFor('word2').hintUsed === true);
+    check('the hinted letter is locked in place',
+          A.removeAt(0) === false && A.currentInput()[0] === A.wordFor('word2')[0]);
+    A.clearInput();
+    check('clearing the answer leaves the hint alone', A.currentInput()[0] === A.wordFor('word2')[0]);
+    check('only one hint per day', A.hintAvailable() === false && el('btn-hint').hidden);
+
+    // ---------- running out of attempts ----------
+    for (let i = 4; i <= 12 && !A.progressFor('word2').resolved; i++) attempt('word2', i);
+    check('five attempts end the word', A.progressFor('word2').resolved && !A.progressFor('word2').solved);
+    check('the answer is revealed on failure',
+          el('reveal-word').textContent === A.wordFor('word2').toUpperCase());
+    check('the definition is shown with it', el('reveal-def').textContent.length > 0);
+    check('the failure is filed in the distribution', A.save.stats.distribution.word2.failed >= 1);
+
+    // ---------- giving up ----------
+    useDay(repeatDay.date);
+    check('giving up resolves the word as a miss',
+          A.skipSlot() === true && A.progressFor('word1').resolved && !A.progressFor('word1').solved);
+
+    // ---------- keyboard only (acceptance 5) ----------
+    useDay(repeatDay.date);
+    closeModals();
+    [...A.wordFor('word1')].forEach(c => press(w, c));
+    check('typing fills the answer', A.currentInput() === A.wordFor('word1'), A.currentInput());
+    press(w, 'Backspace');
+    check('backspace takes a letter back', A.currentInput().length === A.wordFor('word1').length - 1);
+    press(w, A.wordFor('word1').slice(-1));
+    press(w, 'Enter');
+    check('enter submits, and the whole word is playable from the keyboard',
+          A.progressFor('word1').solved === true);
+    press(w, 'Enter');
+    check('enter also dismisses the reveal', A.state.activeSlot === 'word2');
+
+    // ---------- pasting ----------
+    useDay(repeatDay.date);
+    check('a pasted answer is accepted when the letters fit',
+          A.applyPaste(' ' + A.wordFor('word1').toUpperCase() + '! ') === true &&
+          A.currentInput() === A.wordFor('word1'));
+    A.clearInput();
+    check('a paste using letters you do not have is refused whole',
+          A.applyPaste('zzzz') === false && A.currentInput() === '');
+    check('an over-long paste is refused', A.applyPaste('abcdefghijklmnop') === false);
+
+    // ---------- announcements (acceptance 6) ----------
+    useDay(repeatDay.date);
+    check('the slot is announced on arrival', el('live').textContent.includes('Word 1 of 2'),
+          el('live').textContent);
+    A.shuffleTiles();
+    check('shuffling is announced', el('live').textContent === 'Letters shuffled');
+    A.typeLetter('z') || A.submitGuess();
+    check('a refusal is announced', el('live').textContent.length > 0);
+    check('tiles carry a label for screen readers',
+          tiles()[0].getAttribute('aria-label').startsWith('Letter'));
+    check('answer positions are labelled',
+          answerSlots()[0].getAttribute('aria-label').includes('Position 1'));
+
+    // ---------- streaks over a simulated week (acceptance 3) ----------
+    const streakLog = [];
+    A.save.lastPlayedDate = '';
+    A.save.stats = A.blankStats();
+
+    function simulate(date, action) {
+      A.state.puzzleDate = date;
+      if (action === 'away') return;               // no play at all
+      A.notePlayed();
+      if (action === 'solved') A.noteSolved();
+      streakLog.push(`${date.slice(-2)}:${action}=${A.save.stats.currentStreak}`);
+    }
+
+    simulate('2026-03-01', 'solved');
+    check('day 1 solved starts the streak', A.save.stats.currentStreak === 1);
+    simulate('2026-03-02', 'solved');
+    check('day 2 solved continues it', A.save.stats.currentStreak === 2);
+    simulate('2026-03-03', 'played');              // played, solved nothing
+    check('a day played but not solved holds the streak', A.save.stats.currentStreak === 2);
+    simulate('2026-03-04', 'solved');
+    check('solving again after a held day increments', A.save.stats.currentStreak === 3);
+    simulate('2026-03-05', 'away');                // the skipped day
+    check('a missed day does not change anything by itself', A.save.stats.currentStreak === 3);
+    simulate('2026-03-06', 'solved');
+    check('a day with no play at all breaks the streak, and the new day restarts it',
+          A.save.stats.currentStreak === 1, streakLog.join(' '));
+    simulate('2026-03-07', 'solved');
+    check('the streak builds again', A.save.stats.currentStreak === 2);
+    check('max streak remembers the best run', A.save.stats.maxStreak === 3);
+    check('days played counted every day that was played', A.save.stats.daysPlayed === 6,
+          String(A.save.stats.daysPlayed));
+
+    /* Solving both words must not count the day twice. */
+    A.save.stats = A.blankStats();
+    A.state.puzzleDate = '2026-04-01';
+    A.notePlayed(); A.noteSolved(); A.noteSolved();
+    check('two solved words in a day still count as one streak day', A.save.stats.currentStreak === 1);
+
+    // ---------- share text (acceptance 4) ----------
+    const permutations = [
+      { solved: true,  attemptsUsed: 1, hintUsed: false },
+      { solved: true,  attemptsUsed: 5, hintUsed: false },
+      { solved: true,  attemptsUsed: 4, hintUsed: true },
+      { solved: false, attemptsUsed: 5, hintUsed: false },
+      { solved: false, attemptsUsed: 5, hintUsed: true }
+    ];
+    /* Held to a strict template. "Anagram", "hint" and "day streak" are the only
+       prose allowed, so any letter of an answer leaking in would break the match.
+       Checking letter-by-letter instead would be meaningless: the fixed title
+       alone contains a, n, g, r and m. */
+    const MARKS = '[\u{1F7E9}\u{1F7E5}\u2B1C\u{1F4A1}]{5}';
+    const SCORE = '\\((?:[1-5](?:, hint)?|X)\\)';
+    const TEMPLATE = new RegExp(
+      '^Anagram #\\d+' +
+      '\\n1\uFE0F\u20E3 ' + MARKS + ' ' + SCORE +
+      '\\n2\uFE0F\u20E3 ' + MARKS + ' ' + SCORE +
+      '(?:\\n\u{1F525} \\d+ day streak)?$', 'u');
+
+    let offTemplate = '', leaked = '';
+    permutations.forEach(p1 => permutations.forEach(p2 => {
+      Object.assign(A.progressFor('word1'), p1, { resolved: true });
+      Object.assign(A.progressFor('word2'), p2, { resolved: true });
+      const text = A.shareText();
+      if (!TEMPLATE.test(text)) offTemplate = JSON.stringify(text);
+      if (text.toLowerCase().includes(A.wordFor('word1')) ||
+          text.toLowerCase().includes(A.wordFor('word2'))) leaked = text;
+      /* FR-7.6 is about a URL carrying the answer. The # in "Anagram #3" is a
+         puzzle number, not a fragment, so match links rather than punctuation. */
+      if (/https?:|www\.|\/\/|\.com/i.test(text)) leaked = text;
+    }));
+    check('share text holds to the emoji template in every outcome, so no letter leaks',
+          offTemplate === '', offTemplate);
+    check('share text contains neither answer, and no link that could carry one',
+          leaked === '', leaked);
+    check('share text carries the puzzle number',
+          A.shareText().startsWith('Anagram #' + A.state.puzzleNumber), A.shareText().split('\n')[0]);
+
+    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, hintUsed: false, resolved: true });
+    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 4, hintUsed: true, resolved: true });
+    check('a solved word shows one marker per attempt',
+          A.shareLine('word1') === '1️⃣ \u{1F7E9}\u{1F7E9}⬜⬜⬜ (2)', A.shareLine('word1'));
+    check('a hint is flagged in the share text',
+          A.shareLine('word2').includes('\u{1F4A1}') && A.shareLine('word2').includes('hint'),
+          A.shareLine('word2'));
+    check('a missed word shares as X', (() => {
+      Object.assign(A.progressFor('word1'), { solved: false, attemptsUsed: 5, hintUsed: false });
+      return A.shareLine('word1').endsWith('(X)');
+    })());
+
+    // ---------- rollover mid-session ----------
+    A.state.puzzleDate = '2026-03-01';             // pretend the tab has been open a while
+    const wordBefore = A.wordFor('word1');
+    A.checkRollover();
+    check('a rollover shows a prompt', !el('banner').hidden);
+    check('the puzzle is not swapped underneath the player', A.wordFor('word1') === wordBefore);
+    el('banner').hidden = true;
+
+    // ---------- countdown ----------
+    check('the countdown is a clock, not a counter', /^\d{2}:\d{2}:\d{2}$/.test(el('countdown').textContent),
+          el('countdown').textContent);
+    check('the countdown is computed from the clock',
+          A.nextRolloverMs() > Date.now() && A.nextRolloverMs() - Date.now() <= 86400000);
+
+    // ---------- corrupt or foreign saved state ----------
+    w.localStorage.setItem(A.STORE_KEY, '{ this is not json');
+    check('unparseable saved state is discarded, not surfaced',
+          A.loadSave().stats.daysPlayed === 0);
+    w.localStorage.setItem(A.STORE_KEY, JSON.stringify({ schemaVersion: 99, stats: { daysPlayed: 7 } }));
+    check('a save from an unknown schema is discarded', A.loadSave().stats.daysPlayed === 0);
+    w.localStorage.removeItem(A.STORE_KEY);
+
+    // ---------- playable without persistence (acceptance 9) ----------
+    const realSetItem = w.localStorage.setItem.bind(w.localStorage);
+    w.localStorage.setItem = () => { throw new Error('storage blocked'); };
+    useDay(repeatDay.date);
+    const blockedVerdict = solveCurrent();
+    w.localStorage.setItem = realSetItem;
+    check('the game plays on when storage refuses to write', blockedVerdict === 'correct');
+
+    // ---------- 360px layout (acceptance 8) ----------
+    closeModals();
+    el('reveal').hidden = true;
+    useDay(A.manifest.days.find(x => x.w2.length === 8).date, 'word2');
+    await wait(60);
+    check('the page does not scroll sideways at 360px',
+          d.documentElement.scrollWidth <= 360, 'scrollWidth ' + d.documentElement.scrollWidth);
+
+    const smallTiles = tiles().filter(t => t.getBoundingClientRect().width < 44 ||
+                                           t.getBoundingClientRect().height < 44);
+    check('letter tiles meet the 44px tap target', smallTiles.length === 0,
+          smallTiles.length ? Math.round(tiles()[0].getBoundingClientRect().width) + 'px' : '');
+
+    const controls = [...d.querySelectorAll('.controls .btn, .btn-submit, .icon-btn')]
+      .filter(b => !b.hidden && b.getBoundingClientRect().height > 0);
+    const smallControls = controls.filter(b => b.getBoundingClientRect().height < 44);
+    check('controls meet the 44px tap target', smallControls.length === 0,
+          smallControls.map(b => b.id + ' ' + Math.round(b.getBoundingClientRect().height)).join(', '));
+
+    const smallSlots = answerSlots().filter(s => s.getBoundingClientRect().width < 44);
+    check('answer positions meet the 44px tap target', smallSlots.length === 0,
+          smallSlots.length ? Math.round(answerSlots()[0].getBoundingClientRect().width) + 'px' : '');
+
+    // ---------- a refresh restores the day exactly (acceptance 2) ----------
+    const today = A.todayKey();
+    const realDay = A.manifest.days.find(x => x.date === today) || A.manifest.days[0];
+    w.localStorage.setItem(A.STORE_KEY, JSON.stringify({
+      schemaVersion: A.SCHEMA_VERSION,
+      lastPlayedDate: today,
+      progress: {
+        date: today,
+        word1: { solved: true, attemptsUsed: 2, guesses: ['aaaaa', realDay.w1], resolved: true },
+        word2: { solved: false, attemptsUsed: 3, guesses: ['bbbbbbb'], resolved: false,
+                 hintUsed: true, unlocked: true }
+      },
+      stats: Object.assign(A.blankStats(), { daysPlayed: 4, currentStreak: 3, maxStreak: 3 })
+    }));
+
+    /* A fresh frame rather than a reload of this one: reloading the frame the
+       suite is attached to re-fires its load handler, and the second run fights
+       the first over the same storage. */
+    const frame2 = document.createElement('iframe');
+    frame2.width = 360;
+    frame2.height = 900;
+    await new Promise(done => {
+      frame2.addEventListener('load', done, { once: true });
+      frame2.src = 'index.html?refresh-test';
+      document.body.appendChild(frame2);
+    });
+    await wait(500);
+
+    const w2 = frame2.contentWindow;
+    const d2 = w2.document;
+    const A2 = w2.ANAGRAM;
+    d2.querySelectorAll('.modal:not([hidden])').forEach(m => (m.hidden = true));
+
+    check('a refresh returns to the word in play', A2.state.activeSlot === 'word2', A2.state.activeSlot);
+    check('attempts used survive the refresh', A2.progressFor('word2').attemptsUsed === 3);
+    check('the guess history survives', A2.progressFor('word2').guesses.length === 1);
+    check('the finished word stays finished', A2.progressFor('word1').resolved === true);
+    check('the streak survives', A2.save.stats.currentStreak === 3);
+    check('a revealed hint is still revealed',
+          A2.progressFor('word2').hintUsed === true &&
+          A2.currentInput()[0] === A2.wordFor('word2')[0],
+          A2.currentInput());
+    check('the hint is still locked after a refresh', A2.state.lockedSlots.length === 1);
+    // ---------- practice, once the day is done ----------
+    /* The day's puzzle stays one-shot; what changes is that finishing it no
+       longer leaves you with nothing to play. */
+    const manifest = A.manifest;
+    check('the manifest ships a practice pool',
+          manifest.practice && manifest.practice.easy.length >= 40 &&
+          manifest.practice.hard.length >= 40,
+          manifest.practice ? manifest.practice.easy.length + ' pairs' : 'missing');
+
+    const calendarWords = new Set(manifest.days.flatMap(day => [day.w1, day.w2]));
+    const practiceWords = [...manifest.practice.easy, ...manifest.practice.hard].map(x => x.w);
+    check('no practice word is ever a puzzle from the calendar',
+          practiceWords.every(word => !calendarWords.has(word)));
+    check('every practice word carries its definition and arrangement',
+          [...manifest.practice.easy, ...manifest.practice.hard].every(x => x.d && x.s > 0));
+
+    /* Set up a finished day with a record worth protecting. */
+    const dayKey = A.todayKey();
+    A.save.progress = A.blankProgress(dayKey);
+    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
+    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 3, resolved: true });
+    A.save.stats = Object.assign(A.blankStats(), {
+      daysPlayed: 4, daysBothSolved: 3, currentStreak: 3, maxStreak: 5, lastStreakDate: dayKey
+    });
+    A.save.lastPlayedDate = dayKey;
+    A.persist();
+
+    const recordBefore = JSON.stringify(A.save.stats);
+    const savedBefore = w.localStorage.getItem(A.STORE_KEY);
+
+    check('a practice round can be started', A.startPractice() === true);
+    check('the game knows it is practice', A.inPractice() === true);
+    check('practice deals a word from the practice pool',
+          practiceWords.includes(A.wordFor('word1')), A.wordFor('word1'));
+    check('practice words are scrambled, not handed over',
+          A.scrambleFor('word1') !== A.wordFor('word1'), A.scrambleFor('word1'));
+    check('practice starts with a clean slate', A.progressFor('word1').attemptsUsed === 0);
+
+    /* Play it out: solve one, fail the other, which would move every counter if
+       practice were being recorded. */
+    [...A.wordFor('word1')].forEach(c => A.typeLetter(c));
+    check('a practice answer is accepted', A.submitGuess() === 'correct');
+    A.advance();
+    for (let i = 0; i < A.ATTEMPTS; i++) {
+      A.clearInput();
+      [...A.scrambleFor('word2')].forEach(c => A.typeLetter(c));
+      A.submitGuess();
+    }
+
+    check('practice leaves the streak and stats untouched',
+          JSON.stringify(A.save.stats) === recordBefore);
+    check('practice is never written to storage',
+          w.localStorage.getItem(A.STORE_KEY) === savedBefore);
+    check('the day it was played on is not marked again', A.save.lastPlayedDate === dayKey);
+
+    A.leavePractice();
+    check('leaving practice returns to the day', A.inPractice() === false);
+    check('the day is still finished', A.progressFor('word1').resolved === true &&
+          A.progressFor('word2').resolved === true);
+    check('the day record is exactly as it was', JSON.stringify(A.save.stats) === recordBefore);
+
+    check('another practice round can be started', A.startPractice() === true);
+    A.leavePractice();
+
+    // ---------- the finished day shows both words ----------
+    /* A day is two words, so ending it on the second one alone hides half of
+       what was just played. */
+    A.save.progress = A.blankProgress(dayKey);
+    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
+    Object.assign(A.progressFor('word2'), { solved: false, attemptsUsed: 5, resolved: true });
+    A.showResults();
+    await wait(60);
+
+    const finishedRows = [...d.querySelectorAll('#slots .finished-row')];
+    check('both words are shown, not just the last one', finishedRows.length === 2,
+          finishedRows.length + ' rows');
+    check('each word is spelled out in full',
+          finishedRows[0].textContent.includes(A.wordFor('word1').toUpperCase()) ||
+          finishedRows[0].textContent.toLowerCase().includes(A.wordFor('word1')),
+          finishedRows.map(r => r.textContent).join(' | '));
+    check('the word that beat you is marked as missed',
+          finishedRows[1].querySelectorAll('.answer-slot.missed').length === A.wordFor('word2').length &&
+          finishedRows[0].querySelectorAll('.answer-slot.missed').length === 0);
+    check('the label stops naming one word', el('slot-label').textContent.includes("Today"),
+          el('slot-label').textContent);
+    check('the tray and controls step aside', el('tray').hidden && el('controls').hidden &&
+          el('btn-submit').hidden && el('attempts-row').hidden);
+
+    // ---------- attempts are counted out loud ----------
+    /* This plays a real guess, which moves the record. Put it back afterwards so
+       the checks that follow still see the day they set up. */
+    const recordAside = JSON.stringify(A.save.stats);
+    const playedAside = A.save.lastPlayedDate;
+    useDay(repeatDay.date);
+    check('the attempt dots are labelled with a number',
+          el('attempts').textContent.trim() === A.ATTEMPTS + ' left',
+          el('attempts').textContent.trim());
+    attempt('word1', 1);
+    check('the number goes down with each attempt',
+          el('attempts').textContent.trim() === (A.ATTEMPTS - 1) + ' left',
+          el('attempts').textContent.trim());
+
+    A.save.stats = JSON.parse(recordAside);
+    A.save.lastPlayedDate = playedAside;
+    A.save.progress = A.blankProgress(dayKey);
+    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
+    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 3, resolved: true });
+    A.showResults();
+    await wait(40);
+
+    // ---------- the Today / Practice control ----------
+    const modeBtn = mode => d.querySelector(`.mode-btn[data-mode="${mode}"]`);
+    check('the game offers Today and Practice', !!modeBtn('daily') && !!modeBtn('practice'));
+    check('Today is marked while the day is on show',
+          modeBtn('daily').getAttribute('aria-pressed') === 'true' &&
+          modeBtn('practice').getAttribute('aria-pressed') === 'false');
+
+    modeBtn('practice').click();
+    await wait(80);
+    check('the Practice button starts a practice round', A.inPractice() === true);
+    check('Practice is marked while it runs',
+          modeBtn('practice').getAttribute('aria-pressed') === 'true' &&
+          modeBtn('daily').getAttribute('aria-pressed') === 'false');
+
+    modeBtn('daily').click();
+    await wait(80);
+    check('the Today button comes back to the day', A.inPractice() === false);
+    check('the day is still finished, and still recorded',
+          A.progressFor('word1').resolved === true &&
+          JSON.stringify(A.save.stats) === recordBefore);
+
+  } catch (err) {
+    check('suite ran to the end', false, err.message + ' @ ' + (err.stack || '').split('\n')[1]);
+  }
+
+  document.getElementById('out').textContent = results.join(String.fromCharCode(10));
+});
+</script>
+</body></html>

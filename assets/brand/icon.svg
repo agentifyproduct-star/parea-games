@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Parea Games">
+  <!-- The app icon: the same five tiles, inverted onto a dark ground so it holds
+       up against a home screen or a browser tab. -->
+  <rect width="100" height="100" rx="24" fill="#1e2a26" />
+  <g transform="translate(21 20) scale(.64)">
+    <g fill="#f4efe7">
+      <rect x="4"  y="30" width="27" height="27" rx="7" transform="rotate(-13 17.5 43.5)" />
+      <rect x="30" y="8"  width="27" height="27" rx="7" transform="rotate(7 43.5 21.5)" />
+      <rect x="17" y="60" width="27" height="27" rx="7" transform="rotate(9 30.5 73.5)" />
+      <rect x="45" y="54" width="27" height="27" rx="7" transform="rotate(-6 58.5 67.5)" />
+    </g>
+    <rect x="60" y="20" width="27" height="27" rx="7" fill="#c2562c" transform="rotate(-9 73.5 33.5)" />
+  </g>
+</svg>

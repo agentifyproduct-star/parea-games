@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Scattered letter tiles settling into a solved word">
+  <defs>
+    <filter id="an-soft" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#2f3162" flood-opacity=".16" />
+    </filter>
+    <linearGradient id="an-wash" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0f0fa" />
+      <stop offset="1" stop-color="#e6e7f6" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#an-wash)" />
+
+  <g stroke="#ffffff" stroke-width="1.5" opacity=".7">
+    <path d="M0 125h800M0 250h800M0 375h800" />
+    <path d="M200 0v500M400 0v500M600 0v500" />
+  </g>
+
+  <g font-family="'Segoe UI', system-ui, Helvetica, Arial, sans-serif" font-weight="700"
+     font-size="40" text-anchor="middle" filter="url(#an-soft)">
+
+    <!-- in the air, still scrambled -->
+    <g>
+      <g transform="rotate(-13 200 130)">
+        <rect x="164" y="94" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="200" y="143" fill="#3a3c6b">R</text>
+      </g>
+      <g transform="rotate(9 316 108)">
+        <rect x="280" y="72" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="316" y="121" fill="#3a3c6b">M</text>
+      </g>
+      <g transform="rotate(-6 438 128)">
+        <rect x="402" y="92" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="438" y="141" fill="#3a3c6b">A</text>
+      </g>
+      <g transform="rotate(15 556 104)">
+        <rect x="520" y="68" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="556" y="117" fill="#3a3c6b">G</text>
+      </g>
+      <g transform="rotate(-10 662 142)">
+        <rect x="626" y="106" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="662" y="155" fill="#3a3c6b">N</text>
+      </g>
+    </g>
+
+    <!-- landed, in order -->
+    <g>
+      <rect x="152" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="234" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="316" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="398" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="480" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="562" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <rect x="644" y="300" width="72" height="72" rx="12" fill="#6c74d8" />
+      <g fill="#ffffff">
+        <text x="188" y="349">A</text>
+        <text x="270" y="349">N</text>
+        <text x="352" y="349">A</text>
+        <text x="434" y="349">G</text>
+        <text x="516" y="349">R</text>
+        <text x="598" y="349">A</text>
+        <text x="680" y="349">M</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- the ground the tiles land on -->
+  <path d="M152 404h564" stroke="#c9cbe8" stroke-width="4" stroke-linecap="round" />
+</svg>

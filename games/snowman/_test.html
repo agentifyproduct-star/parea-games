@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Snowman tests</title></head>
+<body>
+<iframe id="f" src="index.html" width="700" height="900"></iframe>
+<pre id="out">running</pre>
+<script>
+const results = [];
+const check = (n, c, x) => {
+  results.push((c ? 'PASS ' : 'FAIL ') + n + (x !== undefined && x !== '' ? ' :: ' + x : ''));
+  /* Written out as we go, so a hang still shows how far the suite got. */
+  document.getElementById('out').textContent = results.join(String.fromCharCode(10));
+};
+const wait = ms => new Promise(r => setTimeout(r, ms));
+window.addEventListener('error', e => results.push('FAIL pageerror :: ' + e.message));
+const press = (w, key) => w.document.dispatchEvent(new w.KeyboardEvent('keydown', {key, bubbles: true}));
+
+/* The refresh tests reload the iframe, which fires this listener again. Run the
+   suite once and let those reloads be handled by their own one-shot listeners. */
+let started = false;
+
+document.getElementById('f').addEventListener('load', async () => {
+  if (started) return;
+  started = true;
+
+  const w = document.getElementById('f').contentWindow;
+  const d = w.document;
+
+  let seen = [];
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => {
+    if (n.classList && n.classList.contains('toast')) seen.push(n.textContent);
+  }))).observe(d.getElementById('toast-area'), { childList: true });
+  const since = () => { const s = seen.join(' | '); seen = []; return s; };
+
+  /* Starting a new word mid-game asks for confirmation. A native dialog blocks a
+     headless run outright, so answer it here and test the buttons themselves. */
+  w.confirm = () => true;
+
+  const closeModals = () => d.querySelectorAll('.modal:not([hidden])').forEach(m => (m.hidden = true));
+  /* The drawing runs backwards now: pieces leave the snowman as you get letters
+     wrong, so what is counted is what has melted. */
+  const meltedParts = () => d.querySelectorAll('.snowman .part.gone').length;
+  const puddleShown = () => !!d.querySelector('.puddle.shown');
+  const keyEl = k => d.querySelector(`.key[data-key="${k}"]`);
+
+  /* Deals a known word so a test never depends on the shuffle. */
+  function setWord(phrase, category = 'Test') {
+    w.state.secretWord = phrase;
+    w.state.category = category;
+    w.state.guessedLetters = new Set();
+    w.state.wrongGuesses = 0;
+    w.state.status = 'playing';
+    w.render();
+  }
+
+  await wait(300);
+  closeModals();
+
+  try {
+    // ---------- the word book ----------
+    const all = w.SNOWMAN_WORDS.all();
+    check('word book is populated', all.length > 100, all.length + ' entries');
+    check('every entry is lowercase letters, spaces and hyphens only',
+          all.every(x => /^[a-z]+([ -][a-z]+)*$/.test(x.phrase)));
+    check('no duplicate words', new Set(all.map(x => x.phrase)).size === all.length);
+    check('every entry carries a category', all.every(x => x.category && x.category.length > 1));
+
+    for (const level of w.SNOWMAN_WORDS.levels) {
+      const pool = w.SNOWMAN_WORDS.atLevel(level);
+      check(`${level} pool is big enough to play`, pool.length >= 20, pool.length + ' words');
+      check(`${level} pool is all rated ${level}`,
+            pool.every(x => w.SNOWMAN_WORDS.difficultyOf(x.phrase) === level));
+    }
+
+    check('difficulty is ordered: more distinct and rarer letters rate harder',
+          w.SNOWMAN_WORDS.difficultyOf('koala') === 'easy' &&
+          w.SNOWMAN_WORDS.difficultyOf('jellyfish') === 'hard');
+
+    // ---------- masking ----------
+    setWord('polar bear', 'Animals');
+    check('a fresh word is fully masked', w.maskedText() === '_____ ____', w.maskedText());
+    check('the space is not a guessable slot', d.querySelectorAll('#word .slot').length === 9);
+    check('the space renders as a gap', d.querySelectorAll('#word .sep').length === 1);
+
+    w.guessLetter('a');
+    check('one guess reveals every copy of that letter', w.maskedText() === '___a_ __a_', w.maskedText());
+    check('the reveal is on the board too',
+          [...d.querySelectorAll('#word .slot.revealed')].map(s => s.textContent).join('') === 'aa');
+
+    // ---------- input handling ----------
+    setWord('kettle', 'Around the house');
+    check('uppercase input is accepted', w.guessLetter('E') === 'hit');
+    check('uppercase reveals correctly', w.maskedText() === '_e___e', w.maskedText());
+    check('a digit is refused', w.guessLetter('4') === 'invalid');
+    check('punctuation is refused', w.guessLetter('!') === 'invalid');
+    check('a whole string is refused as a letter guess', w.guessLetter('ab') === 'invalid');
+    check('empty input is refused', w.guessLetter('') === 'invalid');
+    check('refused input costs nothing', w.state.wrongGuesses === 0 && w.state.guessedLetters.size === 1);
+
+    // ---------- duplicates are free ----------
+    setWord('kettle');
+    w.guessLetter('e');
+    const beforeDupe = w.state.wrongGuesses;
+    check('repeating a correct letter is reported as a duplicate', w.guessLetter('e') === 'duplicate');
+    w.guessLetter('z');
+    const afterMiss = w.state.wrongGuesses;
+    check('repeating a wrong letter is also a duplicate', w.guessLetter('z') === 'duplicate');
+    check('neither repeat costs a life',
+          beforeDupe === 0 && afterMiss === 1 && w.state.wrongGuesses === 1);
+
+    // ---------- lives and the drawing ----------
+    setWord('kettle');
+    check('a hit costs no life', w.guessLetter('t') === 'hit' && w.state.wrongGuesses === 0);
+    check('the snowman starts whole', meltedParts() === 0 && !puddleShown());
+    w.guessLetter('z');
+    check('a miss costs one life', w.state.wrongGuesses === 1);
+    check('a miss melts a piece off', meltedParts() === 1);
+    w.guessLetter('q');
+    w.guessLetter('x');
+    check('the melt keeps pace with the misses', meltedParts() === 3, meltedParts() + ' pieces gone');
+    check('the puddle holds off until the end', !puddleShown());
+    check('lives shown match lives left',
+          d.querySelectorAll('#lives .pip:not(.spent)').length === 3,
+          d.getElementById('lives').textContent);
+
+    // ---------- the guessed list ----------
+    check('every guess is listed', d.querySelectorAll('#guessed .tried').length === 4);
+    check('hits and misses are told apart',
+          d.querySelectorAll('#guessed .tried.hit').length === 1 &&
+          d.querySelectorAll('#guessed .tried.miss').length === 3);
+    check('a used key is spent', keyEl('t').disabled && keyEl('z').disabled);
+    check('an untried key is still live', !keyEl('a').disabled);
+
+    // ---------- winning ----------
+    setWord('koala');
+    ['k', 'o', 'a', 'l'].forEach(c => w.guessLetter(c));
+    check('finding every letter wins', w.state.status === 'won', w.state.status);
+    check('a win does not need the lives spent', w.state.wrongGuesses === 0);
+    check('the finished word is fully shown', w.maskedText() === 'koala', w.maskedText());
+    await wait(60);
+    check('the win is announced', /Flawless|Superb|Great/.test(since()));
+    closeModals();
+
+    // ---------- losing ----------
+    setWord('quebec', 'Places');
+    ['a', 'i', 'o', 's', 't', 'n'].forEach(c => w.guessLetter(c));
+    check('six wrong guesses ends it', w.state.status === 'lost', w.state.status);
+    check('the snowman melts away completely', meltedParts() === 6);
+    check('all that is left is a puddle', puddleShown());
+    check('the answer is revealed on a loss', w.maskedText() === 'quebec', w.maskedText());
+    check('the letters that beat you are marked',
+          d.querySelectorAll('#word .slot.missed').length === 6);
+    await wait(60);
+    check('the answer is announced', since().includes('QUEBEC'));
+    closeModals();
+
+    check('a finished game takes no more guesses', w.guessLetter('q') === 'over');
+
+    // ---------- whole-word guessing ----------
+    setWord('polar bear', 'Animals');
+    check('a wrong word costs a life', w.guessWord('polar bears') === 'miss' && w.state.wrongGuesses === 1);
+    check('a word with digits is refused', w.guessWord('polar 2') === 'invalid');
+    check('an invalid word costs nothing', w.state.wrongGuesses === 1);
+    check('spacing and case are forgiven', w.guessWord('  Polar   Bear ') === 'win', w.state.status);
+    check('a won word is fully revealed', w.maskedText() === 'polar bear', w.maskedText());
+    await wait(60);
+    closeModals();
+
+    setWord('koala');
+    check('the whole word can be guessed with letters already found',
+          w.guessLetter('k') === 'hit' && w.guessWord('koala') === 'win');
+    await wait(60);
+    closeModals();
+
+    // ---------- the on-screen and physical keyboards ----------
+    setWord('kettle');
+    keyEl('k').click();
+    check('clicking a key guesses that letter', w.state.guessedLetters.has('k'));
+    press(w, 'e');
+    check('typing guesses too', w.state.guessedLetters.has('e'));
+    press(w, '5');
+    press(w, 'Shift');
+    check('non-letter keys are ignored', w.state.guessedLetters.size === 2,
+          [...w.state.guessedLetters].join(''));
+    check('a spent on-screen key cannot be pressed again', keyEl('k').disabled);
+    press(w, 'k');
+    await wait(30);
+    check('retyping a spent letter says so, without penalty',
+          w.state.wrongGuesses === 0 && w.state.guessedLetters.size === 2 &&
+          since().includes('already tried'));
+
+    // ---------- restarting ----------
+    const before = w.state.secretWord;
+    d.getElementById('btn-new').click();
+    await wait(60);
+    check('a new game clears the board',
+          w.state.guessedLetters.size === 0 && w.state.wrongGuesses === 0 &&
+          w.state.status === 'playing');
+    check('a new game deals a word', w.state.secretWord.length > 2, w.state.secretWord);
+    check('a fresh game starts with the snowman back', meltedParts() === 0 && !puddleShown());
+    closeModals();
+
+    // ---------- difficulty ----------
+    d.querySelector('.level-btn[data-level="hard"]').click();
+    await wait(60);
+    check('the difficulty picker deals a practice word from that tier',
+          w.state.level === 'hard' && w.state.daily === false &&
+          w.SNOWMAN_WORDS.difficultyOf(w.state.secretWord) === 'hard',
+          w.state.secretWord);
+    check('the picked difficulty is marked',
+          d.querySelector('.level-btn[data-level="hard"]').getAttribute('aria-pressed') === 'true' &&
+          d.querySelector('.level-btn[data-level="easy"]').getAttribute('aria-pressed') === 'false');
+    closeModals();
+
+    // ---------- the word of the day ----------
+    const todayWord = w.SNOWMAN_WORDS.daily();
+    check('there is a word for today', !!todayWord && todayWord.phrase.length > 2,
+          todayWord.phrase + ' (' + todayWord.category + ')');
+    check('today is the same word every time you ask',
+          w.SNOWMAN_WORDS.daily().phrase === todayWord.phrase);
+    check('a given date always gives the same word',
+          w.SNOWMAN_WORDS.daily(new Date('2026-09-01T12:00:00Z')).phrase ===
+          w.SNOWMAN_WORDS.daily(new Date('2026-09-01T12:00:00Z')).phrase);
+    check('tomorrow is a different word',
+          w.SNOWMAN_WORDS.daily(new Date('2026-09-01T12:00:00Z')).phrase !==
+          w.SNOWMAN_WORDS.daily(new Date('2026-09-02T12:00:00Z')).phrase);
+
+    const sweep = new Set();
+    for (let i = 0; i < 170; i++) {
+      sweep.add(w.SNOWMAN_WORDS.daily(new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000)).phrase);
+    }
+    check('no word comes round again for 170 days', sweep.size === 170, sweep.size + ' distinct');
+
+    w.startDaily();
+    check('the daily is marked as the daily', w.state.daily === true);
+    check('the daily deals the word for today', w.state.secretWord === todayWord.phrase);
+    check('the daily is numbered', w.state.puzzle === w.SNOWMAN_WORDS.puzzleNumber());
+
+    // ---------- only the daily counts ----------
+    w.localStorage.removeItem('arcade.snowman.stats');
+    w.startDaily();
+    setWord('koala');
+    w.state.daily = true;                       // setWord leaves the mode alone
+    ['k', 'o', 'a', 'l'].forEach(c => w.guessLetter(c));
+    await wait(60);
+    closeModals();
+
+    const record = JSON.parse(w.localStorage.getItem('arcade.snowman.stats') || '{}');
+    check('a daily win is recorded', record.played === 1 && record.wins === 1, JSON.stringify(record));
+    check('the streak moves', record.streak === 1 && record.maxStreak === 1);
+    check('the win is filed under how many lives it cost', record.dist[0] === 1, String(record.dist));
+
+    // ---------- when the next puzzle lands ----------
+    check('the countdown appears once today is done', !d.getElementById('next-up').hidden);
+    check('it reads as a clock',
+          /^\d{2}:\d{2}:\d{2}$/.test(d.getElementById('countdown').textContent),
+          d.getElementById('countdown').textContent);
+
+    /* The whole point of the split: practice is unlimited, so it must not move
+       anything the streak is built on. */
+    const recordBefore = w.localStorage.getItem('arcade.snowman.stats');
+    w.startGame('easy');
+    check('a practice round is marked as practice', w.state.daily === false);
+    setWord('otter');
+    w.state.daily = false;
+    ['o', 't', 'e', 'r'].forEach(c => w.guessLetter(c));
+    await wait(60);
+    closeModals();
+    check('winning a practice round leaves the record alone',
+          w.localStorage.getItem('arcade.snowman.stats') === recordBefore,
+          w.localStorage.getItem('arcade.snowman.stats'));
+    check('practice shows no countdown, having no deadline',
+          d.getElementById('next-up').hidden);
+
+    // ---------- an unfinished game survives a refresh ----------
+    /* restoreGame() is exactly what the page runs at boot, so driving it here
+       tests the real path without reloading the frame. */
+    w.startGame('medium');
+    setWord('dolphin', 'Animals');
+    w.guessLetter('d');
+    w.guessLetter('z');
+    w.saveGame();
+
+    setWord('kettle', 'Around the house');       // scramble live state
+    check('an unfinished game is restored', w.restoreGame() === true);
+    check('the word carries across a refresh', w.state.secretWord === 'dolphin', w.state.secretWord);
+    check('the guesses carry across',
+          w.state.guessedLetters.has('d') && w.state.guessedLetters.has('z') &&
+          w.state.guessedLetters.size === 2);
+    check('the lives spent carry across', w.state.wrongGuesses === 1);
+    check('the category carries across', w.state.category === 'Animals', w.state.category);
+    check('the board is redrawn from the saved game',
+          w.maskedText() === 'd______' && meltedParts() === 1, w.maskedText());
+
+    // ---------- a finished game is not resumed ----------
+    w.state.status = 'lost';
+    w.saveGame();
+    check('a finished game is not restored', w.restoreGame() === false);
+
+    w.localStorage.setItem('arcade.snowman.game', '{ not json');
+    check('a corrupt save is ignored rather than trusted', w.restoreGame() === false);
+
+    w.localStorage.setItem('arcade.snowman.game', JSON.stringify({
+      level: 'medium', secretWord: 'dolphin', guessedLetters: ['a'], wrongGuesses: 9, status: 'playing'
+    }));
+    check('a save with impossible lives is ignored', w.restoreGame() === false);
+
+    // ---------- today's game survives a refresh, yesterday's does not ----------
+    w.startDaily();
+    w.guessLetter(w.state.secretWord[0]);
+    w.saveGame();
+    const dailyWord = w.state.secretWord;
+
+    setWord('kettle');                          // scramble live state
+    w.state.daily = false;
+    check('a daily left half-played is restored', w.restore('arcade.snowman.daily') === true);
+    check('it comes back as the same word, still in progress',
+          w.state.secretWord === dailyWord && w.state.daily === true);
+
+    const stale = JSON.parse(w.localStorage.getItem('arcade.snowman.daily'));
+    stale.puzzle = stale.puzzle - 1;            // pretend it was saved yesterday
+    w.localStorage.setItem('arcade.snowman.daily', JSON.stringify(stale));
+    check('a game saved on an earlier day is not offered up as today', w.restore('arcade.snowman.daily') === false);
+
+  } catch (err) {
+    results.push('FAIL threw :: ' + err.message + ' @ ' + (err.stack || '').split('\n')[1]);
+  }
+
+  document.getElementById('out').textContent = results.join('\n');
+});
+</script>
+</body></html>

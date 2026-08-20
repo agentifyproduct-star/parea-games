@@ -1,0 +1,459 @@
+/* The Parea Games front page.
+
+   Light, wide-margined and type-led: an off-white ground, near-black ink, one
+   enormous headline, and the artwork doing the talking. The games themselves
+   keep their dark playing surfaces — a bright board is tiring to stare at for
+   six guesses — so the change in temperature is deliberate. It marks the door
+   between browsing and playing. */
+
+:root {
+  --paper: #f2f1ec;          /* the ground everything sits on */
+  --card: #ffffff;
+  --ink: #16161a;
+  --ink-soft: #6a6862;
+  --line: #e2e0d8;
+  --gold: #c9a227;           /* rooms */
+  --teal: #2f9e8f;           /* Shabda */
+  --green: #5a9e4f;          /* Snowman */
+  --indigo: #6c74d8;         /* Anagram */
+  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --page: min(1180px, 100% - 10vw);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+
+::selection { background: var(--ink); color: var(--paper); }
+
+/* ---------- header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 18px calc((100% - var(--page)) / 2);
+  background: rgba(242, 241, 236, .82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .2s ease;
+}
+
+.site-header:hover { border-bottom-color: var(--line); }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -.01em;
+}
+
+.brand-mark { width: 31px; height: 31px; }
+
+/* "parea" carries the weight, "games" trails it — the same relationship as the
+   mark's four dark tiles and the one warm one. */
+.brand-name { font-weight: 800; font-size: 19px; letter-spacing: -.025em; }
+.brand-name span { font-weight: 500; color: var(--ink-soft); letter-spacing: 0; }
+
+.site-nav {
+  display: flex;
+  gap: 26px;
+  margin-left: auto;
+}
+
+.site-nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.site-nav a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.btn-ink { background: var(--ink); color: var(--paper); }
+.btn-ink:hover { transform: translateY(-1px); background: #000; }
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.btn-outline:hover { border-color: var(--ink); transform: translateY(-1px); }
+
+/* ---------- hero ---------- */
+.hero {
+  width: var(--page);
+  margin: 0 auto;
+  padding: clamp(48px, 10vh, 110px) 0 clamp(40px, 7vh, 80px);
+  text-align: center;
+}
+
+/* Four claims, all of them equal: a pill around the first one made it look like
+   a category label with three afterthoughts trailing it. Small letterspaced caps
+   read as a line of credits under the headline, which is what they are. */
+.eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 clamp(24px, 5vh, 48px);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+
+/* The separator is a tile off the mark — tilted, and the middle one warm, the
+   same four-cool-one-warm arrangement the logo makes. */
+.eyebrow .tile {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: #c9c5bb;
+  transform: rotate(-10deg);
+}
+
+.eyebrow .tile:nth-of-type(2) { background: #c2562c; transform: rotate(7deg); }
+.eyebrow .tile:nth-of-type(3) { transform: rotate(-5deg); }
+
+.eyebrow-tag {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.eyebrow-tag.alt { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* The headline is the loudest thing on the page, and everything else defers.
+   Each line is its own block and never wraps, so the break falls where it was
+   written rather than wherever the width happens to run out. The size is tuned
+   to the longer of the two lines. */
+.display {
+  margin: 0;
+  font-size: clamp(38px, 11vw, 150px);
+  line-height: .86;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  text-transform: uppercase;
+}
+
+.display span { display: block; white-space: nowrap; }
+
+.hero-note {
+  max-width: 46ch;
+  margin: clamp(28px, 5vh, 46px) auto 0;
+  color: var(--ink-soft);
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.65;
+}
+
+/* The three games as one wide band, the way a gallery shows its work. */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: clamp(40px, 8vh, 76px);
+}
+
+.strip-item {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 12px 30px rgba(22, 22, 26, .06);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.strip-item:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(22, 22, 26, .1); }
+.strip-item img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
+
+.strip-label {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  background: rgba(255, 255, 255, .92);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* ---------- sections ---------- */
+.games, .rooms, .about, .questions {
+  width: var(--page);
+  margin: 0 auto;
+  padding: clamp(56px, 12vh, 130px) 0;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+  margin-bottom: clamp(32px, 6vh, 64px);
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.muted { margin: 0; color: var(--ink-soft); font-size: 14px; }
+
+/* ---------- game features ---------- */
+.features { display: flex; flex-direction: column; gap: clamp(40px, 8vh, 96px); }
+
+.feature {
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: clamp(28px, 5vw, 68px);
+  align-items: center;
+}
+
+/* Alternate the side the artwork sits on, so the page has a rhythm — and swap
+   the column widths with it, so the artwork is the same size either way. */
+.feature:nth-child(even) { grid-template-columns: .85fr 1.15fr; }
+.feature:nth-child(even) .feature-art { order: 2; }
+
+.feature-art {
+  display: block;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: 0 16px 40px rgba(22, 22, 26, .07);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.feature-art:hover { transform: translateY(-5px); box-shadow: 0 26px 60px rgba(22, 22, 26, .11); }
+.feature-art img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
+
+.feature-index {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 13px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.feature h3 {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 4.4vw, 54px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+
+.feature p {
+  margin: 0 0 22px;
+  color: var(--ink-soft);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.65;
+  max-width: 40ch;
+}
+
+.feature-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 26px;
+  list-style: none;
+  padding: 0;
+}
+
+.feature-meta li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+/* A hairline in the game's own colour — the only colour in the text column. */
+.feature-rule {
+  width: 54px;
+  height: 3px;
+  border-radius: 2px;
+  margin-bottom: 22px;
+}
+
+/* ---------- rooms ---------- */
+.rooms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+}
+
+.rooms-art {
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 16px 40px rgba(22, 22, 26, .07);
+}
+
+.rooms-copy .eyebrow { justify-content: flex-start; margin-bottom: 18px; }
+
+.rooms-copy h2 {
+  margin: 0 0 18px;
+  font-size: clamp(28px, 3.6vw, 46px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.05;
+}
+
+.rooms-copy p {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.65;
+  max-width: 46ch;
+}
+
+.fine { font-size: 13.5px !important; }
+
+code {
+  background: rgba(22, 22, 26, .06);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: .92em;
+}
+
+/* ---------- about ---------- */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(24px, 4vw, 60px);
+}
+
+.about-grid p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.7;
+}
+
+/* The one sentence that says plainly what this is: an opening line to a person,
+   a definition to anything quoting the page. */
+.about-lead p {
+  margin: 0 0 clamp(24px, 4vh, 44px);
+  max-width: 62ch;
+  font-size: clamp(19px, 2.1vw, 26px);
+  line-height: 1.45;
+  letter-spacing: -.01em;
+}
+
+/* ---------- questions ---------- */
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(26px, 3.4vw, 52px);
+}
+
+.faq h3 {
+  margin: 0 0 8px;
+  font-size: clamp(16px, 1.5vw, 19px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.faq p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: clamp(14.5px, 1.3vw, 16px);
+  line-height: 1.7;
+}
+
+/* ---------- footer ---------- */
+.site-footer {
+  width: var(--page);
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding: 34px 0 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-lead { margin: 0; font-weight: 600; }
+.site-footer p { margin: 0; font-size: 14px; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 860px) {
+  :root { --page: min(1180px, 100% - 8vw); }
+
+  .site-nav { display: none; }
+
+  /* Both the base rule and the alternating one have to collapse, or the even
+     rows keep their second column and the text sits indented. */
+  .feature, .rooms, .about-grid, .faq-grid { grid-template-columns: 1fr; }
+  .feature:nth-child(even) { grid-template-columns: 1fr; }
+  .feature:nth-child(even) .feature-art { order: 0; }
+
+  /* Once the feature rows stack, the strip's cards are the same pictures at the
+     same width a screen further down — the games read as six, not three. The
+     headline can carry the hero on its own. */
+  .strip { display: none; }
+
+  /* With the strip gone the hero ends on its one line of type, so the air that
+     used to sit above the cards would read as a hole. */
+  .hero { padding-bottom: clamp(20px, 3vh, 34px); }
+  .games, .rooms, .about, .questions { padding: clamp(40px, 7vh, 72px) 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition-duration: .001ms !important; }
+}

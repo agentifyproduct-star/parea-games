@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Anagram &mdash; Parea Games</title>
+<meta name="description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
+<link rel="stylesheet" href="anagram.css" />
+<link rel="icon" href="../../assets/brand/icon.svg" />
+<link rel="alternate icon" href="../../assets/brand/icon-192.png" />
+<link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
+<!-- seo:start -->
+<link rel="canonical" href="https://pareagames.com/games/anagram/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Parea Games" />
+<meta property="og:title" content="Anagram — Parea Games" />
+<meta property="og:description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
+<meta property="og:url" content="https://pareagames.com/games/anagram/" />
+<meta property="og:image" content="https://pareagames.com/assets/brand/share-anagram.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Anagram — Parea Games" />
+<meta name="twitter:description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
+<meta name="twitter:image" content="https://pareagames.com/assets/brand/share-anagram.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Anagram",
+  "url": "https://pareagames.com/games/anagram/",
+  "description": "Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.",
+  "image": "https://pareagames.com/assets/brand/share-anagram.png",
+  "genre": [
+    "Word game",
+    "Puzzle"
+  ],
+  "gamePlatform": "Web browser",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any modern web browser",
+  "playMode": [
+    "SinglePlayer",
+    "MultiPlayer"
+  ],
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Parea Games",
+    "url": "https://pareagames.com/"
+  }
+}
+</script>
+<!-- seo:end -->
+</head>
+<body>
+  <header class="game-header">
+    <a class="brand-link" href="../../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
+      <span class="arrow" aria-hidden="true">&larr;</span>
+      <img class="brand-mark" src="../../assets/brand/mark.svg" alt="" width="21" height="21" />
+      <span class="brand-name">parea<span> games</span></span>
+    </a>
+    <h1>Anagram</h1>
+    <div class="header-actions">
+      <button id="btn-help"  class="icon-btn" title="How to play" aria-label="How to play">?</button>
+      <button id="btn-stats" class="icon-btn" title="Statistics"  aria-label="Statistics">&#9202;</button>
+    </div>
+  </header>
+
+  <!-- Rollover while the tab sat open: offered, never forced -->
+  <div id="banner" class="banner" hidden>
+    <span>Tomorrow's puzzle just landed.</span>
+    <button id="btn-reload" class="btn btn-small" type="button">Load it</button>
+  </div>
+
+  <div id="no-storage" class="notice" hidden>
+    This browser will not let us save anything, so you can play but your streak and stats
+    will not stick.
+  </div>
+
+  <!-- Every state change lands here for screen readers -->
+  <div id="live" class="visually-hidden" role="status" aria-live="polite"></div>
+
+  <main>
+    <!-- Today's pair, and practice once it is done -->
+    <div class="modes" role="group" aria-label="Puzzle to play">
+      <button class="mode-btn today" data-mode="daily" type="button">Today</button>
+      <button class="mode-btn" data-mode="practice" type="button">Practice</button>
+    </div>
+
+    <section id="play" class="play">
+      <div class="status-row">
+        <span class="badge" id="puzzle-no">#0</span>
+        <span class="slot-label" id="slot-label">Word 1 of 2</span>
+        <span class="badge streak" title="Current streak">&#128293; <b id="streak">0</b></span>
+      </div>
+
+      <div class="attempts-row" id="attempts-row">
+        <span class="attempts-label">Attempts</span>
+        <span id="attempts" class="attempts" role="img"></span>
+      </div>
+
+      <div id="slots" class="slots" aria-label="Your answer"></div>
+      <p id="message" class="message"></p>
+      <div id="tray" class="tray" aria-label="Letters to use"></div>
+
+      <div class="controls" id="controls">
+        <button id="btn-shuffle" class="btn btn-ghost" type="button">Shuffle</button>
+        <button id="btn-clear"   class="btn btn-ghost" type="button">Clear</button>
+        <button id="btn-hint"    class="btn btn-ghost" type="button" hidden>Hint</button>
+        <button id="btn-skip"    class="btn btn-ghost" type="button">Give up</button>
+      </div>
+
+      <button id="btn-submit" class="btn btn-primary btn-submit" type="button">Submit</button>
+
+      <div id="history" class="history" aria-label="Guesses so far" hidden></div>
+
+      <!-- Answer reveal, between words -->
+      <div id="reveal" class="reveal" hidden>
+        <h3 id="reveal-title">The word was</h3>
+        <p id="reveal-word" class="reveal-word"></p>
+        <p id="reveal-def" class="reveal-def"></p>
+        <button id="btn-continue" class="btn btn-primary" type="button">Continue</button>
+      </div>
+    </section>
+
+    <!-- Once the day is done the board stays put, the way it does in the other
+         two games, and this sits underneath it. Statistics live behind the
+         header button rather than taking over the screen. -->
+    <section id="results" class="results" hidden>
+      <p id="results-heading" class="results-heading">Done for today</p>
+
+      <div class="answer-line">
+        <span class="answer-slot-no">1</span>
+        <b id="res-word1"></b>
+        <span class="answer-outcome" id="res-attempt1"></span>
+      </div>
+      <div class="answer-line">
+        <span class="answer-slot-no">2</span>
+        <b id="res-word2"></b>
+        <span class="answer-outcome" id="res-attempt2"></span>
+      </div>
+
+      <div class="next-up" id="next-up">
+        Next puzzle in <b id="countdown">00:00:00</b>
+      </div>
+
+      <p id="practice-note" class="note" hidden>Practice round &mdash; nothing here counts towards
+         your streak or your stats.</p>
+
+      <div class="result-actions">
+        <button id="btn-share" class="btn btn-primary" type="button">Share result</button>
+        <button id="btn-practice" class="btn btn-ghost" type="button">Play another</button>
+        <button id="btn-back-to-today" class="btn btn-ghost" type="button" hidden>Back to today</button>
+      </div>
+    </section>
+
+    <section id="no-puzzle" class="notice big" hidden>
+      <h2>Nothing for today</h2>
+      <p>We have run out of puzzles &mdash; sorry about that. Try again soon.</p>
+    </section>
+  </main>
+
+  <!-- How to play -->
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="help-title">How to play</h2>
+<!-- intro:start -->
+      <p class="lede">Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.</p>
+<!-- intro:end -->
+      <p>Two jumbled words a day: a short one first, then a longer one. Everybody,
+         everywhere, gets the same two.</p>
+      <p>Tap the letters to spell your answer, or just type it. Tap a letter you have
+         placed to take it back, and hit <b>Shuffle</b> whenever the jumble stops
+         helping &mdash; it is free, and as often as you like.</p>
+      <p>You get <b>5 tries per word</b>. Guesses that do not use the letters in front of
+         you, or ones you have already tried, are not held against you.</p>
+      <p>Stuck on the long one? After 3 wrong tries a <b>hint</b> turns up and gives you
+         the first letter. One a day, and your shared result owns up to it.</p>
+
+      <p>Finished for the day and want another? <b>Play another</b> deals a practice pair from
+         words the daily calendar never uses &mdash; as many as you like, none of them counting
+         towards anything.</p>
+
+      <h3>Streaks</h3>
+      <p>Solve <b>either</b> word and your streak goes up. Solve neither and it simply stays
+         where it is. The only thing that breaks it is a day you do not play at all.</p>
+
+      <p class="fine">
+        New words arrive at midnight New York time &mdash; the same moment for everyone,
+        whatever your clock says. Your streak is kept on this device, so playing on your
+        phone and your laptop means two separate streaks.
+      </p>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div id="stats-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="stats-title">Statistics</h2>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-num" id="stats-played">0</div><div class="stat-lbl">Played</div></div>
+        <div class="stat"><div class="stat-num" id="stats-both">0</div><div class="stat-lbl">Both solved</div></div>
+        <div class="stat"><div class="stat-num" id="stats-streak">0</div><div class="stat-lbl">Streak</div></div>
+        <div class="stat"><div class="stat-num" id="stats-max">0</div><div class="stat-lbl">Max streak</div></div>
+      </div>
+      <h3>Attempts</h3>
+      <div id="dist" class="dist"></div>
+
+      <p class="fine">One solved word a day keeps a streak alive. Only a day you skip
+         entirely will end it.</p>
+    </div>
+  </div>
+
+  <script src="../../assets/daily.js"></script>
+  <script src="scramble.js"></script>
+  <script src="puzzles.js"></script>
+  <script src="anagram.js"></script>
+</body>
+</html>

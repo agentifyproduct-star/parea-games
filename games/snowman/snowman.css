@@ -1,0 +1,555 @@
+:root {
+  /* Paper, ink and one accent — the same ground the front page stands on. */
+  --bg: #f2f1ec;
+  --surface: #ffffff;
+  --border: #e2e0d8;
+  --text: #16161a;
+  --text-dim: #6a6862;
+  --key-bg: #e5e2d9;
+  --rule: #c9c5bb;           /* the snow's outline, and the line under an unfound letter */
+  --spent: #d5d2c9;
+  /* Snowman's own accent — a warmer green than Shabda's teal, with the same
+     amber for near-misses so the games still read as one place. Deepened for
+     a light ground, where white type has to hold up on top of them. */
+  --hit: #4b8a41;
+  --miss: #b4552f;
+  --warn: #c07c2c;
+  --absent: #7d7a71;
+  --on-colour: #ffffff;
+  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { display: flex; flex-direction: column; }
+
+/* ---------- header ---------- */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  flex: 0 0 auto;
+}
+
+.game-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.brand-link, .icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.brand-link:hover, .icon-btn:hover { background: var(--surface); color: var(--text); }
+.header-actions { display: flex; gap: 2px; }
+
+/* ---------- the brand, and the way back ---------- */
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  padding: 6px 8px;
+  font-size: 18px;
+}
+
+.brand-link .arrow { color: var(--text-dim); }
+.brand-link .brand-mark { width: 21px; height: 21px; }
+
+/* Small beside the game's own name, which is the thing being played right now,
+   but on every page so the site has a face wherever you land. */
+.brand-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  text-transform: none;
+}
+
+.brand-name span { font-weight: 500; color: var(--text-dim); letter-spacing: 0; }
+
+/* A phone has room for the game's name or ours, not both in full. */
+@media (max-width: 430px) {
+  .brand-name span { display: none; }
+  /* The mark is the way home too, so the arrow is what gives way first. */
+  .brand-link .arrow { display: none; }
+  .brand-link { gap: 6px; padding-left: 4px; }
+  .game-header h1 { font-size: 19px; letter-spacing: 2px; }
+}
+
+/* ---------- difficulty picker ---------- */
+.levels {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px 2px;
+}
+
+.level-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 7px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.level-btn:hover { color: var(--text); border-color: #3d4557; }
+
+.level-btn[aria-pressed="true"] {
+  background: var(--hit);
+  border-color: var(--hit);
+  color: var(--on-colour);
+}
+
+/* Today's word is the point of the game; practice is the extra. */
+.level-btn.today { border-color: var(--rule); color: var(--text); }
+.level-btn.today[aria-pressed="true"] { border-color: var(--hit); color: var(--on-colour); }
+
+/* ---------- layout ---------- */
+.game {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 8px 14px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---------- the snowman ---------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.snowman {
+  height: min(210px, 30vh);
+  width: auto;
+  overflow: visible;
+}
+
+.snowman .snow { fill: #ffffff; stroke: var(--rule); stroke-width: 2.5; }
+.snowman .detail { fill: var(--text); }
+.snowman .carrot { fill: var(--warn); }
+
+.snowman .twig {
+  stroke: #9b8f7d;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.snowman .scarf {
+  stroke: var(--miss);
+  stroke-width: 7;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.snowman .hat { fill: var(--text); }
+.snowman .hat .brim { stroke: var(--text); stroke-width: 5; stroke-linecap: round; }
+.snowman .ground { stroke: var(--rule); stroke-width: 4; stroke-linecap: round; fill: none; }
+
+/* Everything starts on the snowman and leaves it. A piece that has melted sinks
+   a little as it fades, rather than simply blinking out. */
+.snowman .part {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+.snowman .part.gone { opacity: 0; transform: translateY(9px) scale(.86); }
+
+.snowman .puddle {
+  fill: #bcd8e4;
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+
+.snowman .puddle-carrot { fill: var(--warn); }
+.snowman .puddle.shown { opacity: 1; }
+
+.stage.shake { animation: shake .45s; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+/* ---------- category and lives ---------- */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chip {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+.chip b { color: var(--text); font-weight: 700; }
+
+.lives { display: flex; align-items: center; gap: 5px; }
+
+.pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--hit);
+}
+
+.pip.spent { background: var(--spent); }
+
+.lives-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
+/* ---------- the word ---------- */
+.word {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 5px;
+  padding: 0 4px;
+  flex: 0 0 auto;
+}
+
+.slot {
+  display: grid;
+  place-items: center;
+  width: clamp(24px, 7vw, 36px);
+  height: clamp(34px, 9vw, 46px);
+  border-bottom: 3px solid var(--rule);
+  font-size: clamp(20px, 6vw, 28px);
+  font-weight: 700;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.slot.revealed { border-bottom-color: var(--hit); animation: pop .16s ease; }
+
+/* On a loss the letters that were never found are shown in the miss colour, so
+   it is obvious what beat you. */
+.slot.missed { color: var(--miss); border-bottom-color: var(--miss); }
+
+@keyframes pop {
+  0%   { transform: translateY(4px); opacity: .4; }
+  100% { transform: none; opacity: 1; }
+}
+
+/* A word break: no underscore, just air. */
+.sep { width: clamp(12px, 3vw, 18px); }
+
+/* ---------- guessed letters ---------- */
+.tried-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.tried-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.guessed { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+
+.guessed .none { font-size: 12px; color: var(--text-dim); font-style: italic; }
+
+.tried {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--spent);
+  color: var(--text);
+}
+
+.tried.hit  { background: var(--hit);  color: var(--on-colour); }
+.tried.miss { background: var(--miss); color: var(--on-colour); }
+
+/* ---------- whole-word guess ---------- */
+.word-guess {
+  display: flex;
+  gap: 6px;
+  width: min(420px, 100%);
+  padding: 0 4px;
+  flex: 0 0 auto;
+}
+
+.word-guess input {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 16px;
+}
+
+.word-guess input::placeholder { color: var(--text-dim); }
+.word-guess input:focus { outline: none; border-color: var(--hit); }
+.word-guess input:disabled { opacity: .5; }
+.word-guess .btn { flex: 0 0 auto; padding: 10px 20px; }
+
+/* ---------- keyboard ---------- */
+.keyboard {
+  width: min(500px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+.kb-row { display: flex; gap: 5px; justify-content: center; }
+
+.key {
+  flex: 1;
+  min-width: 0;
+  max-width: 46px;
+  height: 48px;
+  border: none;
+  border-radius: 5px;
+  background: var(--key-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s ease, transform .05s ease;
+}
+
+.key:hover:not(:disabled)  { filter: brightness(1.12); }
+.key:active:not(:disabled) { transform: scale(.94); }
+
+.key.hit  { background: var(--hit);  color: var(--on-colour); }
+.key.miss { background: var(--miss); color: var(--on-colour); }
+.key:disabled { cursor: default; }
+.key:disabled:not(.hit):not(.miss) { background: var(--spent); color: #93908a; }
+
+/* ---------- toast ---------- */
+.toast-area {
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.toast {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  animation: fadein .12s ease;
+}
+
+.toast.out { opacity: 0; transition: opacity .3s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; } }
+
+/* ---------- modals ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 22, 26, .45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal[hidden] { display: none; }
+
+.modal-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 24px 22px;
+  width: min(430px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: rise .18s ease;
+}
+
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* The first line of the how-to says what the game is, in one sentence, rather
+   than starting straight in on the rules — useful to a player who arrived from
+   a link, and it is the line anything quoting the page will take. */
+.modal-card .lede {
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.modal-card h2 { margin: 0 0 14px; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card h3 { margin: 22px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card p  { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.modal-card p b { color: var(--text); }
+
+.outcome {
+  font-size: 15px !important;
+  font-weight: 700;
+  color: var(--text) !important;
+  margin-top: -6px !important;
+}
+
+.stats-scope { font-size: 13px; margin-top: -6px; }
+.stats-scope b { text-transform: capitalize; }
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.example { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
+
+.ex-word { display: flex; gap: 4px; margin-bottom: 12px; justify-content: center; }
+
+.ex-word .slot {
+  width: 24px;
+  height: 30px;
+  font-size: 17px;
+  border-bottom-width: 2px;
+}
+
+.ex-word .sep { width: 10px; }
+
+.fine { font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 16px; }
+.fine.plain { border: 0; padding-top: 0; margin-top: 8px; }
+
+/* stats */
+.stat-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.stat { flex: 1; text-align: center; }
+.stat-num { font-size: 30px; font-weight: 700; }
+.stat-lbl { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
+
+.dist { display: flex; flex-direction: column; gap: 5px; }
+.dist-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.dist-key { width: 10px; color: var(--text-dim); }
+
+.dist-bar {
+  background: #e5e2d9;
+  color: var(--text);
+  font-weight: 700;
+  padding: 2px 8px;
+  text-align: right;
+  min-width: 26px;
+  border-radius: 3px;
+}
+
+.dist-bar.current { background: var(--hit); color: var(--on-colour); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+
+.btn {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--hit); color: var(--on-colour); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: default; filter: none; }
+
+@media (max-height: 720px) {
+  .snowman { height: min(160px, 24vh); }
+  .key { height: 42px; }
+  .game-header h1 { font-size: 20px; }
+  .slot { height: clamp(30px, 8vw, 40px); }
+}
+
+/* The daily sign-off: when the next word arrives. */
+.next-up {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.next-up b { color: var(--text); font-variant-numeric: tabular-nums; }

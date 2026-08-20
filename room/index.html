@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Rooms &mdash; Parea Games</title>
+<meta name="description" content="Play Parea Games with your friends: same puzzles, same second, one winner." />
+<link rel="stylesheet" href="room.css" />
+<link rel="icon" href="../assets/brand/icon.svg" />
+<link rel="alternate icon" href="../assets/brand/icon-192.png" />
+<link rel="apple-touch-icon" href="../assets/brand/icon-180.png" />
+<!-- seo:start -->
+<meta name="robots" content="noindex, follow" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Parea Games" />
+<meta property="og:title" content="Play with your friends — Parea Games" />
+<meta property="og:description" content="Start a room, send the code, and play the same puzzles at the same second." />
+<meta property="og:image" content="https://pareagames.com/assets/brand/share.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- seo:end -->
+</head>
+<body>
+  <header class="game-header">
+    <a class="brand-link" href="../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
+      <span class="arrow" aria-hidden="true">&larr;</span>
+      <img class="brand-mark" src="../assets/brand/mark.svg" alt="" width="21" height="21" />
+      <span class="brand-name">parea<span> games</span></span>
+    </a>
+    <h1>Rooms</h1>
+    <div class="header-actions">
+      <span id="conn" class="conn" title="Connection">&#9679;</span>
+      <button id="btn-help" class="icon-btn" title="How rooms work" aria-label="How rooms work">?</button>
+    </div>
+  </header>
+
+  <div id="live" class="visually-hidden" role="status" aria-live="polite"></div>
+  <div id="toast-area" class="toast-area" aria-live="polite"></div>
+
+  <!-- Shown whenever there is no server to talk to. Rooms are the one part of
+       Parea that cannot work as plain files. -->
+  <div id="offline" class="offline-banner" role="alert" hidden>
+    <b id="offline-title">Not connected</b>
+    <span id="offline-detail"></span>
+  </div>
+
+  <main>
+    <!-- 1. Join or create -->
+    <section id="view-join" class="view">
+      <h2>Play together</h2>
+      <p class="lede">Everyone in the room gets the same puzzles at the same second. Nobody is
+         racing their own wifi &mdash; the scoring sees to that.</p>
+
+      <label class="field">
+        <span>Your name</span>
+        <input id="name" type="text" maxlength="20" placeholder="What should we call you?" autocomplete="nickname" />
+      </label>
+
+      <button id="btn-create" class="btn btn-primary" type="button">Create a room</button>
+
+      <div class="or"><span>or</span></div>
+
+      <form id="join-form" class="join-row" autocomplete="off">
+        <input id="code" type="text" maxlength="4" placeholder="CODE" aria-label="Room code"
+               spellcheck="false" autocapitalize="characters" />
+        <button class="btn btn-ghost" type="submit">Join</button>
+      </form>
+    </section>
+
+    <!-- 2. Lobby -->
+    <section id="view-lobby" class="view" hidden>
+      <div class="room-code">
+        <span class="room-code-label">Room</span>
+        <b id="room-code">----</b>
+        <button id="btn-copy" class="btn btn-small btn-ghost" type="button">Copy link</button>
+      </div>
+
+      <h3>Who is here</h3>
+      <ul id="roster" class="roster"></ul>
+
+      <h3>Games in this match</h3>
+      <div id="game-picker" class="game-picker"></div>
+      <p id="picker-note" class="note">Only the host picks the games. Change them and everyone has to say ready again.</p>
+
+      <div class="lobby-actions">
+        <button id="btn-ready" class="btn btn-primary" type="button">I'm ready</button>
+        <button id="btn-start" class="btn btn-ghost" type="button" hidden>Start match</button>
+      </div>
+      <p id="lobby-note" class="note"></p>
+    </section>
+
+    <!-- 3. Countdown -->
+    <section id="view-countdown" class="view" hidden>
+      <div class="countdown-wrap">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-track" cx="60" cy="60" r="52" />
+          <circle id="ring-drain" class="ring-drain" cx="60" cy="60" r="52" />
+        </svg>
+        <div id="count-number" class="count-number">5</div>
+      </div>
+      <p class="count-label">Starting</p>
+      <ul id="countdown-roster" class="roster small"></ul>
+      <button id="btn-abort" class="btn btn-ghost" type="button" hidden>Stop the countdown</button>
+    </section>
+
+    <!-- 4. Playing -->
+    <section id="view-game" class="view wide" hidden>
+      <div class="game-top">
+        <span class="badge" id="game-slot">Game 1 of 2</span>
+        <span class="badge" id="game-name">Shabda</span>
+        <span class="badge timer" id="game-timer">1:30</span>
+      </div>
+
+      <div id="game-area" class="game-area"></div>
+      <p id="game-message" class="message"></p>
+
+      <h3>Everyone else</h3>
+      <ul id="opponents" class="opponents"></ul>
+      <p class="note">You can see how far along everyone is &mdash; never what they have guessed.</p>
+    </section>
+
+    <!-- 5. Between games and at the end -->
+    <section id="view-results" class="view" hidden>
+      <h2 id="results-title">Standings</h2>
+      <div id="reveal" class="reveal" hidden></div>
+      <ol id="scoreboard" class="scoreboard"></ol>
+
+      <h3 id="standings-title" hidden>Room standings</h3>
+      <ol id="standings" class="scoreboard subtle" hidden></ol>
+
+      <p id="results-note" class="note"></p>
+      <button id="btn-rematch" class="btn btn-primary" type="button" hidden>Play again</button>
+    </section>
+  </main>
+
+  <!-- How rooms work -->
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="help-title">How rooms work</h2>
+      <p>Start a room, share the code, and everyone plays the same puzzles at the same second.</p>
+      <p>Say you are ready. Once everybody has, the host kicks off a <b>five second countdown</b>,
+         and the words are only picked when it hits zero &mdash; so nobody gets an early look,
+         host included.</p>
+      <p>Every game has a clock on it, so one stuck player cannot hold everyone up. You score on
+         <b>how few guesses you needed</b> first and how fast you were second: a tidy solve always
+         beats a scrappy quick one.</p>
+      <p>While you play you can see who has finished and how many guesses they have spent. You
+         never see what anyone actually guessed.</p>
+      <p class="fine">Lose your connection and come back, and you pick up exactly where you were.
+         Two players make it count towards the room table &mdash; on your own it is just practice.</p>
+    </div>
+  </div>
+
+  <script src="room.js"></script>
+</body>
+</html>

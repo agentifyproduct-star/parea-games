@@ -1,0 +1,404 @@
+:root {
+  /* Paper, ink and one accent — the same ground the front page stands on. */
+  --bg: #f2f1ec;
+  --surface: #ffffff;
+  --border: #e2e0d8;
+  --text: #16161a;
+  --text-dim: #6a6862;
+  --tile-empty-border: #d9d6cd;
+  --tile-filled-border: #b9b5aa;
+  --key-bg: #e5e2d9;
+  /* Shabda's own palette — teal/amber rather than the familiar green/yellow.
+     Deeper here than on the front page: white letters sit on these tiles, and on
+     a light ground the brighter versions do not carry enough contrast. */
+  --correct: #23907f;
+  --present: #c07c2c;
+  --absent: #7d7a71;
+  --on-colour: #ffffff;      /* type sitting on a filled tile or key */
+  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { display: flex; flex-direction: column; }
+
+/* ---------- header ---------- */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  flex: 0 0 auto;
+}
+
+.game-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.brand-link, .icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.brand-link:hover, .icon-btn:hover { background: var(--surface); color: var(--text); }
+.header-actions { display: flex; gap: 2px; }
+
+/* ---------- the brand, and the way back ---------- */
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  padding: 6px 8px;
+  font-size: 18px;
+}
+
+.brand-link .arrow { color: var(--text-dim); }
+.brand-link .brand-mark { width: 21px; height: 21px; }
+
+/* Small beside the game's own name, which is the thing being played right now,
+   but on every page so the site has a face wherever you land. */
+.brand-name {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  text-transform: none;
+}
+
+.brand-name span { font-weight: 500; color: var(--text-dim); letter-spacing: 0; }
+
+/* A phone has room for the game's name or ours, not both in full. */
+@media (max-width: 430px) {
+  .brand-name span { display: none; }
+  /* The mark is the way home too, so the arrow is what gives way first. */
+  .brand-link .arrow { display: none; }
+  .brand-link { gap: 6px; padding-left: 4px; }
+  .game-header h1 { font-size: 19px; letter-spacing: 2px; }
+}
+
+/* ---------- length picker ---------- */
+.lengths {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px 2px;
+}
+
+.len-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 7px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.len-btn:hover { color: var(--text); border-color: #3d4557; }
+
+.len-btn[aria-pressed="true"] {
+  background: var(--correct);
+  border-color: var(--correct);
+  color: var(--on-colour);
+}
+
+/* Today's word is the game; the rest is practice. */
+.len-btn.today { border-color: var(--tile-filled-border); color: var(--text); }
+.len-btn.today[aria-pressed="true"] { border-color: var(--correct); color: var(--on-colour); }
+
+/* ---------- layout ---------- */
+.game {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 14px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---------- board ---------- */
+/* --cols is set from script when the length changes. */
+.board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  --cols: 5;
+  width: min(calc(var(--cols) * 68px), 94vw);
+  height: min(408px, 58vh);
+  margin: auto 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 5px;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--tile-empty-border);
+  font-size: clamp(19px, 6vw, 30px);
+  font-weight: 700;
+  text-transform: uppercase;
+  user-select: none;
+  color: var(--text);
+  background: transparent;
+  transition: border-color .1s ease;
+}
+
+.tile.filled { border-color: var(--tile-filled-border); animation: pop .1s ease; }
+
+.tile.correct { background: var(--correct); border-color: var(--correct); color: var(--on-colour); }
+.tile.present { background: var(--present); border-color: var(--present); color: var(--on-colour); }
+.tile.absent  { background: var(--absent);  border-color: var(--absent);  color: var(--on-colour); }
+
+@keyframes pop {
+  0%   { transform: scale(.9); }
+  100% { transform: scale(1); }
+}
+
+/* Flip reveal — the colour class is applied mid-flip by the script. */
+.tile.flip { animation: flip .5s ease forwards; }
+@keyframes flip {
+  0%   { transform: rotateX(0); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
+
+.row.shake { animation: shake .5s; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-7px); }
+  40%, 60% { transform: translateX(7px); }
+}
+
+.tile.bounce { animation: bounce .6s ease; }
+@keyframes bounce {
+  0%, 20%  { transform: translateY(0); }
+  40%      { transform: translateY(-26px); }
+  50%      { transform: translateY(4px); }
+  60%      { transform: translateY(-14px); }
+  80%      { transform: translateY(2px); }
+  100%     { transform: translateY(0); }
+}
+
+/* ---------- keyboard ---------- */
+.keyboard { width: min(500px, 100%); display: flex; flex-direction: column; gap: 7px; flex: 0 0 auto; }
+.kb-row { display: flex; gap: 5px; justify-content: center; }
+.kb-spacer { flex: .5; }
+
+.key {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  border: none;
+  border-radius: 5px;
+  background: var(--key-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s ease, transform .05s ease;
+}
+
+.key:hover  { filter: brightness(1.12); }
+.key:active { transform: scale(.94); }
+.key.wide   { flex: 1.6; font-size: 12px; }
+
+.key.correct { background: var(--correct); color: var(--on-colour); }
+.key.present { background: var(--present); color: var(--on-colour); }
+.key.absent  { background: var(--absent);  color: var(--on-colour); }
+
+/* ---------- toast ---------- */
+.toast-area {
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.toast {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  animation: fadein .12s ease;
+}
+
+.toast.out { opacity: 0; transition: opacity .3s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; } }
+
+/* ---------- modals ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 22, 26, .45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal[hidden] { display: none; }
+
+.modal-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 24px 22px;
+  width: min(430px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: rise .18s ease;
+}
+
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* The first line of the how-to says what the game is, in one sentence, rather
+   than starting straight in on the rules — useful to a player who arrived from
+   a link, and it is the line anything quoting the page will take. */
+.modal-card .lede {
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.modal-card h2 { margin: 0 0 14px; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card h3 { margin: 22px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+.modal-card p  { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.modal-card p b { color: var(--text); }
+
+.stats-scope { font-size: 13px; margin-top: -6px; }
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover { color: var(--text); }
+
+.example { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
+.ex-row { display: flex; gap: 4px; margin-bottom: 10px; }
+
+.tile.small {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  border-width: 2px;
+}
+
+.fine { font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 16px; }
+.fine.plain { border: 0; padding-top: 0; margin-top: 8px; }
+
+/* stats */
+.stat-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.stat { flex: 1; text-align: center; }
+.stat-num { font-size: 30px; font-weight: 700; }
+.stat-lbl { font-size: 11px; color: var(--text-dim); line-height: 1.3; }
+
+.dist { display: flex; flex-direction: column; gap: 5px; }
+.dist-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.dist-key { width: 10px; color: var(--text-dim); }
+
+.dist-bar {
+  background: #e5e2d9;
+  color: var(--text);
+  font-weight: 700;
+  padding: 2px 8px;
+  text-align: right;
+  min-width: 26px;
+  border-radius: 3px;
+}
+
+.dist-bar.current { background: var(--correct); color: var(--on-colour); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+
+.btn {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary { background: var(--correct); color: var(--on-colour); }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: default; filter: none; }
+
+@media (max-height: 700px) {
+  .key { height: 44px; }
+  .game-header h1 { font-size: 20px; }
+  .board { height: min(360px, 52vh); }
+}
+
+/* The daily sign-off: when the next word arrives. */
+.next-up {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.next-up b { color: var(--text); font-variant-numeric: tabular-nums; }

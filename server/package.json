@@ -1,0 +1,15 @@
+{
+  "name": "parea-rooms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Session-based room play for Parea Games: lobby, countdown, match, scoring.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node _test.js",
+    "pools": "node _gen-pools.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

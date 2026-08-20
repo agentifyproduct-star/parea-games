@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Room client tests</title></head>
+<body style="margin:0;background:#0f1115;color:#e8eaf0;font:13px/1.5 Segoe UI,sans-serif">
+<iframe id="f" src="index.html" width="420" height="820" style="border:1px solid #333"></iframe>
+<pre id="out">running</pre>
+<script>
+/* Drives the real room client against the real server. Results are left on
+   window.__results for _test-browser.js to read over the DevTools protocol, so
+   nothing test-shaped has to exist in the server itself. */
+
+window.__results = [];
+window.__done = false;
+
+const check = (name, condition, detail) => {
+  window.__results.push((condition ? 'PASS ' : 'FAIL ') + name +
+    (detail !== undefined && detail !== '' ? ' :: ' + detail : ''));
+  document.getElementById('out').textContent = window.__results.join('\n');
+};
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function until(predicate, timeoutMs, label) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    let value;
+    try { value = predicate(); } catch { value = false; }
+    if (value) return value;
+    if (Date.now() > deadline) throw new Error('timed out: ' + label);
+    await wait(50);
+  }
+}
+
+document.getElementById('f').addEventListener('load', async () => {
+  const w = document.getElementById('f').contentWindow;
+  const d = w.document;
+  const el = id => d.getElementById(id);
+  const visible = id => !el('view-' + id).hidden;
+
+  try {
+    await until(() => w.ROOM && w.ROOM.connected, 8000, 'connection');
+    check('the client connects to the room server', w.ROOM.connected);
+    check('the server sends its game catalogue', w.ROOM.games.length === 3,
+          w.ROOM.games.map(g => g.id).join(', '));
+
+    // ---- create a room ----
+    el('name').value = 'Browser';
+    el('btn-create').click();
+
+    await until(() => visible('lobby'), 6000, 'lobby');
+    const code = el('room-code').textContent;
+    check('creating a room lands in the lobby with a code', /^[A-Z0-9]{4}$/.test(code), code);
+    check('the creator is host', w.ROOM.room.hostId === w.ROOM.me);
+    window.__code = code;                       // the node opponent picks this up
+
+    // pick a single game so the match is short and predictable
+    const picks = [...d.querySelectorAll('.pick')];
+    check('every game is offered to the host', picks.length === 3);
+    picks.forEach(p => { if (p.classList.contains('on') && !p.textContent.includes('Shabda')) p.click(); });
+    await wait(250);
+    if (!d.querySelector('.pick.on')) picks.find(p => p.textContent.includes('Shabda')).click();
+    await until(() => w.ROOM.room.settings.games.join() === 'shabda', 5000, 'settings');
+    check('the host chooses which games are in the match', w.ROOM.room.settings.games.join() === 'shabda');
+
+    // ---- an opponent arrives (a node client, started by the test runner) ----
+    await until(() => w.ROOM.room.members.length === 2, 15000, 'opponent');
+    check('the roster shows both players live', d.querySelectorAll('#roster .roster-row').length === 2);
+
+    const tags = [...d.querySelectorAll('#roster .roster-tags')].map(t => t.textContent).join(' | ');
+    check('the roster spells out state rather than relying on colour', tags.includes('not ready'), tags);
+
+    // ---- ready and start ----
+    el('btn-ready').click();
+    await until(() => w.ROOM.room.members.every(m => m.ready), 15000, 'everyone ready');
+    check('ready state is reflected for everyone', true);
+
+    const startBtn = el('btn-start');
+    check('only the host sees a start button', !startBtn.hidden && !startBtn.disabled);
+    startBtn.click();
+
+    // ---- countdown ----
+    await until(() => visible('countdown'), 6000, 'countdown view');
+    check('the countdown takes over the screen', visible('countdown'));
+    check('the ready roster stays visible during the countdown',
+          d.querySelectorAll('#countdown-roster li').length === 2);
+
+    const firstNumber = el('count-number').textContent;
+    const firstOffset = el('ring-drain').style.strokeDashoffset;
+    check('the countdown shows a number', /^[1-5]$/.test(firstNumber), firstNumber);
+    check('the countdown announces its start at once',
+          el('live').textContent.toLowerCase().includes('five seconds'), el('live').textContent);
+
+    await wait(1200);
+    check('the ring drains as the countdown runs',
+          el('ring-drain').style.strokeDashoffset !== firstOffset,
+          `${firstOffset} -> ${el('ring-drain').style.strokeDashoffset}`);
+    check('the number counts down', el('count-number').textContent !== firstNumber,
+          `${firstNumber} -> ${el('count-number').textContent}`);
+
+    await until(() => el('count-number').classList.contains('urgent'), 5000, 'two-second shift');
+    check('the display shifts at two seconds', el('ring-drain').classList.contains('urgent'));
+    check('two seconds is announced', el('live').textContent.toLowerCase().includes('two'),
+          el('live').textContent);
+
+    // ---- the game ----
+    await until(() => visible('game'), 8000, 'game view');
+    check('the match starts when the countdown finishes', visible('game'));
+    check('the game names itself', el('game-name').textContent.length > 0, el('game-name').textContent);
+    check('a countdown timer runs for the game', /^\d:\d\d$/.test(el('game-timer').textContent),
+          el('game-timer').textContent);
+    check('the board is drawn', d.querySelectorAll('.sh-tile').length === 30,
+          d.querySelectorAll('.sh-tile').length + ' tiles');
+
+    /* Nothing the client holds may contain the answer while the game is live. */
+    const clientSide = JSON.stringify(w.ROOM.game);
+    check('the client is never sent the answer',
+          !/answer/i.test(clientSide) && !clientSide.includes('"words"'), clientSide.slice(0, 80));
+
+    // play by typing, using guesses that cannot be right
+    const type = word => { [...word].forEach(c => w.typeShabda(c)); w.typeShabda('ENTER'); };
+    type('crane');
+    await until(() => w.ROOM.game && w.ROOM.game.view.attemptsUsed >= 1, 6000, 'first guess');
+    check('a guess is scored by the server and drawn on the board',
+          d.querySelectorAll('.sh-tile.correct, .sh-tile.present, .sh-tile.absent').length >= 5,
+          w.ROOM.game.view.verdicts.length + ' scored rows');
+
+    type('crane');
+    await wait(400);
+    check('the server refuses a repeat guess', el('game-message').textContent.length > 0,
+          el('game-message').textContent);
+
+    /* Opponent progress: how far, never what. */
+    await until(() => d.querySelectorAll('#opponents .opponent').length === 2, 8000, 'opponents');
+    const opponentText = el('opponents').textContent;
+    check('opponents are shown with progress only',
+          /attempt|solved|out of attempts/.test(opponentText), opponentText.replace(/\s+/g, ' ').trim());
+    check('no opponent guess is ever rendered',
+          !/[a-z]{5}/.test(opponentText.replace(/attempts?|solved|Browser|Node|you/gi, '')),
+          opponentText.replace(/\s+/g, ' ').trim());
+
+    /* Burn the remaining attempts so the game finishes without waiting out the
+       clock. A guess the server does not recognise costs nothing, so keep going
+       until the attempts are actually spent. */
+    const filler = ['plumb', 'ghost', 'tramp', 'blitz', 'wharf', 'dodge', 'quilt', 'vault', 'mixer', 'scout'];
+    for (const word of filler) {
+      if (!w.ROOM.game || w.ROOM.game.view.resolved) break;
+      const before = w.ROOM.game.view.attemptsUsed;
+      type(word);
+      await until(() => !w.ROOM.game || w.ROOM.game.view.attemptsUsed > before ||
+                        w.ROOM.game.view.resolved, 4000, 'guess ' + word).catch(() => null);
+    }
+
+    // ---- results ----
+    await until(() => visible('results'), 30000, 'results');
+    check('the match ends on a results screen', visible('results'));
+    check('the answer is revealed once the game is over', !el('reveal').hidden &&
+          el('reveal').textContent.trim().length > 0, el('reveal').textContent.replace(/\s+/g, ' ').trim());
+    check('a scoreboard is shown', d.querySelectorAll('#scoreboard .score-row').length === 2,
+          el('scoreboard').textContent.replace(/\s+/g, ' ').trim());
+
+    await until(() => el('results-title').textContent === 'Match over', 20000, 'match end');
+    check('the final scoreboard names the match over', true);
+    check('room standings are shown at the end of a two-player match',
+          !el('standings').hidden, el('standings').textContent.replace(/\s+/g, ' ').trim());
+    check('the host is offered a rematch', !el('btn-rematch').hidden);
+
+    /* ---- losing the server has to be visible ----
+       A dead connection used to make every button do nothing at all, with only a
+       small dot in the header to show for it. */
+    w.ROOM.socket.close();
+    await until(() => !el('offline').hidden, 8000, 'offline banner');
+    check('losing the connection is spelled out, not just a dot',
+          el('offline-title').textContent.length > 0, el('offline-title').textContent);
+    check('the banner says what to do about it',
+          el('offline-detail').textContent.includes('npm start'),
+          el('offline-detail').textContent.slice(0, 60));
+    check('actions are disabled rather than silently doing nothing', el('btn-rematch').disabled);
+
+    await until(() => w.ROOM.connected, 15000, 'reconnect');
+    check('the client reconnects by itself', w.ROOM.connected);
+    check('the banner clears once the server is back', el('offline').hidden);
+    check('actions come back with the connection', !el('btn-rematch').disabled);
+  } catch (err) {
+    check('the suite ran to the end', false, err.message);
+  }
+
+  window.__done = true;
+  document.getElementById('out').textContent = window.__results.join('\n');
+});
+</script>
+</body></html>

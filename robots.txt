@@ -1,0 +1,8 @@
+# Everything here is meant to be read, by people and by machines alike.
+User-agent: *
+Allow: /
+
+# Nothing lives here that is worth a crawl: room codes expire the same evening.
+Disallow: /room/
+
+Sitemap: https://pareagames.com/sitemap.xml

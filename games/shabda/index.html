@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Shabda &mdash; Parea Games</title>
+<meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<link rel="stylesheet" href="shabda.css" />
+<link rel="icon" href="../../assets/brand/icon.svg" />
+<link rel="alternate icon" href="../../assets/brand/icon-192.png" />
+<link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
+<!-- seo:start -->
+<link rel="canonical" href="https://pareagames.com/games/shabda/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Parea Games" />
+<meta property="og:title" content="Shabda — Parea Games" />
+<meta property="og:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<meta property="og:url" content="https://pareagames.com/games/shabda/" />
+<meta property="og:image" content="https://pareagames.com/assets/brand/share-shabda.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Shabda — Parea Games" />
+<meta name="twitter:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<meta name="twitter:image" content="https://pareagames.com/assets/brand/share-shabda.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Shabda",
+  "url": "https://pareagames.com/games/shabda/",
+  "description": "Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.",
+  "image": "https://pareagames.com/assets/brand/share-shabda.png",
+  "genre": [
+    "Word game",
+    "Puzzle"
+  ],
+  "gamePlatform": "Web browser",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Any modern web browser",
+  "playMode": [
+    "SinglePlayer",
+    "MultiPlayer"
+  ],
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Parea Games",
+    "url": "https://pareagames.com/"
+  }
+}
+</script>
+<!-- seo:end -->
+</head>
+<body>
+  <header class="game-header">
+    <a class="brand-link" href="../../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
+      <span class="arrow" aria-hidden="true">&larr;</span>
+      <img class="brand-mark" src="../../assets/brand/mark.svg" alt="" width="21" height="21" />
+      <span class="brand-name">parea<span> games</span></span>
+    </a>
+    <h1>Shabda</h1>
+    <div class="header-actions">
+      <button id="btn-help"  class="icon-btn" title="How to play" aria-label="How to play">?</button>
+      <button id="btn-stats" class="icon-btn" title="Statistics"  aria-label="Statistics">&#9202;</button>
+      <button id="btn-new"   class="icon-btn" title="New random word" aria-label="New random word">&#8635;</button>
+    </div>
+  </header>
+
+  <!-- Today's word, then practice on whichever board you fancy -->
+  <div class="lengths" role="group" aria-label="Word to play">
+    <button class="len-btn today" data-len="daily" type="button">Today</button>
+    <button class="len-btn" data-len="4" type="button">4 letters</button>
+    <button class="len-btn" data-len="5" type="button">5 letters</button>
+    <button class="len-btn" data-len="6" type="button">6 letters</button>
+  </div>
+
+  <div id="toast-area" class="toast-area" aria-live="polite"></div>
+
+  <main class="game">
+    <div id="board" class="board" role="grid" aria-label="Guess grid"></div>
+    <div id="keyboard" class="keyboard" role="group" aria-label="Keyboard"></div>
+
+    <!-- Shown only once today's puzzle is over: practice has no deadline. -->
+    <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
+  </main>
+
+  <!-- How to play -->
+  <div id="help-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="help-title">How to play</h2>
+<!-- intro:start -->
+      <p class="lede">Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.</p>
+<!-- intro:end -->
+      <p>Find the hidden word in <b>6 guesses</b>. <b>Today</b> is one word for everybody,
+         on a board of <b>4</b>, <b>5</b> or <b>6</b> letters &mdash; which one changes day to day.</p>
+      <p>After every guess the tiles change colour to show how close you got.</p>
+
+      <div class="example">
+        <div class="ex-row">
+          <div class="tile small correct">w</div><div class="tile small">e</div>
+          <div class="tile small">a</div><div class="tile small">r</div><div class="tile small">y</div>
+        </div>
+        <p><b>W</b> is in the word, and in the right place.</p>
+      </div>
+      <div class="example">
+        <div class="ex-row">
+          <div class="tile small">p</div><div class="tile small">i</div>
+          <div class="tile small present">l</div><div class="tile small">o</div><div class="tile small">t</div>
+        </div>
+        <p><b>L</b> is in the word, but somewhere else.</p>
+      </div>
+      <div class="example">
+        <div class="ex-row">
+          <div class="tile small">v</div><div class="tile small">a</div>
+          <div class="tile small">g</div><div class="tile small absent">u</div><div class="tile small">e</div>
+        </div>
+        <p><b>U</b> is not in the word at all.</p>
+      </div>
+
+      <p class="fine">
+        Any real word counts as a guess. If we do not know it, we look it up before
+        holding it against you &mdash; random letters will just get handed back.
+      </p>
+      <p class="fine plain">
+        Today's word is the only one that counts towards your record and streak. The
+        <b>4</b>, <b>5</b> and <b>6</b> buttons deal practice words as often as you like, and
+        those count for nothing. A new day starts at midnight New York time.
+      </p>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div id="stats-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="stats-title">Statistics</h2>
+      <p class="stats-scope">Your <b>daily</b> record &mdash; today is
+         <b><span id="st-len">5</span> letters</b></p>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-num" id="st-played">0</div><div class="stat-lbl">Played</div></div>
+        <div class="stat"><div class="stat-num" id="st-win">0</div><div class="stat-lbl">Win %</div></div>
+        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl">Current streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl">Max streak</div></div>
+      </div>
+
+      <h3>Guess distribution</h3>
+      <div id="dist" class="dist"></div>
+
+      <div class="modal-actions">
+        <button id="btn-share" class="btn btn-primary">Share result</button>
+        <button id="btn-play-again" class="btn btn-ghost">Play again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/daily.js"></script>
+  <script src="words-4.js"></script>
+  <script src="words-5.js"></script>
+  <script src="words-6.js"></script>
+  <script src="words.js"></script>
+  <script src="shabda.js"></script>
+</body>
+</html>
