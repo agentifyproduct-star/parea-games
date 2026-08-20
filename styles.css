@@ -393,69 +393,10 @@ code {
   letter-spacing: -.01em;
 }
 
-/* ---------- today ---------- */
+/* ---------- what you have finished today ---------- */
 
-/* Only ever seen by somebody who has played something today, which is why it
-   sits above the games rather than inside them: it is a status line, not a
-   pitch. */
-.today {
-  width: var(--page);
-  margin: 0 auto;
-  padding: clamp(24px, 4vh, 44px) 0 0;
-}
-
-.today[hidden] { display: none; }
-
-.today-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  border-top: 1px solid var(--line);
-  padding-top: 20px;
-  margin-bottom: 18px;
-}
-
-.today-head h2 {
-  margin: 0;
-  font-size: clamp(20px, 2.2vw, 26px);
-  font-weight: 700;
-  letter-spacing: -.02em;
-}
-
-.today-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.today-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
-  text-decoration: none;
-  transition: transform .15s ease, border-color .15s ease;
-}
-
-.today-row:hover { transform: translateY(-2px); border-color: var(--ink); }
-
-.today-name { font-weight: 700; font-size: 15px; }
-.today-state { color: var(--ink-soft); font-size: 13px; }
-
-/* A finished game is marked, not greyed: it is an achievement, not a disabled
-   control. */
-.today-row.is-done .today-state::after {
-  content: " \2713";
-  color: var(--green);
-  font-weight: 700;
-}
-
-/* The same tick on the cards below, so the page reads the same either way. */
+/* A tick rather than a grey-out: a finished game is an achievement, not a
+   disabled control. */
 .feature.is-done .feature-index::after,
 .strip-item.is-done .strip-label::after {
   content: " \2713";
@@ -464,6 +405,103 @@ code {
 }
 
 .btn-ink.is-done { background: var(--green); }
+
+/* ---------- your games ---------- */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(22, 22, 26, .4);
+  backdrop-filter: blur(3px);
+}
+
+.sheet[hidden] { display: none; }
+
+.sheet-card {
+  width: min(520px, 100%);
+  max-height: 88vh;
+  max-height: 88svh;
+  overflow-y: auto;
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 24px 24px 22px;
+  box-shadow: 0 30px 80px rgba(22, 22, 26, .28);
+}
+
+/* The same sticky bar the games use, for the same reason: the way out must not
+   scroll away on a phone. */
+.sheet-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  padding: 2px 0 12px;
+  margin-bottom: 16px;
+}
+
+.sheet-head h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+
+.sheet-close {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  margin: -6px -8px 0 0;
+  padding: 6px 10px;
+  color: var(--ink-soft);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sheet-note { margin: 0 0 16px; color: var(--ink-soft); font-size: 14px; }
+
+.sheet-rows { display: flex; flex-direction: column; gap: 10px; }
+
+.sheet-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: border-color .15s ease, transform .15s ease;
+}
+
+.sheet-row:hover { border-color: var(--ink); transform: translateY(-1px); }
+
+.sheet-game { font-weight: 700; font-size: 15px; }
+
+.sheet-today { color: var(--ink-soft); font-size: 13px; text-align: right; }
+.sheet-row.is-done .sheet-today { color: var(--green); font-weight: 600; }
+
+/* Four numbers, the same four for every game, so they can be read across. */
+.sheet-figures {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.sheet-figure { text-align: center; }
+.sheet-figure b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+.sheet-figure span { color: var(--ink-soft); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+
+.sheet-fine { margin: 18px 0 0; color: var(--ink-soft); font-size: 12.5px; text-align: center; }
 
 /* ---------- questions ---------- */
 .faq-grid {
@@ -511,7 +549,6 @@ code {
   /* Both the base rule and the alternating one have to collapse, or the even
      rows keep their second column and the text sits indented. */
   .feature, .rooms, .about-grid, .faq-grid { grid-template-columns: 1fr; }
-  .today-list { grid-template-columns: 1fr; }
   .feature:nth-child(even) { grid-template-columns: 1fr; }
   .feature:nth-child(even) .feature-art { order: 0; }
 

@@ -92,6 +92,66 @@
     return { done: list.filter(g => g.finished).length, total: list.length };
   };
 
+  /* ---------------- the record, across all three ----------------
+
+     Each game keeps its own statistics in its own key and its own words: two of
+     them count wins, the third counts days where both words fell. Reading all
+     three is the only way to answer "how am I doing?" without opening three
+     games, so the knowledge of where they live and what they call things is
+     gathered here — one place to correct if a game ever changes its mind. */
+
+  const STATS_KEYS = {
+    shabda: 'arcade.shabda.stats',
+    snowman: 'arcade.snowman.stats',
+    anagram: 'arcade.anagram.v1'
+  };
+
+  function readJSON(key) {
+    if (!storage) return null;
+    try {
+      return JSON.parse(storage.getItem(key) || 'null');
+    } catch {
+      return null;
+    }
+  }
+
+  /* Everything normalised to the same four numbers, whatever the game called
+     them. `solved` means the puzzle went the player's way: guessed in time for
+     Shabda and Snowman, both words for Anagram. */
+  function statsFor(id) {
+    const raw = readJSON(STATS_KEYS[id]);
+    const blank = { played: 0, solved: 0, streak: 0, best: 0 };
+    if (!raw) return blank;
+
+    if (id === 'anagram') {
+      const stats = raw.stats || {};
+      return {
+        played: Number(stats.daysPlayed) || 0,
+        solved: Number(stats.daysBothSolved) || 0,
+        streak: Number(stats.currentStreak) || 0,
+        best: Number(stats.maxStreak) || 0
+      };
+    }
+
+    return {
+      played: Number(raw.played) || 0,
+      solved: Number(raw.wins) || 0,
+      streak: Number(raw.streak) || 0,
+      best: Number(raw.maxStreak) || 0
+    };
+  }
+
+  /* Every game, its record, and where it stands today. */
+  function record() {
+    return summary().map(game => Object.assign({}, game, statsFor(game.id)));
+  }
+
+  const totals = () => record().reduce((sum, game) => ({
+    played: sum.played + game.played,
+    solved: sum.solved + game.solved,
+    best: Math.max(sum.best, game.best)
+  }), { played: 0, solved: 0, best: 0 });
+
   /* Draws the way onward at the end of a game. Every game has the same three
      elements and the same two outcomes, so the wording lives here rather than
      in three places that would slowly stop agreeing with each other. */
@@ -117,5 +177,6 @@
     els.container.hidden = false;
   }
 
-  window.TODAY = { KEY, GAMES, read, set, finished, summary, next, counts, dayKey, offerNext };
+  window.TODAY = { KEY, GAMES, read, set, finished, summary, next, counts, dayKey, offerNext,
+                 STATS_KEYS, statsFor, record, totals };
 })();

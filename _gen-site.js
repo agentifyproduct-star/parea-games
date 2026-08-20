@@ -148,7 +148,12 @@ function navMarkup() {
     ? '    <a class="btn btn-ink" id="play-cta" href="room/index.html">Play together</a>'
     : `    <a class="btn btn-ink" id="play-cta" href="${live[0].url}">Play today's games</a>`;
 
-  return `    <nav class="site-nav">\n${links}\n    </nav>\n${button}`;
+  /* The statistics button is written here but starts hidden: it opens a dialog
+     that only home.js can fill, so it must not exist for anyone that script
+     never reaches. */
+  const stats = '    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Your games</button>';
+
+  return `    <nav class="site-nav">\n${links}\n    </nav>\n${stats}\n${button}`;
 }
 
 function heroNoteMarkup() {

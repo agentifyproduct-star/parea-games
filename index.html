@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
-<link rel="stylesheet" href="styles.css?v=b4f2126f" />
+<link rel="stylesheet" href="styles.css?v=82cdde90" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -148,6 +148,7 @@
       <a href="#about">About</a>
       <a href="#questions">Questions</a>
     </nav>
+    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Your games</button>
     <a class="btn btn-ink" id="play-cta" href="games/shabda/index.html">Play today's games</a>
 <!-- nav:end -->
   </header>
@@ -180,17 +181,6 @@
         <a class="strip-item" data-game="anagram" href="games/anagram/index.html" aria-label="Play Anagram"><img src="assets/art/anagram.svg" alt="Scattered letter tiles settling into a solved word" /><span class="strip-label">Anagram</span></a>
 <!-- strip:end -->
       </div>
-    </section>
-
-    <!-- Filled in by home.js once the page is open in somebody's browser; a
-         crawler, and anyone with no JavaScript, sees the games and nothing
-         about a day that is not theirs. -->
-    <section id="today" class="today" hidden>
-      <div class="today-head">
-        <h2>Today</h2>
-        <p class="muted" id="today-count"></p>
-      </div>
-      <div class="today-list" id="today-list"></div>
     </section>
 
     <section id="games" class="games">
@@ -299,6 +289,22 @@
     </section>
   </main>
 
+  <!-- Opened from the header. Everything in it is read out of this browser's
+       own storage by home.js; with no JavaScript there is nothing to show and
+       the button that opens it is never rendered. -->
+  <div id="stats-modal" class="sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-head">
+        <h2 id="sheet-title">Your games</h2>
+        <button class="sheet-close" data-close aria-label="Close">&times;</button>
+      </div>
+      <p class="sheet-note" id="sheet-note"></p>
+      <div class="sheet-rows" id="sheet-rows"></div>
+      <p class="sheet-fine">Kept in this browser only &mdash; your phone and your laptop
+         keep separate records.</p>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <p class="footer-lead">Your people, every day.</p>
     <p class="muted">Three games today, more when they are ready. Made for the fun of it.</p>
@@ -308,8 +314,8 @@
 <!-- analytics:end -->
 <!-- home:start -->
   <script src="assets/daily.js?v=cb789ce2"></script>
-  <script src="assets/today.js?v=c1849cd9"></script>
-  <script src="home.js?v=12127897"></script>
+  <script src="assets/today.js?v=98868351"></script>
+  <script src="home.js?v=4f593503"></script>
 <!-- home:end -->
 </body>
 </html>
