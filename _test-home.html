@@ -51,6 +51,31 @@ frame.addEventListener('load', async function start() {
   await wait(150);
 
   try {
+    // ---------- the stylesheet arrived whole ----------
+
+    /* Not paranoia: an edit to the headline animation once took the rules
+       either side of it with it, and every test still passed because none of
+       them looked at the page. These do. */
+    const styleOf = (sel, prop) => win().getComputedStyle(doc().querySelector(sel))[prop];
+
+    check('the front page has a stylesheet at all',
+          doc().styleSheets.length > 0 && doc().styleSheets[0].cssRules.length > 40,
+          doc().styleSheets.length ? doc().styleSheets[0].cssRules.length + ' rules' : 'none');
+    check('the strip is a row of three, not a stack',
+          styleOf('.strip', 'gridTemplateColumns').split(' ').length === 3,
+          styleOf('.strip', 'gridTemplateColumns'));
+    check('its cards are cropped cards, not raw pictures',
+          parseFloat(styleOf('.strip-item', 'borderTopLeftRadius')) > 8 &&
+          styleOf('.strip-item img', 'objectFit') === 'cover',
+          styleOf('.strip-item', 'borderTopLeftRadius') + ' / ' + styleOf('.strip-item img', 'objectFit'));
+    check('the label sits on the card rather than under it',
+          styleOf('.strip-label', 'position') === 'absolute', styleOf('.strip-label', 'position'));
+    check('the line under the headline is held to a readable measure',
+          styleOf('.hero-note', 'maxWidth') !== 'none', styleOf('.hero-note', 'maxWidth'));
+    check('the game rows are laid out in two columns',
+          styleOf('.feature', 'gridTemplateColumns').split(' ').length === 2,
+          styleOf('.feature', 'gridTemplateColumns'));
+
     // ---------- a day nobody has started ----------
     win().localStorage.removeItem(win().TODAY.KEY);
     await reload();
