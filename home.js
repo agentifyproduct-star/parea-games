@@ -32,7 +32,7 @@
 
   if (cta && upcoming) {
     cta.href = upcoming.path + 'index.html';
-    cta.textContent = started ? `Play ${upcoming.title}` : "Play today's games";
+    cta.textContent = started ? `Play ${upcoming.title}` : 'Play today';
   } else if (cta) {
     /* Everything is done: the honest thing is to say so rather than to send
        somebody back into a game they have already finished. */

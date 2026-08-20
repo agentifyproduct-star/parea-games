@@ -82,7 +82,7 @@ frame.addEventListener('load', async function start() {
 
     check('the button offers the first game',
           cta().getAttribute('href') === 'games/shabda/index.html', cta().getAttribute('href'));
-    check('and says so plainly', cta().textContent === "Play today's games", cta().textContent);
+    check('and says so plainly', cta().textContent === 'Play today', cta().textContent);
     check('no game is ticked yet', ticked() === '', ticked());
     check('the statistics button is there once the script has run',
           doc().getElementById('btn-stats').hidden === false);
