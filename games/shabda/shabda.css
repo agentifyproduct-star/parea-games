@@ -298,6 +298,9 @@ body { display: flex; flex-direction: column; }
   padding: 26px 24px 22px;
   width: min(430px, 100%);
   max-height: 88vh;
+  /* Phones report vh as the height with the browser bars hidden, so a card
+     sized in vh can hang off both ends of what is really visible. */
+  max-height: 88svh;
   overflow-y: auto;
   animation: rise .18s ease;
 }
@@ -320,12 +323,34 @@ body { display: flex; flex-direction: column; }
 
 .stats-scope { font-size: 13px; margin-top: -6px; }
 
+/* Title and close button ride together in a bar that stays at the top while the
+   rest scrolls. On a phone the how-to is twice the height of the screen, and
+   before this the way out scrolled off with the text — disappearing at exactly
+   the moment someone had read to the end and wanted to start playing. */
+.modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 0 12px;
+  margin-bottom: 16px;
+}
+
+.modal-head h2 { margin: 0; }
+
+/* Padded out to a thumb-sized target rather than a glyph you have to aim at. */
 .modal-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
+  flex: 0 0 auto;
   background: none;
   border: none;
+  border-radius: 8px;
+  margin: -6px -8px 0 0;
+  padding: 6px 10px;
   color: var(--text-dim);
   font-size: 26px;
   line-height: 1;

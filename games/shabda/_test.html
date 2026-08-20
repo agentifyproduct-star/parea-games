@@ -199,12 +199,16 @@ document.getElementById('f').addEventListener('load', async () => {
           d.querySelectorAll('.tile[data-row="0"].correct').length === todayLen,
           d.querySelectorAll('.tile[data-row="0"].correct').length + ' green');
     check('stats dialog opens', !d.getElementById('stats-modal').hidden);
-    check('stats say 4-letter', d.getElementById('st-len').textContent === '4',
-          d.getElementById('st-len').textContent);
-    check('4-letter stats recorded 1 play', d.getElementById('st-played').textContent === '1',
+    /* Today's board is 4, 5 or 6 letters depending on the day, so both of these
+       are read against the length actually being played. Hardcoding 4 made the
+       suite pass only on the days the rotation happened to agree. */
+    check('stats name the length being played',
+          d.getElementById('st-len').textContent === String(todayLen),
+          d.getElementById('st-len').textContent + ' vs ' + todayLen);
+    check('that length has recorded 1 play', d.getElementById('st-played').textContent === '1',
           d.getElementById('st-played').textContent);
     check('share label names the length',
-          w.shareText().startsWith('Shabda #') && w.shareText().includes('4 letters'),
+          w.shareText().startsWith('Shabda #') && w.shareText().includes(todayLen + ' letters'),
           w.shareText().split('\n')[0]);
     d.getElementById('stats-modal').hidden = true;
 
