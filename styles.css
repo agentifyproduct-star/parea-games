@@ -208,10 +208,10 @@ a { color: inherit; }
     background-repeat: no-repeat;
 
     /* The band lives at the middle of an image three times the width of the
-       line, so at 0% it waits off the right-hand edge and at 100% it has left
-       past the other side. Everything between those two is a covered element
-       and a legible headline; anything outside them is a hole. */
-    background-position: 0% 0;
+       line, so at 100% it waits off the left-hand edge and at 0% it has left
+       past the right. Everything between those two is a covered element and a
+       legible headline; anything outside them is a hole. */
+    background-position: 100% 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -221,12 +221,13 @@ a { color: inherit; }
   .display span:nth-child(2) { animation-delay: 2.3s; }
 }
 
-/* One pass, then rest: the light crosses over about a second and a half and the
-   headline is plain black for the remaining seven. Both ends of the sweep park
-   the band off the edge of the line, so the loop has nothing to jump. */
+/* One pass, then rest. The band only clears the edges of the line for the
+   middle half of its travel, so the 2.6 seconds here read as about 1.3 seconds
+   of visible light, and the headline is plain black for the six after that.
+   Both ends park the band off an edge, so the loop has nothing to jump. */
 @keyframes sheen {
-  0%, 5% { background-position: 0% 0; }
-  22%, 100% { background-position: 100% 0; }
+  0%, 5% { background-position: 100% 0; }
+  34%, 100% { background-position: 0% 0; }
 }
 
 /* ---------- sections ---------- */
