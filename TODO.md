@@ -25,17 +25,13 @@
    sleep wipes cumulative standings. Only worth solving if rooms stop being an
    occasional thing.
 
-4. **Rename the storage keys** from `arcade.*` to `parea.*` for tidiness. Cheap
-   now, since it only resets local progress, and impossible to do quietly once
-   people have streaks worth keeping.
-
-5. **Snowman needs more words.** The whole book is 170 entries and the schedule
+4. **Snowman needs more words.** The whole book is 170 entries and the schedule
    is 170 days long, so after about six months the words come round again in the
    same order. Hard has only 26 of them. Worth fixing before it wants anything
    else — and it is what makes Snowman the one game where splitting a practice
    pool off the daily pool would leave both halves thin.
 
-6. **Practice data can stay public, but never as the complement.** Practice
+5. **Practice data can stay public, but never as the complement.** Practice
    touches no stats in any of the three games, so there is nothing to protect and
    it can keep working with no server at all — which is what keeps the site
    usable offline once the daily puzzle moves behind something. The one rule: do
@@ -43,6 +39,15 @@
    recovered by subtraction. Either practice draws from the same pool the daily
    secretly draws from, or it is a small sample of it, the way Anagram's 60 pairs
    already are.
+
+## Decided
+
+- **The `localStorage` keys stay `arcade.*`.** They are variable names, invisible
+  to anyone playing, and renaming them resets every streak on every device for
+  no gain. Two corollaries, for whoever is tempted later: do not rename them,
+  and in `games/anagram/anagram.js` do not bump `SCHEMA_VERSION` — that gate
+  throws the whole save away, streak included. If the saved shape has to change,
+  migrate it.
 
 ## Done — 19 August 2026
 

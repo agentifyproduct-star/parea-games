@@ -16,6 +16,9 @@ const KEY_LAYOUT = [
 /* One record, for the word of the day. The board size is the day's business
    rather than the player's, so a per-length record would only fragment the same
    streak three ways. Practice never lands here at all. */
+/* These keys are frozen. They read oddly now the site is called Parea, but
+   they are the address of every player's streak: rename one and that
+   player starts again from nothing. */
 const STORE_STATS = 'arcade.shabda.stats';
 const STORE_DAILY = 'arcade.shabda.daily';
 const STORE_LEN = 'arcade.shabda.len';

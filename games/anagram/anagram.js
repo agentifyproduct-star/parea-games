@@ -12,6 +12,9 @@
 const ATTEMPTS = 5;
 const HINT_AFTER = 3;            // failed attempts on word 2 before a hint is offered
 const SCHEMA_VERSION = 1;
+/* Frozen, and so is the version beside it: this gate drops the whole save,
+   streak and all, when the number changes. A new shape gets migrated, not
+   bumped. */
 const STORE_KEY = 'arcade.anagram.v1';
 const SLOTS = ['word1', 'word2'];
 

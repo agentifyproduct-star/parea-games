@@ -17,6 +17,9 @@
        back to exactly the same game (CN-1.2). */
 
 const WS_PATH = '/rooms';
+/* These keys are frozen. They read oddly now the site is called Parea, but
+   they are the address of every player's streak: rename one and that
+   player starts again from nothing. */
 const STORE = 'arcade.room.seat';
 
 const el = id => document.getElementById(id);

@@ -27,6 +27,9 @@ const KEY_ROWS = [
 
 /* The record belongs to the word of the day and nothing else. Practice rounds are
    unlimited, so counting them would turn a streak into a measure of free time. */
+/* These keys are frozen. They read oddly now the site is called Parea, but
+   they are the address of every player's streak: rename one and that
+   player starts again from nothing. */
 const STORE_STATS = 'arcade.snowman.stats';
 const STORE_DAILY = 'arcade.snowman.daily';
 const STORE_USED = level => `arcade.snowman.used.${level}`;
