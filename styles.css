@@ -182,6 +182,43 @@ a { color: inherit; }
 
 .display span { display: block; white-space: nowrap; }
 
+/* A band of light crossing the headline every few seconds, with a thread of the
+   brand's terracotta at its centre — the same warm tile that sits in the mark.
+
+   Painted by clipping a moving gradient to the letters themselves, so it is the
+   type that lights up rather than a shape sliding over the page. Guarded by
+   @supports because the trick needs transparent text, and text that is
+   transparent in a browser that cannot clip it is text nobody can read.
+
+   The second line starts a beat later, which reads as one light travelling down
+   the block rather than two lines flashing together. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .display span {
+    background-image: linear-gradient(96deg,
+      var(--ink) 0 48.4%,
+      #6f6759 49.3%,
+      #c2562c 50%,
+      #6f6759 50.7%,
+      var(--ink) 51.6% 100%);
+    background-size: 300% 100%;
+    background-position: 130% 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 9s cubic-bezier(.4, 0, .2, 1) 2s infinite;
+  }
+
+  .display span:nth-child(2) { animation-delay: 2.35s; }
+}
+
+/* Most of the cycle is the resting position: the light passes, then the
+   headline is simply black again for six or seven seconds. */
+@keyframes sheen {
+  0%, 4% { background-position: 130% 0; }
+  22%, 100% { background-position: -30% 0; }
+}
+
 .hero-note {
   max-width: 46ch;
   margin: clamp(28px, 5vh, 46px) auto 0;
@@ -566,4 +603,11 @@ code {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition-duration: .001ms !important; }
+
+  /* No sweep, and the headline goes back to being painted rather than clipped. */
+  .display span {
+    animation: none;
+    background-image: none;
+    color: var(--ink);
+  }
 }
