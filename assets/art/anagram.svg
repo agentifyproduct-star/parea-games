@@ -19,7 +19,9 @@
   <g font-family="'Segoe UI', system-ui, Helvetica, Arial, sans-serif" font-weight="700"
      font-size="40" text-anchor="middle" filter="url(#an-soft)">
 
-    <!-- in the air, still scrambled -->
+    <!-- In the air, still scrambled. Seven tiles for a seven-letter answer, and
+         the same seven letters: a jumble that could not be rearranged into the
+         word below it is a picture of a puzzle nobody could solve. -->
     <g>
       <g transform="rotate(-13 200 130)">
         <rect x="164" y="94" width="72" height="72" rx="12" fill="#ffffff" />
@@ -40,6 +42,14 @@
       <g transform="rotate(-10 662 142)">
         <rect x="626" y="106" width="72" height="72" rx="12" fill="#ffffff" />
         <text x="662" y="155" fill="#3a3c6b">N</text>
+      </g>
+      <g transform="rotate(7 272 214)">
+        <rect x="236" y="178" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="272" y="227" fill="#3a3c6b">A</text>
+      </g>
+      <g transform="rotate(-16 536 212)">
+        <rect x="500" y="176" width="72" height="72" rx="12" fill="#ffffff" />
+        <text x="536" y="225" fill="#3a3c6b">A</text>
       </g>
     </g>
 
