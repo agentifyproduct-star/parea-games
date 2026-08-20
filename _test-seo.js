@@ -216,7 +216,7 @@ pages.forEach(page => {
     .filter(ref => !/^(https?:|mailto:|data:|#|\/)/.test(ref));
 
   refs.forEach(ref => {
-    const rel = path.posix.normalize(path.posix.join(dir === '.' ? '' : dir, ref.split('#')[0]));
+    const rel = path.posix.normalize(path.posix.join(dir === '.' ? '' : dir, ref.split('#')[0].split('?')[0]));
     const onDisk = fs.existsSync(path.join(ROOT, rel));
     check(`${page} → ${ref} ships`, onDisk && ships(rel),
       !onDisk ? 'missing on disk' : (!ships(rel) ? 'excluded from the deploy' : ''));

@@ -12,6 +12,7 @@
 
    Run: node _gen-site.js        (--check to verify without writing) */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { SITE, GAMES, FAQ } = require('./_catalog.js');
@@ -53,6 +54,27 @@ function block(html, name, body, anchor) {
   if (from !== -1 && to !== -1) return html.slice(0, from) + built + html.slice(to + end.length);
   if (!anchor || !html.includes(anchor)) throw new Error(`no anchor for ${name}`);
   return html.replace(anchor, `${built}\n${anchor}`);
+}
+
+
+/* ---------------- cache stamps ---------------- */
+
+/* Pages revalidate on every visit; stylesheets and scripts are cached for an
+   hour. That combination can hand somebody new markup with old styles — which
+   is how a fixed layout arrives broken. Every local .css and .js reference
+   therefore carries a stamp taken from the file's own contents: change the
+   file, change the URL, and the old copy in a browser cache is simply never
+   asked for again. Unchanged files keep their stamp, so nothing is re-fetched
+   for the sake of it. */
+function stampAssets(html, pageFile) {
+  const dir = path.dirname(path.join(ROOT, pageFile));
+
+  return html.replace(/(src|href)="([^"?:]+\.(?:css|js))(\?v=[a-f0-9]+)?"/g, (whole, attr, ref) => {
+    const target = path.resolve(dir, ref);
+    if (!fs.existsSync(target)) return whole;
+    const hash = crypto.createHash('sha1').update(fs.readFileSync(target)).digest('hex').slice(0, 8);
+    return `${attr}="${ref}?v=${hash}"`;
+  });
 }
 
 /* ---------------- shared head markup ---------------- */
@@ -223,7 +245,7 @@ function buildHome() {
   html = block(html, 'summary', `        <p>${esc(summary)}</p>`);
   html = html.replace(/<span id="game-count">\d+<\/span>/, `<span id="game-count">${live.length}</span>`);
 
-  put(file, html);
+  put(file, stampAssets(html, file));
 }
 
 /* ---------------- a game page ---------------- */
@@ -270,7 +292,7 @@ function buildGame(game) {
     jsonLd(gameStructuredData(game))
   ].join('\n'), '</head>');
 
-  put(file, html);
+  put(file, stampAssets(html, file));
 }
 
 /* ---------------- pages that stay out of the index ---------------- */
@@ -293,7 +315,7 @@ function buildUnlisted(file, { title, description, follow }) {
     `<meta name="twitter:card" content="summary_large_image" />`
   ].join('\n'), '</head>');
 
-  put(file, html);
+  put(file, stampAssets(html, file));
 }
 
 /* ---------------- files for crawlers ---------------- */
