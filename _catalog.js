@@ -21,6 +21,11 @@ const SITE = {
      the button, the section, the question, the sentence in the summary — is
      generated, so this one word turns it all on together. */
   roomsLive: false,
+
+  /* Vercel's web analytics: page views only, no cookies, nothing that follows
+     anyone between sites. The script is served by the host itself, so it exists
+     on the deployed site and 404s harmlessly anywhere else. */
+  analytics: true,
   /* One sentence that says what this is, in the shape an answer engine can
      lift whole. */
   summary: 'Parea Games is a free daily word game site with three games — Shabda, ' +

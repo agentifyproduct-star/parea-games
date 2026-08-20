@@ -27,6 +27,7 @@ const rooms = !!SITE.roomsLive;
 const summary = rooms ? SITE.summary : SITE.summarySolo;
 const heroNote = rooms ? SITE.heroNote : SITE.heroNoteSolo;
 const questions = FAQ.filter(item => (rooms ? !item.solo : !item.rooms));
+const analytics = !!SITE.analytics;
 
 const abs = rel => `${SITE.origin}/${String(rel).replace(/^\/+/, '')}`;
 const esc = s => String(s)
@@ -99,6 +100,15 @@ function socialTags({ title, description, url, image }) {
 }
 
 const jsonLd = data => `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n</script>`;
+
+
+/* Counted where the host counts it: no third party, no cookie, and deferred so
+   it cannot hold up a single letter of the game. */
+function analyticsMarkup() {
+  return analytics
+    ? '  <script defer src="/_vercel/insights/script.js"></script>'
+    : '';
+}
 
 /* ---------------- the front page ---------------- */
 
@@ -244,6 +254,7 @@ function buildHome() {
   html = block(html, 'faq', faqMarkup());
   html = block(html, 'summary', `        <p>${esc(summary)}</p>`);
   html = html.replace(/<span id="game-count">\d+<\/span>/, `<span id="game-count">${live.length}</span>`);
+  html = block(html, 'analytics', analyticsMarkup(), '</body>');
 
   put(file, stampAssets(html, file));
 }
@@ -291,6 +302,8 @@ function buildGame(game) {
     }),
     jsonLd(gameStructuredData(game))
   ].join('\n'), '</head>');
+
+  html = block(html, 'analytics', analyticsMarkup(), '</body>');
 
   put(file, stampAssets(html, file));
 }
