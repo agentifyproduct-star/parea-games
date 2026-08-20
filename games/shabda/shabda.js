@@ -401,7 +401,10 @@ async function submitGuess() {
   }, revealMs);
 }
 
-const WIN_WORDS = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Phew'];
+/* One for each row, so the praise is proportional to how few guesses it took.
+   Ours, not the ones the genre is used to — a game explaining itself in another
+   game's words is a game with nothing of its own to say. */
+const WIN_WORDS = ['Uncanny', 'Sharp', 'Tidy', 'Solid', 'Cut it fine', 'Just in time'];
 
 function finishTurn(rowIndex, guess) {
   if (guess === state.answer) {

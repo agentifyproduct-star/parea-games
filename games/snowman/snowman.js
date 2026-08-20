@@ -242,7 +242,7 @@ function finishTurn() {
   else setTimeout(() => toast('Practice round — not counted', 2400), 1600);
 }
 
-const WIN_WORDS = ['Flawless', 'Superb', 'Great', 'Nicely done', 'Close one', 'By a thread'];
+const WIN_WORDS = ['Flawless', 'Superb', 'Neat', 'Nicely done', 'Close one', 'By a thread'];
 
 /* ---------------- rendering ---------------- */
 
