@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Front page tests</title></head>
+<body>
+<iframe id="f" src="index.html" width="900" height="700"></iframe>
+<pre id="out">running</pre>
+<script>
+/* The front page is plain HTML that one script quietly annotates. These tests
+   drive that script the way a day does: nothing played, one game finished, all
+   three finished, and a record left over from yesterday. */
+
+const results = [];
+const check = (name, condition, detail) => {
+  results.push((condition ? 'PASS ' : 'FAIL ') + name + (detail !== undefined && detail !== '' ? ' :: ' + detail : ''));
+  document.getElementById('out').textContent = results.join(String.fromCharCode(10));
+};
+
+const frame = document.getElementById('f');
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/* Each case starts from a known record, so reload and let home.js run again. */
+function reload() {
+  return new Promise(resolve => {
+    frame.addEventListener('load', function once() {
+      frame.removeEventListener('load', once);
+      setTimeout(resolve, 60);
+    });
+    frame.contentWindow.location.reload();
+  });
+}
+
+const win = () => frame.contentWindow;
+const doc = () => frame.contentWindow.document;
+const text = id => (doc().getElementById(id) || {}).textContent;
+const cta = () => doc().getElementById('play-cta');
+const ticked = () => [...doc().querySelectorAll('.feature.is-done')].map(f => f.dataset.game).join(',');
+
+async function setDay(games, dayKey) {
+  win().localStorage.setItem(win().TODAY.KEY, JSON.stringify({
+    day: dayKey || win().TODAY.dayKey(),
+    games
+  }));
+  await reload();
+}
+
+window.addEventListener('error', e => results.push('FAIL pageerror :: ' + e.message));
+
+frame.addEventListener('load', async function start() {
+  frame.removeEventListener('load', start);
+  await wait(150);
+
+  try {
+    // ---------- a day nobody has started ----------
+    win().localStorage.removeItem(win().TODAY.KEY);
+    await reload();
+
+    check('with nothing played, the day panel stays out of the way',
+          doc().getElementById('today').hidden === true);
+    check('the button offers the first game',
+          cta().getAttribute('href') === 'games/shabda/index.html', cta().getAttribute('href'));
+    check('and says so plainly', cta().textContent === "Play today's games", cta().textContent);
+    check('no game is ticked yet', ticked() === '', ticked());
+
+    // ---------- one game down ----------
+    await setDay({ shabda: 'won' });
+
+    check('the day panel appears once something has been played',
+          doc().getElementById('today').hidden === false);
+    check('it counts what is done', text('today-count') === '1 of 3 done', text('today-count'));
+    check('it lists all three games', doc().querySelectorAll('.today-row').length === 3);
+    check('a solved game reads as solved',
+          doc().querySelector('.today-row').textContent.indexOf('Solved') !== -1,
+          doc().querySelector('.today-row').textContent);
+    check('the finished game is ticked on its card', ticked() === 'shabda', ticked());
+    check('the button moves on to the next unplayed game',
+          cta().getAttribute('href') === 'games/snowman/index.html', cta().getAttribute('href'));
+    check('and names it', cta().textContent === 'Play Snowman', cta().textContent);
+
+    // ---------- a game in progress is not a game finished ----------
+    await setDay({ shabda: 'won', snowman: 'playing' });
+
+    check('a game left half-played still counts as todo',
+          cta().getAttribute('href') === 'games/snowman/index.html', cta().getAttribute('href'));
+    check('and is not ticked', ticked() === 'shabda', ticked());
+    check('the count only counts finished games',
+          text('today-count') === '1 of 3 done', text('today-count'));
+
+    // ---------- the whole day ----------
+    await setDay({ shabda: 'won', snowman: 'lost', anagram: 'done' });
+
+    check('a lost game is still a game played',
+          text('today-count') === 'All three done', text('today-count'));
+    check('every card is ticked', ticked() === 'shabda,snowman,anagram', ticked());
+    check('the button stops sending you into a finished game',
+          cta().getAttribute('href') === '#today', cta().getAttribute('href'));
+    check('and says the day is done', cta().textContent === 'All three done', cta().textContent);
+
+    // ---------- yesterday is not today ----------
+    const yesterday = win().DAILY.shift(win().TODAY.dayKey(), -1);
+    await setDay({ shabda: 'won', snowman: 'won', anagram: 'done' }, yesterday);
+
+    check("yesterday's record reads as a clean slate",
+          doc().getElementById('today').hidden === true);
+    check('and the button starts again at the first game',
+          cta().getAttribute('href') === 'games/shabda/index.html', cta().getAttribute('href'));
+    check('with nothing ticked', ticked() === '', ticked());
+
+    // ---------- what the games ask for ----------
+    win().localStorage.setItem(win().TODAY.KEY, JSON.stringify({
+      day: win().TODAY.dayKey(), games: { shabda: 'won', anagram: 'done' }
+    }));
+    const T = win().TODAY;
+    check('after Shabda, the next game is the unplayed one', T.next('shabda').id === 'snowman', T.next('shabda').id);
+    check('the search wraps round the list', T.next('anagram').id === 'snowman', T.next('anagram').id);
+    check('and gives up once the day is done',
+          (() => {
+            win().localStorage.setItem(T.KEY, JSON.stringify({
+              day: T.dayKey(), games: { shabda: 'won', snowman: 'won', anagram: 'done' }
+            }));
+            return T.next('shabda') === null;
+          })());
+
+    win().localStorage.removeItem(T.KEY);
+
+  } catch (err) {
+    results.push('FAIL threw :: ' + err.message + ' @ ' + (err.stack || '').split(String.fromCharCode(10))[1]);
+  }
+
+  document.getElementById('out').textContent = results.join(String.fromCharCode(10));
+});
+</script>
+</body></html>

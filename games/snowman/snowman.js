@@ -224,6 +224,8 @@ function finishTurn() {
   render();
   saveGame();
 
+  if (state.daily && state.status !== 'playing') TODAY.set('snowman', state.status);
+
   if (state.status === 'won') {
     if (state.daily) recordResult(true, state.wrongGuesses);
     toast(WIN_WORDS[state.wrongGuesses] || 'Saved', 2200);
@@ -444,6 +446,7 @@ function startDaily() {
   state.status = 'playing';
 
   stats = loadStats();
+  TODAY.set('snowman', 'playing');
   markLevelButtons();
   render();
   saveGame();
@@ -493,6 +496,7 @@ function restore(key, { finished = false } = {}) {
   if (state.status === 'playing' && (state.wrongGuesses >= LIVES || isSolved())) return false;
 
   stats = loadStats();
+  if (state.daily) TODAY.set('snowman', state.status);
   markLevelButtons();
   render();
   return true;
@@ -561,6 +565,11 @@ document.getElementById('btn-play-again').addEventListener('click', () => {
 });
 
 function openStats() {
+  TODAY.offerNext('snowman', {
+    container: document.getElementById('next-game'),
+    link: document.getElementById('next-game-link'),
+    note: document.getElementById('next-game-note')
+  });
   document.getElementById('st-level').textContent = 'daily';
   document.getElementById('st-played').textContent = stats.played;
   document.getElementById('st-win').textContent =

@@ -418,6 +418,7 @@ function finishTurn(rowIndex, guess) {
      — a twenty-day streak in ten minutes without a day passing. */
   if (state.status !== 'playing' && state.daily) {
     recordResult(state.status === 'won', state.guesses.length);
+    TODAY.set('shabda', state.status);
   }
 
   saveDaily();
@@ -485,6 +486,11 @@ document.getElementById('btn-play-again').addEventListener('click', () => {
 });
 
 function openStats() {
+  TODAY.offerNext('shabda', {
+    container: document.getElementById('next-game'),
+    link: document.getElementById('next-game-link'),
+    note: document.getElementById('next-game-note')
+  });
   document.getElementById('st-len').textContent = String(state.len);
   document.getElementById('st-played').textContent = stats.played;
   document.getElementById('st-win').textContent =
@@ -616,10 +622,12 @@ function startGame({ len, daily }) {
       state.status = saved.status || 'playing';
       state.guesses = Array.isArray(saved.guesses) ? saved.guesses.slice(0, ROWS) : [];
       state.guesses.forEach((g, i) => revealRow(i, g, scoreGuess(g, state.answer), false));
+      TODAY.set('shabda', state.status);
       if (state.status !== 'playing') setTimeout(openStats, 300);
       return;
     }
     state.answer = WORDS.dailyWord(state.len);
+    TODAY.set('shabda', 'playing');
     saveDaily();
   } else {
     state.answer = WORDS.randomWord(state.len);

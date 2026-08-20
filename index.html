@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
-<link rel="stylesheet" href="styles.css?v=faad6dc8" />
+<link rel="stylesheet" href="styles.css?v=b4f2126f" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -148,7 +148,7 @@
       <a href="#about">About</a>
       <a href="#questions">Questions</a>
     </nav>
-    <a class="btn btn-ink" href="#games">Play today's games</a>
+    <a class="btn btn-ink" id="play-cta" href="games/shabda/index.html">Play today's games</a>
 <!-- nav:end -->
   </header>
 
@@ -175,11 +175,22 @@
       <!-- The three games at a glance, before any words about them -->
       <div class="strip" id="strip">
 <!-- strip:start -->
-        <a class="strip-item" href="games/shabda/index.html" aria-label="Play Shabda"><img src="assets/art/shabda.svg" alt="A grid of letter tiles with one row solved in teal" /><span class="strip-label">Shabda</span></a>
-        <a class="strip-item" href="games/snowman/index.html" aria-label="Play Snowman"><img src="assets/art/snowman.svg" alt="A snowman that has lost its hat and scarf, beside a part-guessed word" /><span class="strip-label">Snowman</span></a>
-        <a class="strip-item" href="games/anagram/index.html" aria-label="Play Anagram"><img src="assets/art/anagram.svg" alt="Scattered letter tiles settling into a solved word" /><span class="strip-label">Anagram</span></a>
+        <a class="strip-item" data-game="shabda" href="games/shabda/index.html" aria-label="Play Shabda"><img src="assets/art/shabda.svg" alt="A grid of letter tiles with one row solved in teal" /><span class="strip-label">Shabda</span></a>
+        <a class="strip-item" data-game="snowman" href="games/snowman/index.html" aria-label="Play Snowman"><img src="assets/art/snowman.svg" alt="A snowman that has lost its hat and scarf, beside a part-guessed word" /><span class="strip-label">Snowman</span></a>
+        <a class="strip-item" data-game="anagram" href="games/anagram/index.html" aria-label="Play Anagram"><img src="assets/art/anagram.svg" alt="Scattered letter tiles settling into a solved word" /><span class="strip-label">Anagram</span></a>
 <!-- strip:end -->
       </div>
+    </section>
+
+    <!-- Filled in by home.js once the page is open in somebody's browser; a
+         crawler, and anyone with no JavaScript, sees the games and nothing
+         about a day that is not theirs. -->
+    <section id="today" class="today" hidden>
+      <div class="today-head">
+        <h2>Today</h2>
+        <p class="muted" id="today-count"></p>
+      </div>
+      <div class="today-list" id="today-list"></div>
     </section>
 
     <section id="games" class="games">
@@ -189,7 +200,7 @@
       </div>
       <div id="game-grid" class="features">
 <!-- games:start -->
-        <article class="feature">
+        <article class="feature" data-game="shabda">
           <a class="feature-art" href="games/shabda/index.html" tabindex="-1" aria-hidden="true"><img src="assets/art/shabda.svg" alt="" /></a>
           <div class="feature-copy">
             <span class="feature-index">Game 01</span>
@@ -200,7 +211,7 @@
             <a class="btn btn-ink" href="games/shabda/index.html">Play Shabda</a>
           </div>
         </article>
-        <article class="feature">
+        <article class="feature" data-game="snowman">
           <a class="feature-art" href="games/snowman/index.html" tabindex="-1" aria-hidden="true"><img src="assets/art/snowman.svg" alt="" /></a>
           <div class="feature-copy">
             <span class="feature-index">Game 02</span>
@@ -211,7 +222,7 @@
             <a class="btn btn-ink" href="games/snowman/index.html">Play Snowman</a>
           </div>
         </article>
-        <article class="feature">
+        <article class="feature" data-game="anagram">
           <a class="feature-art" href="games/anagram/index.html" tabindex="-1" aria-hidden="true"><img src="assets/art/anagram.svg" alt="" /></a>
           <div class="feature-copy">
             <span class="feature-index">Game 03</span>
@@ -295,5 +306,10 @@
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->
+<!-- home:start -->
+  <script src="assets/daily.js?v=cb789ce2"></script>
+  <script src="assets/today.js?v=c1849cd9"></script>
+  <script src="home.js?v=12127897"></script>
+<!-- home:end -->
 </body>
 </html>

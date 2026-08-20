@@ -588,6 +588,13 @@ function showResults() {
 
   markModeButtons();
   const inPractice = !!practice;
+  if (!inPractice) TODAY.set('anagram', 'done');
+  TODAY.offerNext('anagram', inPractice ? null : {
+    container: el('next-game'),
+    link: el('next-game-link'),
+    note: el('next-game-note')
+  });
+
   el('results-heading').textContent = inPractice ? 'Practice round over' : 'Done for today';
   el('btn-share').hidden = inPractice;
   el('btn-back-to-today').hidden = !inPractice;
@@ -1025,9 +1032,11 @@ function init() {
     beginSlot('word2');            // fills state.tiles so the results screen has a word
     showResults();
   } else if (p1.resolved) {
+    TODAY.set('anagram', 'playing');
     p2.unlocked = true;
     beginSlot('word2');
   } else {
+    TODAY.set('anagram', 'playing');
     beginSlot('word1');
   }
 

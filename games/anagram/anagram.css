@@ -498,6 +498,31 @@ main {
 .dist-bar.current { background: var(--accent); color: var(--on-colour); }
 
 .result-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+
+/* The way on to the next of today's three games. It only appears once a day's
+   game is behind you, and it is the same shape in all three so finishing one
+   feels like finishing a leg of the same day rather than leaving a game. */
+.next-game {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.next-game[hidden] { display: none; }
+
+.next-game-note {
+  margin: 0 0 12px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.next-game .btn {
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
 .note { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); text-align: center; }
 
 .next-up { font-size: 13px; color: var(--text-dim); }

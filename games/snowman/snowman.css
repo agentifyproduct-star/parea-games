@@ -546,6 +546,31 @@ body { display: flex; flex-direction: column; }
 
 .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
 
+/* The way on to the next of today's three games. It only appears once a day's
+   game is behind you, and it is the same shape in all three so finishing one
+   feels like finishing a leg of the same day rather than leaving a game. */
+.next-game {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.next-game[hidden] { display: none; }
+
+.next-game-note {
+  margin: 0 0 12px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.next-game .btn {
+  display: inline-flex;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
 .btn {
   flex: 1;
   padding: 13px 16px;

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Anagram &mdash; Parea Games</title>
 <meta name="description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
-<link rel="stylesheet" href="anagram.css?v=73bbf31e" />
+<link rel="stylesheet" href="anagram.css?v=35ad24a8" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -155,6 +155,11 @@
       <p id="practice-note" class="note" hidden>Practice round &mdash; nothing here counts towards
          your streak or your stats.</p>
 
+      <div class="next-game" id="next-game" hidden>
+        <p class="next-game-note" id="next-game-note"></p>
+        <a class="btn btn-primary" id="next-game-link" href="../../index.html"></a>
+      </div>
+
       <div class="result-actions">
         <button id="btn-share" class="btn btn-primary" type="button">Share result</button>
         <button id="btn-practice" class="btn btn-ghost" type="button">Play another</button>
@@ -226,9 +231,10 @@
   </div>
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
+  <script src="../../assets/today.js?v=c1849cd9"></script>
   <script src="scramble.js?v=fd811190"></script>
   <script src="puzzles.js?v=0724a4e6"></script>
-  <script src="anagram.js?v=9246f942"></script>
+  <script src="anagram.js?v=6acc86b9"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

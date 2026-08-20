@@ -114,14 +114,14 @@ function analyticsMarkup() {
 
 function stripMarkup() {
   return live.map(game =>
-    `        <a class="strip-item" href="${game.url}" aria-label="Play ${esc(game.title)}">` +
+    `        <a class="strip-item" data-game="${game.id}" href="${game.url}" aria-label="Play ${esc(game.title)}">` +
     `<img src="${game.art}" alt="${esc(game.alt)}" />` +
     `<span class="strip-label">${esc(game.title)}</span></a>`
   ).join('\n');
 }
 
 function featureMarkup() {
-  return live.map((game, i) => `        <article class="feature">
+  return live.map((game, i) => `        <article class="feature" data-game="${game.id}">
           <a class="feature-art" href="${game.url}" tabindex="-1" aria-hidden="true"><img src="${game.art}" alt="" /></a>
           <div class="feature-copy">
             <span class="feature-index">Game ${String(i + 1).padStart(2, '0')}</span>
@@ -145,8 +145,8 @@ function navMarkup() {
   /* With rooms off, the header's one button would lead nowhere, so the games
      themselves become the call to action. */
   const button = rooms
-    ? '    <a class="btn btn-ink" href="room/index.html">Play together</a>'
-    : '    <a class="btn btn-ink" href="#games">Play today\'s games</a>';
+    ? '    <a class="btn btn-ink" id="play-cta" href="room/index.html">Play together</a>'
+    : `    <a class="btn btn-ink" id="play-cta" href="${live[0].url}">Play today's games</a>`;
 
   return `    <nav class="site-nav">\n${links}\n    </nav>\n${button}`;
 }
@@ -254,6 +254,11 @@ function buildHome() {
   html = block(html, 'faq', faqMarkup());
   html = block(html, 'summary', `        <p>${esc(summary)}</p>`);
   html = html.replace(/<span id="game-count">\d+<\/span>/, `<span id="game-count">${live.length}</span>`);
+  html = block(html, 'home', [
+    '  <script src="assets/daily.js"></script>',
+    '  <script src="assets/today.js"></script>',
+    '  <script src="home.js"></script>'
+  ].join('\n'));
   html = block(html, 'analytics', analyticsMarkup(), '</body>');
 
   put(file, stampAssets(html, file));

@@ -393,6 +393,78 @@ code {
   letter-spacing: -.01em;
 }
 
+/* ---------- today ---------- */
+
+/* Only ever seen by somebody who has played something today, which is why it
+   sits above the games rather than inside them: it is a status line, not a
+   pitch. */
+.today {
+  width: var(--page);
+  margin: 0 auto;
+  padding: clamp(24px, 4vh, 44px) 0 0;
+}
+
+.today[hidden] { display: none; }
+
+.today-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-bottom: 18px;
+}
+
+.today-head h2 {
+  margin: 0;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.today-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.today-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.today-row:hover { transform: translateY(-2px); border-color: var(--ink); }
+
+.today-name { font-weight: 700; font-size: 15px; }
+.today-state { color: var(--ink-soft); font-size: 13px; }
+
+/* A finished game is marked, not greyed: it is an achievement, not a disabled
+   control. */
+.today-row.is-done .today-state::after {
+  content: " \2713";
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* The same tick on the cards below, so the page reads the same either way. */
+.feature.is-done .feature-index::after,
+.strip-item.is-done .strip-label::after {
+  content: " \2713";
+  color: var(--green);
+  font-weight: 700;
+}
+
+.btn-ink.is-done { background: var(--green); }
+
 /* ---------- questions ---------- */
 .faq-grid {
   display: grid;
@@ -439,6 +511,7 @@ code {
   /* Both the base rule and the alternating one have to collapse, or the even
      rows keep their second column and the text sits indented. */
   .feature, .rooms, .about-grid, .faq-grid { grid-template-columns: 1fr; }
+  .today-list { grid-template-columns: 1fr; }
   .feature:nth-child(even) { grid-template-columns: 1fr; }
   .feature:nth-child(even) .feature-art { order: 0; }
 
