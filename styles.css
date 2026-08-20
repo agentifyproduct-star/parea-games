@@ -194,71 +194,39 @@ a { color: inherit; }
    the block rather than two lines flashing together. */
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .display span {
+    /* The ink is a background colour, not a text colour, so that any part of
+       the element the gradient does not reach is still painted black rather
+       than left transparent. Getting that wrong makes letters vanish. */
+    background-color: var(--ink);
     background-image: linear-gradient(96deg,
-      var(--ink) 0 48.4%,
+      transparent 0 48.4%,
       #6f6759 49.3%,
       #c2562c 50%,
       #6f6759 50.7%,
-      var(--ink) 51.6% 100%);
+      transparent 51.6% 100%);
     background-size: 300% 100%;
-    background-position: 130% 0;
     background-repeat: no-repeat;
+
+    /* The band lives at the middle of an image three times the width of the
+       line, so at 0% it waits off the right-hand edge and at 100% it has left
+       past the other side. Everything between those two is a covered element
+       and a legible headline; anything outside them is a hole. */
+    background-position: 0% 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: sheen 9s cubic-bezier(.4, 0, .2, 1) 2s infinite;
+    animation: sheen 9s linear 2s infinite;
   }
 
-  .display span:nth-child(2) { animation-delay: 2.35s; }
+  .display span:nth-child(2) { animation-delay: 2.3s; }
 }
 
-/* Most of the cycle is the resting position: the light passes, then the
-   headline is simply black again for six or seven seconds. */
+/* One pass, then rest: the light crosses over about a second and a half and the
+   headline is plain black for the remaining seven. Both ends of the sweep park
+   the band off the edge of the line, so the loop has nothing to jump. */
 @keyframes sheen {
-  0%, 4% { background-position: 130% 0; }
-  22%, 100% { background-position: -30% 0; }
-}
-
-.hero-note {
-  max-width: 46ch;
-  margin: clamp(28px, 5vh, 46px) auto 0;
-  color: var(--ink-soft);
-  font-size: clamp(15px, 1.5vw, 17px);
-  line-height: 1.65;
-}
-
-/* The three games as one wide band, the way a gallery shows its work. */
-.strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: clamp(40px, 8vh, 76px);
-}
-
-.strip-item {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  border-radius: 18px;
-  background: var(--card);
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 12px 30px rgba(22, 22, 26, .06);
-  transition: transform .3s ease, box-shadow .3s ease;
-}
-
-.strip-item:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(22, 22, 26, .1); }
-.strip-item img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
-
-.strip-label {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  background: rgba(255, 255, 255, .92);
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 12.5px;
-  font-weight: 700;
+  0%, 5% { background-position: 0% 0; }
+  22%, 100% { background-position: 100% 0; }
 }
 
 /* ---------- sections ---------- */
