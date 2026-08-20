@@ -17,3 +17,7 @@ games/anagram/puzzles.json
 games/[redacted]/
 
 TODO.md
+
+# The room client has no server to reach until one is hosted. Kept in the
+# repository, left off the site: see DEPLOY.md, phase 2.
+room/

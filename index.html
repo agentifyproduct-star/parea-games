@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
-<meta name="description" content="Parea Games: three word games. A new puzzle every day, free, no sign-up. Play on your own or against your friends." />
+<meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
 <link rel="stylesheet" href="styles.css" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Parea Games" />
 <meta property="og:title" content="Parea Games — three word games, every day" />
-<meta property="og:description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to install and no account to make, and you can play against friends in a private room." />
+<meta property="og:description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
 <meta property="og:url" content="https://pareagames.com/" />
 <meta property="og:image" content="https://pareagames.com/assets/brand/share.png" />
 <meta property="og:image:width" content="1200" />
@@ -22,7 +22,7 @@
 <meta property="og:locale" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Parea Games — three word games, every day" />
-<meta name="twitter:description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to install and no account to make, and you can play against friends in a private room." />
+<meta name="twitter:description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
 <meta name="twitter:image" content="https://pareagames.com/assets/brand/share.png" />
 <script type="application/ld+json">
 {
@@ -46,7 +46,7 @@
       "@id": "https://pareagames.com/#website",
       "name": "Parea Games",
       "url": "https://pareagames.com/",
-      "description": "Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to install and no account to make, and you can play against friends in a private room.",
+      "description": "Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make.",
       "inLanguage": "en",
       "publisher": {
         "@id": "https://pareagames.com/#organisation"
@@ -86,7 +86,7 @@
           "name": "What is Parea Games?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Parea Games is a free word game site with three daily games: Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, and you can play them on your own or against friends in a private room."
+            "text": "Parea Games is a free word game site with three daily games: Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, so whoever else played today played exactly what you played."
           }
         },
         {
@@ -128,14 +128,6 @@
             "@type": "Answer",
             "text": "Two scrambled words arrive each day, one short and one long. Unscramble each within five tries. Everyone gets the same pair, so the day is the same puzzle for everybody."
           }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I play against my friends?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Start a room, send the four-letter code to your friends, and everybody plays the same puzzles at the same second. Nobody sees the words until the countdown reaches zero, not even the person who started the room. You score on how few guesses you needed first, and how quickly second."
-          }
         }
       ]
     }
@@ -150,13 +142,14 @@
       <img class="brand-mark" src="assets/brand/mark.svg" alt="" width="31" height="31" />
       <span class="brand-name">parea<span> games</span></span>
     </a>
+<!-- nav:start -->
     <nav class="site-nav">
       <a href="#games">Games</a>
-      <a href="#rooms">Rooms</a>
       <a href="#about">About</a>
       <a href="#questions">Questions</a>
     </nav>
-    <a class="btn btn-ink" href="room/index.html">Play together</a>
+    <a class="btn btn-ink" href="#games">Play today's games</a>
+<!-- nav:end -->
   </header>
 
   <main>
@@ -175,10 +168,9 @@
 
       <h1 class="display"><span>Three games.</span><span>Every day.</span></h1>
 
-      <p class="hero-note">
-        Short enough for the two minutes you actually have. Play on your own, or start a room and
-        take on your friends at the very same puzzle.
-      </p>
+<!-- heronote:start -->
+      <p class="hero-note">Short enough for the two minutes you actually have. A new puzzle for everybody at midnight, so today is the same day wherever you are playing from.</p>
+<!-- heronote:end -->
 
       <!-- The three games at a glance, before any words about them -->
       <div class="strip" id="strip">
@@ -234,25 +226,9 @@
       </div>
     </section>
 
-    <section id="rooms" class="rooms">
-      <div class="rooms-art">
-        <img src="assets/art/rooms.svg" alt="Three players marked ready in a room, with a countdown running" />
-      </div>
-      <div class="rooms-copy">
-        <p class="eyebrow"><span class="eyebrow-tag alt">Together</span></p>
-        <h2>Same puzzle. Same second. May the best speller win.</h2>
-        <p>
-          Start a room, send your friends the four-letter code, and play any of the three games
-          against each other. Nobody sees the words until the countdown hits zero &mdash; not even
-          whoever started it.
-        </p>
-        <p class="fine">
-          You score on how few guesses you needed first, and how quickly second. Rooms need Parea
-          running on a computer nearby &mdash; setup takes a minute.
-        </p>
-        <a class="btn btn-ink" href="room/index.html">Open a room &rarr;</a>
-      </div>
-    </section>
+<!-- rooms:start -->
+
+<!-- rooms:end -->
 
     <section id="about" class="about">
       <div class="section-head">
@@ -260,7 +236,7 @@
       </div>
       <div class="about-lead">
 <!-- summary:start -->
-        <p>Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to install and no account to make, and you can play against friends in a private room.</p>
+        <p>Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make.</p>
 <!-- summary:end -->
       </div>
       <div class="about-grid">
@@ -285,7 +261,7 @@
 <!-- faq:start -->
         <div class="faq">
           <h3>What is Parea Games?</h3>
-          <p>Parea Games is a free word game site with three daily games: Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, and you can play them on your own or against friends in a private room.</p>
+          <p>Parea Games is a free word game site with three daily games: Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, so whoever else played today played exactly what you played.</p>
         </div>
         <div class="faq">
           <h3>Is it free, and do I need an account?</h3>
@@ -306,10 +282,6 @@
         <div class="faq">
           <h3>How do I play Anagram?</h3>
           <p>Two scrambled words arrive each day, one short and one long. Unscramble each within five tries. Everyone gets the same pair, so the day is the same puzzle for everybody.</p>
-        </div>
-        <div class="faq">
-          <h3>Can I play against my friends?</h3>
-          <p>Yes. Start a room, send the four-letter code to your friends, and everybody plays the same puzzles at the same second. Nobody sees the words until the countdown reaches zero, not even the person who started the room. You score on how few guesses you needed first, and how quickly second.</p>
         </div>
 <!-- faq:end -->
       </div>

@@ -20,6 +20,13 @@ const ROOT = __dirname;
 const CHECK = process.argv.includes('--check');
 const live = GAMES.filter(game => game.status === 'live');
 
+/* Rooms need a running process. Until one is hosted, every part of the site
+   that offers them is left out rather than left broken. */
+const rooms = !!SITE.roomsLive;
+const summary = rooms ? SITE.summary : SITE.summarySolo;
+const heroNote = rooms ? SITE.heroNote : SITE.heroNoteSolo;
+const questions = FAQ.filter(item => (rooms ? !item.solo : !item.rooms));
+
 const abs = rel => `${SITE.origin}/${String(rel).replace(/^\/+/, '')}`;
 const esc = s => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -95,8 +102,51 @@ function featureMarkup() {
         </article>`).join('\n')
 }
 
+function navMarkup() {
+  const links = [
+    '      <a href="#games">Games</a>',
+    rooms ? '      <a href="#rooms">Rooms</a>' : null,
+    '      <a href="#about">About</a>',
+    '      <a href="#questions">Questions</a>'
+  ].filter(Boolean).join('\n');
+
+  /* With rooms off, the header's one button would lead nowhere, so the games
+     themselves become the call to action. */
+  const button = rooms
+    ? '    <a class="btn btn-ink" href="room/index.html">Play together</a>'
+    : '    <a class="btn btn-ink" href="#games">Play today\'s games</a>';
+
+  return `    <nav class="site-nav">\n${links}\n    </nav>\n${button}`;
+}
+
+function heroNoteMarkup() {
+  return `      <p class="hero-note">${esc(heroNote)}</p>`;
+}
+
+function roomsMarkup() {
+  if (!rooms) return '';
+  return `    <section id="rooms" class="rooms">
+      <div class="rooms-art">
+        <img src="assets/art/rooms.svg" alt="Three players marked ready in a room, with a countdown running" />
+      </div>
+      <div class="rooms-copy">
+        <p class="eyebrow"><span class="eyebrow-tag alt">Together</span></p>
+        <h2>Same puzzle. Same second. May the best speller win.</h2>
+        <p>
+          Start a room, send your friends the four-letter code, and play any of the three games
+          against each other. Nobody sees the words until the countdown hits zero &mdash; not even
+          whoever started it.
+        </p>
+        <p class="fine">
+          You score on how few guesses you needed first, and how quickly second.
+        </p>
+        <a class="btn btn-ink" href="room/index.html">Open a room &rarr;</a>
+      </div>
+    </section>`;
+}
+
 function faqMarkup() {
-  return FAQ.map(item => `        <div class="faq">
+  return questions.map(item => `        <div class="faq">
           <h3>${esc(item.q)}</h3>
           <p>${esc(item.a)}</p>
         </div>`).join('\n');
@@ -119,7 +169,7 @@ function homeStructuredData() {
         '@id': `${SITE.origin}/#website`,
         name: SITE.name,
         url: `${SITE.origin}/`,
-        description: SITE.summary,
+        description: summary,
         inLanguage: 'en',
         publisher: { '@id': `${SITE.origin}/#organisation` }
       },
@@ -137,7 +187,7 @@ function homeStructuredData() {
       {
         '@type': 'FAQPage',
         '@id': `${SITE.origin}/#faq`,
-        mainEntity: FAQ.map(item => ({
+        mainEntity: questions.map(item => ({
           '@type': 'Question',
           name: item.q,
           acceptedAnswer: { '@type': 'Answer', text: item.a }
@@ -151,20 +201,26 @@ function buildHome() {
   const file = 'index.html';
   let html = fs.readFileSync(path.join(ROOT, file), 'utf8');
 
+  html = html.replace(/<meta name="description" content="[^"]*" \/>/,
+    `<meta name="description" content="${esc(summary)}" />`);
+
   html = block(html, 'seo', [
     socialTags({
       title: `${SITE.name} — three word games, every day`,
-      description: SITE.summary,
+      description: summary,
       url: `${SITE.origin}/`,
       image: abs('assets/brand/share.png')
     }),
     jsonLd(homeStructuredData())
   ].join('\n'), '</head>');
 
+  html = block(html, 'nav', navMarkup());
+  html = block(html, 'heronote', heroNoteMarkup());
+  html = block(html, 'rooms', roomsMarkup());
   html = block(html, 'strip', stripMarkup());
   html = block(html, 'games', featureMarkup());
   html = block(html, 'faq', faqMarkup());
-  html = block(html, 'summary', `        <p>${esc(SITE.summary)}</p>`);
+  html = block(html, 'summary', `        <p>${esc(summary)}</p>`);
   html = html.replace(/<span id="game-count">\d+<\/span>/, `<span id="game-count">${live.length}</span>`);
 
   put(file, html);
@@ -294,7 +350,7 @@ function buildLlmsTxt() {
   put('llms.txt', [
     `# ${SITE.name}`,
     '',
-    `> ${SITE.summary}`,
+    `> ${summary}`,
     '',
     `A new puzzle for every game arrives at midnight New York time, at that same instant`,
     `everywhere in the world. Everything is free, nothing needs installing, and there is no`,
@@ -304,15 +360,17 @@ function buildLlmsTxt() {
     '',
     ...live.map(game => `- [${game.title}](${abs(game.path)}): ${game.description}`),
     '',
-    '## Playing together',
-    '',
-    `- [Rooms](${abs('room/')}): start a room, send friends the four-letter code, and everyone`,
-    `  plays the same puzzles at the same second. Nobody sees the words until the countdown`,
-    `  reaches zero. Scoring counts guesses used first and speed second.`,
-    '',
+    ...(rooms ? [
+      '## Playing together',
+      '',
+      `- [Rooms](${abs('room/')}): start a room, send friends the four-letter code, and everyone`,
+      `  plays the same puzzles at the same second. Nobody sees the words until the countdown`,
+      `  reaches zero. Scoring counts guesses used first and speed second.`,
+      ''
+    ] : []),
     '## Questions',
     '',
-    ...FAQ.map(item => `### ${item.q}\n\n${item.a}\n`),
+    ...questions.map(item => `### ${item.q}\n\n${item.a}\n`),
     ''
   ].join('\n'));
 }
@@ -321,7 +379,7 @@ function buildLlmsTxt() {
 
 buildHome();
 live.forEach(buildGame);
-buildUnlisted('room/index.html', {
+if (rooms) buildUnlisted('room/index.html', {
   title: 'Play with your friends — Parea Games',
   description: 'Start a room, send the code, and play the same puzzles at the same second.',
   follow: true

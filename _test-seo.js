@@ -45,6 +45,21 @@ function localFor(url) {
   return rel.endsWith('/') || rel === '' ? path.join(ROOT, rel, 'index.html') : path.join(ROOT, rel);
 }
 
+/* What .vercelignore keeps off the site. */
+const ignoreRules = read('.vercelignore')
+  .split('\n').map(line => line.trim())
+  .filter(line => line && !line.startsWith('#'));
+
+function ships(rel) {
+  const parts = rel.split('/');
+  const base = parts[parts.length - 1];
+  return !ignoreRules.some(rule => {
+    if (rule === '_*' || rule === '**/_*') return base.startsWith('_');
+    if (rule.endsWith('/')) return rel.startsWith(rule);
+    return rel === rule;
+  });
+}
+
 /* ---------------- generated files are current ---------------- */
 
 try {
@@ -57,6 +72,7 @@ try {
 /* ---------------- the front page, with no JavaScript ---------------- */
 
 const home = read('index.html');
+const questions = FAQ.filter(item => (SITE.roomsLive ? !item.solo : !item.rooms));
 
 check('the front page runs no JavaScript at all',
   !/<script(?![^>]*application\/ld\+json)/.test(home));
@@ -72,7 +88,7 @@ check('the site name is in the title', (title(home) || '').includes(SITE.name));
 check('the front page has a description', (meta(home, 'name', 'description') || '').length > 60);
 check('the front page is canonical to the bare domain', canonical(home) === `${SITE.origin}/`);
 
-FAQ.forEach(item => {
+questions.forEach(item => {
   check(`the page shows the answer to "${item.q}"`, has(home, item.a.slice(0, 50)));
 });
 
@@ -85,7 +101,7 @@ check('the front page declares one JSON-LD graph', structuredData(home).length =
 check('it identifies the site', !!typed('WebSite') && typed('WebSite').name === SITE.name);
 check('it identifies the publisher', !!typed('Organization'));
 check('it lists every live game', typed('ItemList').itemListElement.length === live.length);
-check('it carries the questions', typed('FAQPage').mainEntity.length === FAQ.length);
+check('it carries the questions', typed('FAQPage').mainEntity.length === questions.length);
 
 /* Google's rule for FAQ markup: whatever the markup claims must be visible on
    the page. Generating both from one source is what keeps that true, and this
@@ -119,6 +135,21 @@ live.forEach(game => {
   check(`${game.title}: says what it is, in the page`, has(html, game.description.slice(0, 50)));
 });
 
+/* ---------------- rooms are all-or-nothing ---------------- */
+
+/* The one thing worse than a site without rooms is a site that offers rooms and
+   then cannot reach a server, so the switch has to take every mention with it. */
+if (SITE.roomsLive) {
+  check('with rooms on, the front page offers them', has(home, 'href="room/index.html"'));
+  check('with rooms on, the room page ships', ships('room/index.html'));
+} else {
+  check('with rooms off, the front page never links to one', !has(home, 'room/index.html'));
+  check('with rooms off, the room page stays off the site', !ships('room/index.html'));
+  check('with rooms off, nothing on the page promises them',
+    !/start a room|play against friends|against each other/i.test(home));
+  check('with rooms off, llms.txt does not mention them', !/room/i.test(read('llms.txt')));
+}
+
 /* ---------------- pages kept out of the index ---------------- */
 
 ['room/index.html', 'games/[redacted]/index.html'].forEach(file => {
@@ -143,7 +174,7 @@ check('the sitemap leaves the retired game out', !locs.some(loc => loc.includes(
 const llms = read('llms.txt');
 check('llms.txt says what the site is', has(llms, SITE.summary.slice(0, 40)));
 check('llms.txt describes every game', live.every(game => has(llms, game.description.slice(0, 40))));
-check('llms.txt answers the questions', FAQ.every(item => has(llms, item.q)));
+check('llms.txt answers the questions', questions.every(item => has(llms, item.q)));
 
 /* ---------------- the images those tags promise ---------------- */
 
@@ -168,24 +199,11 @@ function pngSize(file) {
    So the rules are read from the file itself and every link on every shipped
    page is checked against them. */
 
-const ignoreRules = read('.vercelignore')
-  .split('\n').map(line => line.trim())
-  .filter(line => line && !line.startsWith('#'));
-
-function ships(rel) {
-  const parts = rel.split('/');
-  const base = parts[parts.length - 1];
-  return !ignoreRules.some(rule => {
-    if (rule === '_*' || rule === '**/_*') return base.startsWith('_');
-    if (rule.endsWith('/')) return rel.startsWith(rule);
-    return rel === rule;
-  });
-}
-
 const pages = ['index.html', 'room/index.html', ...live.map(g => `games/${g.id}/index.html`)]
   .filter(ships);
 
-check('the front page and every live game ship', pages.length === live.length + 2);
+check('the front page and every live game ship',
+  ships('index.html') && live.every(g => ships(`games/${g.id}/index.html`)));
 check('the room server is left behind', !ships('server/index.js') && !ships('server/pools.json'));
 check('the test harnesses are left behind', !ships('games/shabda/_test.html') && !ships('_test-seo.js'));
 check('the readable answer manifest is left behind', !ships('games/anagram/puzzles.json'));

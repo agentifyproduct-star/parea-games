@@ -14,11 +14,28 @@ const SITE = {
   name: 'Parea Games',
   origin: 'https://pareagames.com',
   tagline: 'Your people, every day',
+
+  /* Rooms need a process running somewhere, and until one has a home the site
+     must not offer them: a front page that advertises a thing it cannot do is
+     worse than one that says nothing. Everything room-shaped — the nav link,
+     the button, the section, the question, the sentence in the summary — is
+     generated, so this one word turns it all on together. */
+  roomsLive: false,
   /* One sentence that says what this is, in the shape an answer engine can
      lift whole. */
   summary: 'Parea Games is a free daily word game site with three games — Shabda, ' +
     'Snowman and Anagram. Everyone gets the same puzzles each day, there is nothing to ' +
-    'install and no account to make, and you can play against friends in a private room.'
+    'install and no account to make, and you can play against friends in a private room.',
+
+  /* The same sentence with nothing in it we cannot deliver today. */
+  summarySolo: 'Parea Games is a free daily word game site with three games — Shabda, ' +
+    'Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is ' +
+    'nothing to install and no account to make.',
+
+  heroNote: 'Short enough for the two minutes you actually have. Play on your own, or start ' +
+    'a room and take on your friends at the very same puzzle.',
+  heroNoteSolo: 'Short enough for the two minutes you actually have. A new puzzle for ' +
+    'everybody at midnight, so today is the same day wherever you are playing from.'
 };
 
 const GAMES = [
@@ -75,9 +92,17 @@ const GAMES = [
 const FAQ = [
   {
     q: 'What is Parea Games?',
+    rooms: true,
     a: 'Parea Games is a free word game site with three daily games: Shabda, Snowman and ' +
        'Anagram. Everyone in the world gets the same puzzles each day, and you can play them ' +
        'on your own or against friends in a private room.'
+  },
+  {
+    q: 'What is Parea Games?',
+    solo: true,
+    a: 'Parea Games is a free word game site with three daily games: Shabda, Snowman and ' +
+       'Anagram. Everyone in the world gets the same puzzles each day, so whoever else played ' +
+       'today played exactly what you played.'
   },
   {
     q: 'Is it free, and do I need an account?',
@@ -111,6 +136,7 @@ const FAQ = [
   },
   {
     q: 'Can I play against my friends?',
+    rooms: true,
     a: 'Yes. Start a room, send the four-letter code to your friends, and everybody plays the ' +
        'same puzzles at the same second. Nobody sees the words until the countdown reaches ' +
        'zero, not even the person who started the room. You score on how few guesses you ' +
