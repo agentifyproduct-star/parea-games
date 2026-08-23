@@ -434,6 +434,16 @@ buildUnlisted(path.join('games', '[redacted]', 'index.html'), {
   description: 'An earlier game, kept for the archive.',
   follow: false
 });
+/* A board made for one evening's [redacted], opened only by a link with its code on
+   the end. Not on the front page, not in the sitemap, not in llms.txt — the
+   generator knows about it only so that its scripts get stamped like every
+   other page's. */
+buildUnlisted(path.join('games', 'shabda', '[redacted]', 'index.html'), {
+  title: 'Shabda — [redacted]',
+  description: 'Names from the Ramayan, the Mahabharat, and the stories of Krishna, Shiv and ' +
+    'Ganesh — six guesses each, and the story behind every one.',
+  follow: false
+});
 buildRobots();
 buildSitemap();
 buildLlmsTxt();
