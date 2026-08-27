@@ -176,12 +176,53 @@ document.getElementById('f').addEventListener('load', async () => {
     check('a repeat costs no attempt', A.progressFor().attemptsUsed === 1);
     A.clearInput();
 
-    // ---------- shuffle is free ----------
+    // ---------- shuffle: free of attempts, but two to a word ----------
     const beforeShuffle = tiles().map(t => t.textContent).sort().join('');
-    A.shuffleTiles();
+    check('the button says how many shuffles are left before any are spent',
+          el('btn-shuffle').textContent === 'Shuffle (2)', el('btn-shuffle').textContent);
+
+    check('the first shuffle works', A.shuffleTiles() === true);
     check('shuffle keeps the same letters',
           tiles().map(t => t.textContent).sort().join('') === beforeShuffle);
     check('shuffle costs no attempt', A.progressFor().attemptsUsed === 1);
+    check('and the count comes down', el('btn-shuffle').textContent === 'Shuffle (1)',
+          el('btn-shuffle').textContent);
+
+    check('the second shuffle works too', A.shuffleTiles() === true);
+    check('after two the button is spent and says so',
+          el('btn-shuffle').disabled && el('btn-shuffle').textContent === 'Shuffle (0)',
+          el('btn-shuffle').textContent);
+
+    const trayAtLimit = tiles().map(t => t.textContent).join('');
+    check('a third press does nothing at all', A.shuffleTiles() === false);
+    check('and does not move the letters', tiles().map(t => t.textContent).join('') === trayAtLimit);
+
+    /* A new word hands back two more. */
+    useDay(repeatDay.date);
+    check('a new word resets the shuffles',
+          el('btn-shuffle').textContent === 'Shuffle (2)' && !el('btn-shuffle').disabled,
+          el('btn-shuffle').textContent);
+
+    /* The two exclusions, exercised rather than reasoned about. A five-letter
+       word has 120 arrangements, so a few hundred presses would land on the
+       answer several times over if nothing were stopping it. The cap is lifted
+       between presses because it is the guard being tested here, not the limit. */
+    const shuffleDay = A.manifest.days.find(x => x.w.length === 5 && new Set(x.w).size === 5);
+    useDay(shuffleDay.date);
+    const trayText = () => tiles().map(t => t.textContent).join('');
+    let spelledAnswer = 0, satStill = 0;
+    for (let i = 0; i < 400; i++) {
+      const previous = trayText();
+      A.progressFor().shufflesUsed = 0;
+      if (A.shuffleTiles() !== true) continue;
+      if (trayText() === A.wordFor()) spelledAnswer++;
+      if (trayText() === previous) satStill++;
+    }
+    check('four hundred shuffles never lay the answer out on the tray',
+          spelledAnswer === 0, spelledAnswer + ' times on ' + shuffleDay.w);
+    check('and never hand back the arrangement they started from',
+          satStill === 0, satStill + ' times');
+    A.progressFor().shufflesUsed = 0;
 
     // ---------- solving ----------
     useDay(repeatDay.date);
@@ -256,7 +297,12 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the word is announced on arrival',
           el('live').textContent.includes(A.wordFor().length + ' letters'), el('live').textContent);
     A.shuffleTiles();
-    check('shuffling is announced', el('live').textContent === 'Letters shuffled');
+    check('shuffling is announced, with what it cost',
+          /^Letters shuffled\. 1 shuffle left\.$/.test(el('live').textContent),
+          el('live').textContent);
+    A.shuffleTiles();
+    check('and the last one says it was the last one',
+          /last one/.test(el('live').textContent), el('live').textContent);
     A.typeLetter('z') || A.submitGuess();
     check('a refusal is announced', el('live').textContent.length > 0);
     check('tiles carry a label for screen readers',

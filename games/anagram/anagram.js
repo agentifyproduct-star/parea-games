@@ -10,6 +10,7 @@
      - progress is written after every attempt, never only at the end */
 
 const ATTEMPTS = 5;
+const SHUFFLES = 2;              // per word, and a new word gets two more
 const HINT_AFTER = 3;            // failed attempts before a hint is offered
 const SCHEMA_VERSION = 2;        // 1 was the two-word day; loadSave carries those records over
 /* Frozen, and so is the version beside it: this gate drops the whole save,
@@ -46,7 +47,8 @@ const storageAvailable = storage !== null;
 function blankProgress(date) {
   return {
     date,
-    word: { solved: false, attemptsUsed: 0, guesses: [], resolved: false, hintUsed: false }
+    word: { solved: false, attemptsUsed: 0, guesses: [], resolved: false, hintUsed: false,
+            shufflesUsed: 0 }
   };
 }
 
@@ -345,16 +347,48 @@ function clearInput() {
 
 /* Free and unlimited: reorders the tray only. The puzzle, the attempts and the
    letters are all untouched. */
-function shuffleTiles() {
-  const used = usedTileIndexes();
-  const positionOf = new Map();
-  state.placed.forEach((tileIndex, pos) => { if (tileIndex !== null) positionOf.set(tileIndex, pos); });
+const shufflesUsed = () => progressFor().shufflesUsed || 0;
+const shufflesLeft = () => Math.max(0, SHUFFLES - shufflesUsed());
 
-  const order = state.tiles.map((tile, i) => i);
+/* Two things a shuffle must never do, whatever the dice say.
+
+   It must never lay the answer out on the tray: with six distinct letters
+   there are 720 arrangements, so about one press in 720 would simply solve
+   the puzzle for you.
+
+   And it must never hand back the arrangement it started from, which is not a
+   shuffle so much as a button that looks broken. Both are checked on the
+   letters rather than on the tile order, because a word with a repeated
+   letter has several tile orders that read the same and every one of them
+   would look like nothing happened.
+
+   Attempts are capped rather than looped forever: a word could in principle
+   have too few distinct arrangements to satisfy both rules, and a front page
+   that hangs is worse than a shuffle that repeats itself. */
+function reorder(tiles) {
+  const order = tiles.map((tile, i) => i);
   for (let i = order.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [order[i], order[j]] = [order[j], order[i]];
   }
+  return order;
+}
+
+function shuffleTiles() {
+  if (state.gameStatus !== 'playing' || shufflesLeft() === 0) return false;
+
+  const before = state.tiles.map(t => t.letter).join('');
+  const answer = wordFor();
+
+  let order = null;
+  for (let tries = 0; tries < 40; tries++) {
+    const candidate = reorder(state.tiles);
+    const text = candidate.map(i => state.tiles[i].letter).join('');
+    if (text === answer || text === before) continue;
+    order = candidate;
+    break;
+  }
+  if (!order) return false;      // nothing legal to move to; spend nothing
 
   const remap = new Map();
   order.forEach((oldIndex, newIndex) => remap.set(oldIndex, newIndex));
@@ -362,8 +396,14 @@ function shuffleTiles() {
   state.tiles = order.map(i => state.tiles[i]);
   state.placed = state.placed.map(tileIndex => (tileIndex === null ? null : remap.get(tileIndex)));
 
+  progressFor().shufflesUsed = shufflesUsed() + 1;
+  persist();
+
   render();
-  announce('Letters shuffled');
+  announce(shufflesLeft()
+    ? `Letters shuffled. ${shufflesLeft()} shuffle${shufflesLeft() === 1 ? '' : 's'} left.`
+    : 'Letters shuffled. That was the last one.');
+  return true;
 }
 
 /* ---------------- hints ---------------- */
@@ -751,7 +791,10 @@ function render() {
   const playing = state.gameStatus === 'playing';
   el('btn-submit').disabled = !playing;
   el('btn-clear').disabled = !playing;
-  el('btn-shuffle').disabled = !playing;
+  const shuffleBtn = el('btn-shuffle');
+  shuffleBtn.textContent = finished ? 'Shuffle' : `Shuffle (${shufflesLeft()})`;
+  shuffleBtn.disabled = !playing || shufflesLeft() === 0;
+  shuffleBtn.title = shufflesLeft() ? '' : 'Two shuffles a word';
   el('btn-skip').disabled = !playing;
 
   const hintBtn = el('btn-hint');
