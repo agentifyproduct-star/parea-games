@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Anagram &mdash; Parea Games</title>
-<meta name="description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
-<link rel="stylesheet" href="anagram.css?v=35ad24a8" />
+<meta name="description" content="Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today." />
+<link rel="stylesheet" href="anagram.css?v=b526f207" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Parea Games" />
 <meta property="og:title" content="Anagram — Parea Games" />
-<meta property="og:description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
+<meta property="og:description" content="Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today." />
 <meta property="og:url" content="https://pareagames.com/games/anagram/" />
 <meta property="og:image" content="https://pareagames.com/assets/brand/share-anagram.png" />
 <meta property="og:image:width" content="1200" />
@@ -22,7 +22,7 @@
 <meta property="og:locale" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Anagram — Parea Games" />
-<meta name="twitter:description" content="Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today." />
+<meta name="twitter:description" content="Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today." />
 <meta name="twitter:image" content="https://pareagames.com/assets/brand/share-anagram.png" />
 <script type="application/ld+json">
 {
@@ -30,7 +30,7 @@
   "@type": "VideoGame",
   "name": "Anagram",
   "url": "https://pareagames.com/games/anagram/",
-  "description": "Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.",
+  "description": "Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today.",
   "image": "https://pareagames.com/assets/brand/share-anagram.png",
   "genre": [
     "Word game",
@@ -89,7 +89,7 @@
   <div id="live" class="visually-hidden" role="status" aria-live="polite"></div>
 
   <main>
-    <!-- Today's pair, and practice once it is done -->
+    <!-- Today's word, and practice once it is done -->
     <div class="modes" role="group" aria-label="Puzzle to play">
       <button class="mode-btn today" data-mode="daily" type="button">Today</button>
       <button class="mode-btn" data-mode="practice" type="button">Practice</button>
@@ -98,7 +98,7 @@
     <section id="play" class="play">
       <div class="status-row">
         <span class="badge" id="puzzle-no">#0</span>
-        <span class="slot-label" id="slot-label">Word 1 of 2</span>
+        <span class="slot-label" id="slot-label">Today's word</span>
         <span class="badge streak" title="Current streak">&#128293; <b id="streak">0</b></span>
       </div>
 
@@ -122,7 +122,7 @@
 
       <div id="history" class="history" aria-label="Guesses so far" hidden></div>
 
-      <!-- Answer reveal, between words -->
+      <!-- The answer and what it means, once the word is settled -->
       <div id="reveal" class="reveal" hidden>
         <h3 id="reveal-title">The word was</h3>
         <p id="reveal-word" class="reveal-word"></p>
@@ -138,14 +138,8 @@
       <p id="results-heading" class="results-heading">Done for today</p>
 
       <div class="answer-line">
-        <span class="answer-slot-no">1</span>
-        <b id="res-word1"></b>
-        <span class="answer-outcome" id="res-attempt1"></span>
-      </div>
-      <div class="answer-line">
-        <span class="answer-slot-no">2</span>
-        <b id="res-word2"></b>
-        <span class="answer-outcome" id="res-attempt2"></span>
+        <b id="res-word"></b>
+        <span class="answer-outcome" id="res-attempt"></span>
       </div>
 
       <div class="next-up" id="next-up">
@@ -181,25 +175,25 @@
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
 <!-- intro:start -->
-      <p class="lede">Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.</p>
+      <p class="lede">Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today.</p>
 <!-- intro:end -->
-      <p>Two jumbled words a day: a short one first, then a longer one. Everybody,
-         everywhere, gets the same two.</p>
+      <p>One jumbled word a day, somewhere between five and eight letters. Everybody,
+         everywhere, gets the same one.</p>
       <p>Tap the letters to spell your answer, or just type it. Tap a letter you have
          placed to take it back, and hit <b>Shuffle</b> whenever the jumble stops
          helping &mdash; it is free, and as often as you like.</p>
-      <p>You get <b>5 tries per word</b>. Guesses that do not use the letters in front of
-         you, or ones you have already tried, are not held against you.</p>
-      <p>Stuck on the long one? After 3 wrong tries a <b>hint</b> turns up and gives you
-         the first letter. One a day, and your shared result owns up to it.</p>
+      <p>You get <b>5 tries</b>. Guesses that do not use the letters in front of you, or
+         ones you have already tried, are not held against you.</p>
+      <p>Stuck? After 3 wrong tries a <b>hint</b> turns up and gives you the first letter.
+         One a day, and your shared result owns up to it.</p>
 
-      <p>Finished for the day and want another? <b>Play another</b> deals a practice pair from
-         words the daily calendar never uses &mdash; as many as you like, none of them counting
-         towards anything.</p>
+      <p>Finished for the day and want another? <b>Play another</b> deals a practice word from
+         a pool the daily calendar never touches &mdash; as many as you like, none of them
+         counting towards anything.</p>
 
       <h3>Streaks</h3>
-      <p>Solve <b>either</b> word and your streak goes up. Solve neither and it simply stays
-         where it is. The only thing that breaks it is a day you do not play at all.</p>
+      <p>Solve the word and your streak goes up. Miss it and the streak simply stays where
+         it is. The only thing that breaks it is a day you do not play at all.</p>
 
       <p class="fine">
         New words arrive at midnight New York time &mdash; the same moment for everyone,
@@ -218,23 +212,23 @@
       </div>
       <div class="stat-row">
         <div class="stat"><div class="stat-num" id="stats-played">0</div><div class="stat-lbl">Played</div></div>
-        <div class="stat"><div class="stat-num" id="stats-both">0</div><div class="stat-lbl">Both solved</div></div>
+        <div class="stat"><div class="stat-num" id="stats-solved">0</div><div class="stat-lbl">Solved</div></div>
         <div class="stat"><div class="stat-num" id="stats-streak">0</div><div class="stat-lbl">Streak</div></div>
         <div class="stat"><div class="stat-num" id="stats-max">0</div><div class="stat-lbl">Max streak</div></div>
       </div>
       <h3>Attempts</h3>
       <div id="dist" class="dist"></div>
 
-      <p class="fine">One solved word a day keeps a streak alive. Only a day you skip
+      <p class="fine">Solving the day's word keeps a streak alive. Only a day you skip
          entirely will end it.</p>
     </div>
   </div>
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
-  <script src="../../assets/today.js?v=98868351"></script>
+  <script src="../../assets/today.js?v=aaa86048"></script>
   <script src="scramble.js?v=fd811190"></script>
-  <script src="puzzles.js?v=0724a4e6"></script>
-  <script src="anagram.js?v=6acc86b9"></script>
+  <script src="puzzles.js?v=c4e41f22"></script>
+  <script src="anagram.js?v=720f4f9e"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

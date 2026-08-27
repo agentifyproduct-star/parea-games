@@ -10,13 +10,18 @@
      - progress is written after every attempt, never only at the end */
 
 const ATTEMPTS = 5;
-const HINT_AFTER = 3;            // failed attempts on word 2 before a hint is offered
-const SCHEMA_VERSION = 1;
+const HINT_AFTER = 3;            // failed attempts before a hint is offered
+const SCHEMA_VERSION = 2;        // 1 was the two-word day; loadSave carries those records over
 /* Frozen, and so is the version beside it: this gate drops the whole save,
    streak and all, when the number changes. A new shape gets migrated, not
    bumped. */
 const STORE_KEY = 'arcade.anagram.v1';
-const SLOTS = ['word1', 'word2'];
+
+/* The day is one word. This is kept as a named slot rather than dissolved into
+   the code because the board, the progress record and the distribution all key
+   off it, and a bare string threaded through thirty call sites is harder to
+   follow than one constant. */
+const SLOT = 'word';
 
 const DAY_MS = 86400000;
 const manifest = window.ANAGRAM_MANIFEST || null;
@@ -41,8 +46,7 @@ const storageAvailable = storage !== null;
 function blankProgress(date) {
   return {
     date,
-    word1: { solved: false, attemptsUsed: 0, guesses: [], resolved: false },
-    word2: { solved: false, attemptsUsed: 0, guesses: [], resolved: false, hintUsed: false, unlocked: false }
+    word: { solved: false, attemptsUsed: 0, guesses: [], resolved: false, hintUsed: false }
   };
 }
 
@@ -53,14 +57,15 @@ function blankDistribution() {
 function blankStats() {
   return {
     daysPlayed: 0,
-    daysBothSolved: 0,
+    daysSolved: 0,
     currentStreak: 0,
     maxStreak: 0,
     lastCompletedDate: '',
-    /* Not in the spec's table, but the streak has to know whether today has
-       already counted — otherwise solving word 2 would increment it twice. */
+    /* Kept from when a day held two words and solving the second could count
+       the streak twice. One word cannot, but the guard costs nothing and the
+       record it protects is somebody's. */
     lastStreakDate: '',
-    distribution: { word1: blankDistribution(), word2: blankDistribution() }
+    distribution: blankDistribution()
   };
 }
 
@@ -82,18 +87,46 @@ function loadSave() {
     if (!raw) return blankSave();
 
     const parsed = JSON.parse(raw);
-    if (!parsed || parsed.schemaVersion !== SCHEMA_VERSION) return blankSave();
+    if (!parsed) return blankSave();
+    if (parsed.schemaVersion === 1) return migrateFromPairs(parsed);
+    if (parsed.schemaVersion !== SCHEMA_VERSION) return blankSave();
 
     const save = Object.assign(blankSave(), parsed);
     save.stats = Object.assign(blankStats(), parsed.stats);
-    save.stats.distribution = {
-      word1: Object.assign(blankDistribution(), (parsed.stats || {}).distribution?.word1),
-      word2: Object.assign(blankDistribution(), (parsed.stats || {}).distribution?.word2)
-    };
+    save.stats.distribution = Object.assign(blankDistribution(), (parsed.stats || {}).distribution);
     return save;
   } catch {
     return blankSave();
   }
+}
+
+/* A record from the two-word day. The streak is the part that matters to the
+   person holding it, and none of it stops meaning what it meant: a day they
+   solved everything the day asked is still a day they solved it.
+
+   The short word's distribution is the one that carries over. The long word
+   came from a rarer pool than anything the game deals now, so its shape
+   describes a difficulty that no longer exists — and adding the two together
+   would claim twice as many days played as ever happened.
+
+   Today's half-finished board is dropped rather than migrated. It was a
+   different puzzle. */
+function migrateFromPairs(parsed) {
+  const old = parsed.stats || {};
+  const save = blankSave();
+
+  save.lastPlayedDate = parsed.lastPlayedDate || '';
+  save.stats = Object.assign(blankStats(), {
+    daysPlayed: Number(old.daysPlayed) || 0,
+    daysSolved: Number(old.daysBothSolved) || 0,
+    currentStreak: Number(old.currentStreak) || 0,
+    maxStreak: Number(old.maxStreak) || 0,
+    lastCompletedDate: old.lastCompletedDate || '',
+    lastStreakDate: old.lastStreakDate || ''
+  });
+  save.stats.distribution = Object.assign(blankDistribution(), (old.distribution || {}).word1);
+  save.progress = null;
+  return save;
 }
 
 function persist() {
@@ -143,7 +176,7 @@ const state = {
   puzzleDate: '',
   puzzleNumber: 0,
   day: null,              // the manifest entry
-  activeSlot: 'word1',    // word1 | word2 | results
+  activeSlot: SLOT,       // 'word' while playing, 'results' once the day is done
   tiles: [],              // [{ letter }] in tray order
   placed: [],             // per answer position: tile index, or null
   lockedSlots: [],        // positions the hint filled in and pinned
@@ -155,30 +188,26 @@ window.state = state;     // `const` does not attach to window; the tests drive 
 
 /* Word and scramble for a slot. The scramble is replayed from the manifest's
    accepted-attempt number, never re-decided here. */
-function wordFor(slot) {
+function wordFor() {
   const day = practice ? practice.day : state.day;
-  if (!day) return '';
-  return slot === 'word1' ? day.w1 : day.w2;
+  return day ? day.w : '';
 }
 
-function definitionFor(slot) {
+function definitionFor() {
   const day = practice ? practice.day : state.day;
-  if (!day) return '';
-  return slot === 'word1' ? day.d1 : day.d2;
+  return day ? day.d : '';
 }
 
-function scrambleFor(slot) {
-  const word = wordFor(slot);
+function scrambleFor() {
+  const word = wordFor();
 
   /* Practice words carry their own accepted arrangement, checked at authoring
      time just like the daily ones. */
   if (practice) {
-    const entry = slot === 'word1' ? practice.day.e1 : practice.day.e2;
-    return SCRAMBLE.scramble(word, `practice:${word}`, { take: entry.s }).text;
+    return SCRAMBLE.scramble(word, `practice:${word}`, { take: practice.day.s }).text;
   }
 
-  const take = slot === 'word1' ? state.day.s1 : state.day.s2;
-  const result = SCRAMBLE.scramble(word, `${state.puzzleDate}:${slot === 'word1' ? 1 : 2}`, { take });
+  const result = SCRAMBLE.scramble(word, state.puzzleDate, { take: state.day.s });
 
   /* The manifest was swept at authoring time; if that ever stops holding, say so
      rather than handing the player the answer unscrambled. */
@@ -186,7 +215,7 @@ function scrambleFor(slot) {
   return result.text;
 }
 
-const progressFor = slot => (practice ? practice.progress[slot] : save.progress[slot]);
+const progressFor = () => (practice ? practice.progress[SLOT] : save.progress[SLOT]);
 
 /* ---------------- elements ---------------- */
 
@@ -215,36 +244,34 @@ function message(text, tone = 'info') {
 
 /* ---------------- building a slot ---------------- */
 
-function beginSlot(slot) {
-  state.activeSlot = slot;
+function beginSlot() {
+  state.activeSlot = SLOT;
   state.revealed = false;
   state.revealMissed = false;
   state.lockedSlots = [];
 
-  const scrambled = scrambleFor(slot);
+  const scrambled = scrambleFor();
   state.tiles = [...scrambled].map(letter => ({ letter }));
-  state.placed = new Array(wordFor(slot).length).fill(null);
+  state.placed = new Array(wordFor().length).fill(null);
 
-  const progress = progressFor(slot);
+  const progress = progressFor();
   state.gameStatus = progress.resolved ? 'slotResolved' : 'playing';
 
   /* A hint taken earlier in the day is part of the restored position. */
-  if (slot === 'word2' && progress.hintUsed && !progress.resolved) applyHint(true);
+  if (progress.hintUsed && !progress.resolved) applyHint(true);
 
   /* A word that is over shows its answer and stays put. */
-  if (progress.resolved) revealOnBoard(slot);
+  if (progress.resolved) revealOnBoard();
 
   message('');
   render();
-  announce(`${slotLabel(slot)}. ${wordFor(slot).length} letters. ${attemptsLeft(slot)} attempts left.`);
+  announce(`${wordFor().length} letters. ${attemptsLeft()} attempts left.`);
 }
-
-const slotLabel = slot => (slot === 'word1' ? 'Word 1 of 2' : 'Word 2 of 2');
 
 /* Spells the answer out across the slots using the tiles already on the board,
    so a finished word stays readable instead of leaving an empty frame. */
-function revealOnBoard(slot) {
-  const answer = wordFor(slot);
+function revealOnBoard() {
+  const answer = wordFor();
   const used = new Set();
 
   state.placed = [...answer].map(letter => {
@@ -255,9 +282,9 @@ function revealOnBoard(slot) {
 
   /* No padlocks: that marker means the hint pinned a letter. These slots are
      already beyond touching, because the word is over. */
-  state.revealMissed = !progressFor(slot).solved;
+  state.revealMissed = !progressFor().solved;
 }
-const attemptsLeft = slot => ATTEMPTS - progressFor(slot).attemptsUsed;
+const attemptsLeft = () => ATTEMPTS - progressFor().attemptsUsed;
 
 /* ---------------- tiles ---------------- */
 
@@ -342,16 +369,15 @@ function shuffleTiles() {
 /* ---------------- hints ---------------- */
 
 const hintAvailable = () =>
-  state.activeSlot === 'word2' &&
   state.gameStatus === 'playing' &&
-  !progressFor('word2').hintUsed &&
-  progressFor('word2').attemptsUsed >= HINT_AFTER;
+  !progressFor().hintUsed &&
+  progressFor().attemptsUsed >= HINT_AFTER;
 
 function applyHint(restoring = false) {
-  const progress = progressFor('word2');
+  const progress = progressFor();
   if (!restoring && !hintAvailable()) return false;
 
-  const first = wordFor('word2')[0];
+  const first = wordFor()[0];
   const used = usedTileIndexes();
   const tileIndex = state.tiles.findIndex((t, i) => t.letter === first && !used.has(i));
 
@@ -388,14 +414,13 @@ const sortedLetters = word => [...word].sort().join('');
 function submitGuess() {
   if (state.gameStatus !== 'playing') return 'over';
 
-  const slot = state.activeSlot;
-  const progress = progressFor(slot);
-  const answer = wordFor(slot);
+  const progress = progressFor();
+  const answer = wordFor();
   const guess = currentInput();
 
   if (!guess) { message('Put some letters down first', 'warn'); return 'empty'; }
   if (guess.length !== answer.length) { message('Use all of the letters', 'warn'); return 'short'; }
-  if (sortedLetters(guess) !== sortedLetters(scrambleFor(slot))) {
+  if (sortedLetters(guess) !== sortedLetters(scrambleFor())) {
     message('Those are not your letters', 'warn');
     return 'letters';
   }
@@ -411,7 +436,7 @@ function submitGuess() {
     progress.solved = true;
     progress.attemptsUsed += 1;
     progress.guesses.push(guess);
-    resolveSlot(slot, true);
+    resolveSlot(true);
     return 'correct';
   }
 
@@ -420,49 +445,46 @@ function submitGuess() {
   persist();
 
   if (progress.attemptsUsed >= ATTEMPTS) {
-    resolveSlot(slot, false);
+    resolveSlot(false);
     return 'wrong';
   }
 
   /* UI-2.5: shake, empty the answer, leave the tiles where they are. */
   shake();
   clearInput();
-  const left = attemptsLeft(slot);
+  const left = attemptsLeft();
   message(`Not it — ${left} tr${left === 1 ? 'y' : 'ies'} left`, 'bad');
   return 'wrong';
 }
 
-/* Giving up on a word counts as a failure for that word (decision D-3). */
+/* Giving up counts as a failure for the day (decision D-3). */
 function skipSlot() {
   if (state.gameStatus !== 'playing') return false;
-  resolveSlot(state.activeSlot, false);
+  resolveSlot(false);
   return true;
 }
 
-function resolveSlot(slot, solved) {
-  const progress = progressFor(slot);
+function resolveSlot(solved) {
+  const progress = progressFor();
   progress.solved = solved;
   progress.resolved = true;
   state.gameStatus = 'slotResolved';
 
   if (!practice) {
-    const bucket = save.stats.distribution[slot];
+    const bucket = save.stats.distribution;
     if (solved) bucket[progress.attemptsUsed] = (bucket[progress.attemptsUsed] || 0) + 1;
     else bucket.failed += 1;
   }
 
   if (solved) noteSolved();
-  if (slot === 'word1') progressFor('word2').unlocked = true;
 
-  const both = progressFor('word1').solved && progressFor('word2').solved;
-  const done = progressFor('word1').resolved && progressFor('word2').resolved;
-  if (done && !practice) {
+  if (!practice) {
     save.stats.lastCompletedDate = state.puzzleDate;
-    if (both) save.stats.daysBothSolved += 1;
+    if (solved) save.stats.daysSolved += 1;
   }
 
   persist();
-  showReveal(slot, solved);
+  showReveal(solved);
 }
 
 /* ---------------- streak bookkeeping ----------------
@@ -483,7 +505,7 @@ function notePlayed() {
 
 function noteSolved() {
   if (practice) return;
-  if (save.stats.lastStreakDate === state.puzzleDate) return;   // once a day, not once a word
+  if (save.stats.lastStreakDate === state.puzzleDate) return;   // once a day, whatever happens
   save.stats.currentStreak += 1;
   save.stats.maxStreak = Math.max(save.stats.maxStreak, save.stats.currentStreak);
   save.stats.lastStreakDate = state.puzzleDate;
@@ -494,19 +516,19 @@ function noteSolved() {
 
 let revealTimer = null;
 
-function showReveal(slot, solved) {
+function showReveal(solved) {
   state.revealed = true;
-  const answer = wordFor(slot);
+  const answer = wordFor();
 
   el('reveal-title').textContent = solved ? 'Got it' : 'The word was';
   el('reveal-word').textContent = answer.toUpperCase();
-  el('reveal-def').textContent = definitionFor(slot);
+  el('reveal-def').textContent = definitionFor();
   el('reveal').hidden = false;
   el('reveal').classList.toggle('good', solved);
 
   announce(solved
-    ? `Correct. ${answer}. ${definitionFor(slot)}`
-    : `Out of attempts. The word was ${answer}. ${definitionFor(slot)}`);
+    ? `Correct. ${answer}. ${definitionFor()}`
+    : `Out of attempts. The word was ${answer}. ${definitionFor()}`);
 
   render();
 
@@ -520,11 +542,6 @@ function advance() {
   clearTimeout(revealTimer);
   el('reveal').hidden = true;
   state.revealed = false;
-
-  if (state.activeSlot === 'word1' && !progressFor('word2').resolved) {
-    beginSlot('word2');
-    return;
-  }
   showResults();
 }
 
@@ -537,28 +554,25 @@ function markModeButtons() {
 
 /* ---------------- practice ----------------
    Once the day's puzzle is done there is nothing left to play, which is a poor
-   way to treat someone who wants another go. Practice deals a fresh pair from a
-   pool the calendar never touches, so it can be played as often as you like
-   without ever showing you a word that is due tomorrow. */
+   way to treat someone who wants another go. Practice deals a word from a pool
+   the calendar never touches, so it can be played as often as you like without
+   ever showing you a word that is due tomorrow. */
 
 function startPractice() {
   const pool = manifest && manifest.practice;
-  if (!pool || !pool.easy.length || !pool.hard.length) {
+  if (!Array.isArray(pool) || !pool.length) {
     toast('No practice words available');
     return false;
   }
 
-  const short = pool.easy[Math.floor(Math.random() * pool.easy.length)];
-  const long = pool.hard[Math.floor(Math.random() * pool.hard.length)];
-
   practice = {
-    day: { w1: short.w, w2: long.w, d1: short.d, d2: long.d, e1: short, e2: long },
+    day: pool[Math.floor(Math.random() * pool.length)],
     progress: blankProgress('practice')
   };
 
-  state.activeSlot = 'word1';
+  state.activeSlot = SLOT;
   el('results').hidden = true;
-  beginSlot('word1');
+  beginSlot();
   toast('Practice round — nothing counts');
   return true;
 }
@@ -577,8 +591,8 @@ function showResults() {
   /* The board stays on screen with the last word spelled out, the way the other
      two games leave their finished puzzle up. This panel sits underneath it,
      and the record itself lives behind the statistics button. */
-  state.activeSlot = 'word2';
-  beginSlot('word2');
+  state.activeSlot = SLOT;
+  beginSlot();
 
   /* beginSlot draws while the slot is merely resolved; the finished view only
      appears once the day is marked complete, so draw again. */
@@ -601,18 +615,16 @@ function showResults() {
   el('practice-note').hidden = !inPractice;
   el('next-up').hidden = inPractice;
 
-  el('res-word1').textContent = wordFor('word1').toUpperCase();
-  el('res-word2').textContent = wordFor('word2').toUpperCase();
-  el('res-attempt1').textContent = outcomeText('word1');
-  el('res-attempt2').textContent = outcomeText('word2');
+  el('res-word').textContent = wordFor().toUpperCase();
+  el('res-attempt').textContent = outcomeText();
 
   updateCountdown();
   announce((inPractice ? 'Practice round over. ' : 'Puzzle complete. ') +
            shareText().split(String.fromCharCode(10)).join('. '));
 }
 
-function outcomeText(slot) {
-  const p = progressFor(slot);
+function outcomeText() {
+  const p = progressFor();
   if (!p.solved) return 'missed';
   return `${p.attemptsUsed} attempt${p.attemptsUsed === 1 ? '' : 's'}${p.hintUsed ? ', hint' : ''}`;
 }
@@ -621,43 +633,36 @@ function renderDistribution() {
   const wrap = el('dist');
   wrap.innerHTML = '';
 
-  SLOTS.forEach(slot => {
-    const head = document.createElement('h4');
-    head.textContent = slot === 'word1' ? 'Word 1' : 'Word 2';
-    wrap.appendChild(head);
+  const bucket = save.stats.distribution;
+  const keys = ['1', '2', '3', '4', '5', 'failed'];
+  const max = Math.max(1, ...keys.map(k => bucket[k] || 0));
+  const todayAttempts = progressFor().solved ? String(progressFor().attemptsUsed) : 'failed';
 
-    const bucket = save.stats.distribution[slot];
-    const keys = ['1', '2', '3', '4', '5', 'failed'];
-    const max = Math.max(1, ...keys.map(k => bucket[k] || 0));
-    const todayAttempts = progressFor(slot).solved ? String(progressFor(slot).attemptsUsed) : 'failed';
+  keys.forEach(key => {
+    const row = document.createElement('div');
+    row.className = 'dist-row';
 
-    keys.forEach(key => {
-      const row = document.createElement('div');
-      row.className = 'dist-row';
+    const label = document.createElement('div');
+    label.className = 'dist-key';
+    label.textContent = key === 'failed' ? 'X' : key;
 
-      const label = document.createElement('div');
-      label.className = 'dist-key';
-      label.textContent = key === 'failed' ? 'X' : key;
+    const bar = document.createElement('div');
+    bar.className = 'dist-bar' + (key === todayAttempts ? ' current' : '');
+    bar.style.width = `${Math.max(8, ((bucket[key] || 0) / max) * 100)}%`;
+    bar.textContent = String(bucket[key] || 0);
 
-      const bar = document.createElement('div');
-      bar.className = 'dist-bar' + (key === todayAttempts ? ' current' : '');
-      bar.style.width = `${Math.max(8, ((bucket[key] || 0) / max) * 100)}%`;
-      bar.textContent = String(bucket[key] || 0);
-
-      row.append(label, bar);
-      wrap.appendChild(row);
-    });
+    row.append(label, bar);
+    wrap.appendChild(row);
   });
 }
 
 /* ---------------- share ----------------
-   Emoji only: five markers per word, one per attempt spent, a lamp where a hint
-   was taken. No letter of either answer appears, and there is no link to leak
-   one either. */
+   Emoji only: five markers, one per attempt spent, a lamp where a hint was
+   taken. No letter of the answer appears, and there is no link to leak it
+   either. */
 
-function shareLine(slot) {
-  const p = progressFor(slot);
-  const icon = slot === 'word1' ? '1️⃣' : '2️⃣';
+function shareLine() {
+  const p = progressFor();
 
   let marks;
   if (p.solved) {
@@ -670,11 +675,11 @@ function shareLine(slot) {
   }
 
   const score = p.solved ? `(${p.attemptsUsed}${p.hintUsed ? ', hint' : ''})` : '(X)';
-  return `${icon} ${marks} ${score}`;
+  return `${marks} ${score}`;
 }
 
 function shareText() {
-  const lines = [`Anagram #${state.puzzleNumber}`, shareLine('word1'), shareLine('word2')];
+  const lines = [`Anagram #${state.puzzleNumber}`, shareLine()];
   if (save.stats.currentStreak > 0) lines.push(`\u{1F525} ${save.stats.currentStreak} day streak`);
   return lines.join('\n');
 }
@@ -730,8 +735,8 @@ function render() {
 
   const finished = state.gameStatus === 'dayComplete';
   el('slot-label').textContent = finished
-    ? (practice ? 'Practice words' : "Today's words")
-    : slotLabel(state.activeSlot === 'results' ? 'word2' : state.activeSlot);
+    ? (practice ? 'Practice word' : "Today's word")
+    : `${wordFor().length} letters`;
 
   /* Nothing left to do with the tray, the controls or the attempt count. */
   el('tray').hidden = finished;
@@ -750,7 +755,7 @@ function render() {
   el('btn-skip').disabled = !playing;
 
   const hintBtn = el('btn-hint');
-  hintBtn.hidden = state.activeSlot !== 'word2' || progressFor('word2').hintUsed;
+  hintBtn.hidden = finished || progressFor().hintUsed;
   hintBtn.disabled = !hintAvailable();
   hintBtn.title = hintAvailable()
     ? 'Reveal the first letter'
@@ -800,37 +805,29 @@ function renderSlots() {
   });
 }
 
-/* Both answers, spelled out, each behind its own number. */
+/* The answer, spelled out, once the day is done. */
 function renderBothWords() {
-  SLOTS.forEach((slot, i) => {
-    const row = document.createElement('div');
-    row.className = 'finished-row';
+  const row = document.createElement('div');
+  row.className = 'finished-row';
 
-    const badge = document.createElement('span');
-    badge.className = 'answer-slot-no';
-    badge.textContent = String(i + 1);
+  const letters = document.createElement('div');
+  letters.className = 'finished-letters';
+  const solved = progressFor().solved;
 
-    const letters = document.createElement('div');
-    letters.className = 'finished-letters';
-    const solved = progressFor(slot).solved;
-
-    [...wordFor(slot)].forEach(letter => {
-      const cell = document.createElement('span');
-      cell.className = 'answer-slot filled' + (solved ? '' : ' missed');
-      cell.textContent = letter;
-      letters.appendChild(cell);
-    });
-
-    row.append(badge, letters);
-    row.setAttribute('aria-label',
-      `Word ${i + 1}, ${wordFor(slot)}, ${solved ? 'solved' : 'missed'}`);
-    slotsEl.appendChild(row);
+  [...wordFor()].forEach(letter => {
+    const cell = document.createElement('span');
+    cell.className = 'answer-slot filled' + (solved ? '' : ' missed');
+    cell.textContent = letter;
+    letters.appendChild(cell);
   });
+
+  row.append(letters);
+  row.setAttribute('aria-label', `${wordFor()}, ${solved ? 'solved' : 'missed'}`);
+  slotsEl.appendChild(row);
 }
 
 function renderAttempts() {
-  const slot = state.activeSlot === 'results' ? 'word2' : state.activeSlot;
-  const used = progressFor(slot).attemptsUsed;
+  const used = progressFor().attemptsUsed;
   const left = ATTEMPTS - used;
   const wrap = el('attempts');
   wrap.innerHTML = '';
@@ -850,8 +847,7 @@ function renderAttempts() {
 }
 
 function renderHistory() {
-  const slot = state.activeSlot === 'results' ? 'word2' : state.activeSlot;
-  const guesses = progressFor(slot).guesses;
+  const guesses = progressFor().guesses;
   historyEl.innerHTML = '';
 
   guesses.forEach(guess => {
@@ -944,7 +940,7 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
       /* No dialog: today's puzzle is saved as you go, and a practice round is
          unlimited and counts for nothing. There is nothing here worth stopping
          someone to ask about — just say what happened. */
-      const spent = progressFor('word1').attemptsUsed + progressFor('word2').attemptsUsed;
+      const spent = progressFor().attemptsUsed;
       leavePractice();
       if (spent) toast('Practice round dropped');
       return;
@@ -958,8 +954,7 @@ el('btn-reload').addEventListener('click', () => location.reload());
 
 el('btn-skip').addEventListener('click', () => {
   if (state.gameStatus !== 'playing') return;
-  const word = state.activeSlot === 'word1' ? 'first' : 'second';
-  if (confirm(`Give up on the ${word} word? It counts as a miss.`)) skipSlot();
+  if (confirm('Give up on today\u2019s word? It counts as a miss.')) skipSlot();
 });
 
 /* ---------------- modals ---------------- */
@@ -973,7 +968,7 @@ document.querySelectorAll('.modal').forEach(modal => {
 el('btn-help').addEventListener('click', () => { el('help-modal').hidden = false; });
 el('btn-stats').addEventListener('click', () => {
   el('stats-played').textContent = save.stats.daysPlayed;
-  el('stats-both').textContent = save.stats.daysBothSolved;
+  el('stats-solved').textContent = save.stats.daysSolved;
   el('stats-streak').textContent = save.stats.currentStreak;
   el('stats-max').textContent = save.stats.maxStreak;
   renderDistribution();
@@ -985,7 +980,7 @@ el('btn-stats').addEventListener('click', () => {
    rather than a copy of it. One published object beats scattering assignments. */
 
 window.ANAGRAM = {
-  ATTEMPTS, HINT_AFTER, STORE_KEY, SCHEMA_VERSION,
+  ATTEMPTS, HINT_AFTER, STORE_KEY, SCHEMA_VERSION, SLOT,
   state, save, manifest, storageAvailable,
   currentInput, usedTileIndexes, typeLetter, placeTile, removeAt, removeLast,
   clearInput, shuffleTiles, applyPaste,
@@ -994,7 +989,7 @@ window.ANAGRAM = {
   startPractice, leavePractice, inPractice: () => !!practice, markModeButtons,
   wordFor, scrambleFor, definitionFor, progressFor, puzzleFor, remainingDays,
   todayKey, dayGap, nextRolloverMs, checkRollover, loadSave,
-  notePlayed, noteSolved, blankProgress, blankStats, persist
+  notePlayed, noteSolved, blankProgress, blankStats, persist, migrateFromPairs
 };
 
 /* ---------------- boot ---------------- */
@@ -1025,22 +1020,17 @@ function init() {
 
   if (!storageAvailable) el('no-storage').hidden = false;
 
-  const p1 = progressFor('word1');
-  const p2 = progressFor('word2');
+  const progress = progressFor();
 
-  if (p1.resolved && p2.resolved) {
-    beginSlot('word2');            // fills state.tiles so the results screen has a word
+  if (progress.resolved) {
+    beginSlot();                   // fills state.tiles so the results screen has a word
     showResults();
-  } else if (p1.resolved) {
-    TODAY.set('anagram', 'playing');
-    p2.unlocked = true;
-    beginSlot('word2');
   } else {
     TODAY.set('anagram', 'playing');
-    beginSlot('word1');
+    beginSlot();
   }
 
-  if (!save.stats.daysPlayed && !p1.resolved) el('help-modal').hidden = false;   // UI-3.1
+  if (!save.stats.daysPlayed && !progress.resolved) el('help-modal').hidden = false;   // UI-3.1
 
   setInterval(() => { updateCountdown(); checkRollover(); }, 1000);
   document.addEventListener('visibilitychange', () => {

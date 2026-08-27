@@ -35,13 +35,13 @@ document.getElementById('f').addEventListener('load', async () => {
 
   /* Puts a chosen day on the board, so a test can rely on a word's shape rather
      than on whatever today happens to be. */
-  function useDay(date, slot = 'word1') {
+  function useDay(date) {
     const day = A.manifest.days.find(x => x.date === date);
     A.state.day = day;
     A.state.puzzleDate = date;
     A.state.puzzleNumber = day.n;
     A.save.progress = A.blankProgress(date);
-    A.beginSlot(slot);
+    A.beginSlot();
     return day;
   }
 
@@ -50,19 +50,19 @@ document.getElementById('f').addEventListener('load', async () => {
   /* A different wrong guess every time. Rotating the scramble keeps exactly the
      available letters while giving a new arrangement, so the duplicate guard
      does not swallow the attempt. */
-  function wrongGuess(slot, n) {
-    const letters = [...A.scrambleFor(slot)];
+  function wrongGuess(n) {
+    const letters = [...A.scrambleFor()];
     const at = n % letters.length;
     const rotated = letters.slice(at).concat(letters.slice(0, at)).join('');
-    return rotated === A.wordFor(slot) ? [...rotated].reverse().join('') : rotated;
+    return rotated === A.wordFor() ? [...rotated].reverse().join('') : rotated;
   }
 
-  function attempt(slot, n) {
+  function attempt(n) {
     A.clearInput();
-    typeWord(wrongGuess(slot, n));
+    typeWord(wrongGuess(n));
     return A.submitGuess();
   }
-  const solveCurrent = () => { typeWord(A.wordFor(A.state.activeSlot)); return A.submitGuess(); };
+  const solveCurrent = () => { typeWord(A.wordFor()); return A.submitGuess(); };
 
   await wait(400);
   closeModals();
@@ -73,26 +73,29 @@ document.getElementById('f').addEventListener('load', async () => {
     check('manifest carries at least a 180-day runway', days.length >= 180, days.length + ' days');
     check('manifest is dated, not indexed by timestamp',
           days.every(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date)));
-    check('word 1 is 5 to 6 letters throughout', days.every(x => x.w1.length >= 5 && x.w1.length <= 6));
-    check('word 2 is 7 to 8 letters throughout', days.every(x => x.w2.length >= 7 && x.w2.length <= 8));
-    check('every word is lowercase alphabetic',
-          days.every(x => /^[a-z]+$/.test(x.w1) && /^[a-z]+$/.test(x.w2)));
-    check('no word repeats in either slot',
-          new Set(days.map(x => x.w1)).size === days.length &&
-          new Set(days.map(x => x.w2)).size === days.length);
-    check('every day ships a definition for both words',
-          days.every(x => x.d1 && x.d2));
+    check('a day is one word, not a pair',
+          days.every(x => x.w && x.w1 === undefined && x.w2 === undefined));
+    check('every word is 5 to 8 letters', days.every(x => x.w.length >= 5 && x.w.length <= 8),
+          JSON.stringify(days.reduce((o, x) => (o[x.w.length] = (o[x.w.length] || 0) + 1, o), {})));
+
+    /* The range is only worth having if it is used. A pool that says 5 to 8 and
+       deals nothing but fives is a five-letter game with a wider promise. */
+    const lengths = new Set(days.map(x => x.w.length));
+    check('and all four lengths actually turn up', [5, 6, 7, 8].every(n => lengths.has(n)),
+          [...lengths].sort().join(', '));
+
+    check('every word is lowercase alphabetic', days.every(x => /^[a-z]+$/.test(x.w)));
+    check('no word repeats across the calendar', new Set(days.map(x => x.w)).size === days.length);
+    check('every day ships a definition', days.every(x => x.d && x.d.length > 5));
 
     // ---------- scrambling, swept across the whole manifest (acceptance 7) ----------
     const sortLetters = s => [...s].sort().join('');
     let sameAsWord = 0, wrongLetters = 0, longRun = 0;
     days.forEach(day => {
-      [[day.w1, day.s1, `${day.date}:1`], [day.w2, day.s2, `${day.date}:2`]].forEach(([word, take, seed]) => {
-        const text = w.SCRAMBLE.scramble(word, seed, { take }).text;
-        if (text === word) sameAsWord++;
-        if (sortLetters(text) !== sortLetters(word)) wrongLetters++;
-        if (w.SCRAMBLE.longestKeptRun(word, text) > 2) longRun++;
-      });
+      const text = w.SCRAMBLE.scramble(day.w, day.date, { take: day.s }).text;
+      if (text === day.w) sameAsWord++;
+      if (sortLetters(text) !== sortLetters(day.w)) wrongLetters++;
+      if (w.SCRAMBLE.longestKeptRun(day.w, text) > 2) longRun++;
     });
     check('no scramble equals its source word', sameAsWord === 0, sameAsWord + ' offenders');
     check('every scramble uses exactly the source letters', wrongLetters === 0);
@@ -100,21 +103,21 @@ document.getElementById('f').addEventListener('load', async () => {
 
     // ---------- determinism across devices and loads (acceptance 1) ----------
     const day0 = A.manifest.days[0];
-    const first = w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text;
-    const second = w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text;
+    const first = w.SCRAMBLE.scramble(day0.w, day0.date, { take: day0.s }).text;
+    const second = w.SCRAMBLE.scramble(day0.w, day0.date, { take: day0.s }).text;
     check('the same date yields the same scramble every time', first === second, first);
     check('a second, independent run agrees',
-          w.SCRAMBLE.scramble(day0.w1, `${day0.date}:1`, { take: day0.s1 }).text === first);
+          w.SCRAMBLE.scramble(day0.w, day0.date, { take: day0.s }).text === first);
     check('a different date yields a different arrangement',
-          w.SCRAMBLE.scramble(day0.w1, `${day0.date}:2`, { take: day0.s1 }).text !== first ||
-          day0.w1.length < 4);
+          w.SCRAMBLE.scramble(day0.w, day0.date + 'x', { take: day0.s }).text !== first ||
+          day0.w.length < 4);
     check('the puzzle is looked up by date string',
-          A.puzzleFor(day0.date).w1 === day0.w1 && A.puzzleFor('1999-01-01') === null);
+          A.puzzleFor(day0.date).w === day0.w && A.puzzleFor('1999-01-01') === null);
 
     // ---------- tiles, including repeated letters ----------
-    const repeatDay = A.manifest.days.find(x => new Set(x.w1).size < x.w1.length);
+    const repeatDay = A.manifest.days.find(x => new Set(x.w).size < x.w.length);
     useDay(repeatDay.date);
-    const answer = A.wordFor('word1');
+    const answer = A.wordFor();
     check('tiles match the scrambled word', tiles().length === answer.length, answer.length + ' tiles');
     check('answer slots match the word length', answerSlots().length === answer.length);
     check('every slot starts empty', A.currentInput() === '');
@@ -139,30 +142,30 @@ document.getElementById('f').addEventListener('load', async () => {
     // ---------- submitting ----------
     useDay(repeatDay.date);
     check('an empty submission is refused and costs nothing',
-          A.submitGuess() === 'empty' && A.progressFor('word1').attemptsUsed === 0);
+          A.submitGuess() === 'empty' && A.progressFor().attemptsUsed === 0);
 
-    A.typeLetter(A.wordFor('word1')[0]);
+    A.typeLetter(A.wordFor()[0]);
     check('a short submission is refused and costs nothing',
-          A.submitGuess() === 'short' && A.progressFor('word1').attemptsUsed === 0);
+          A.submitGuess() === 'short' && A.progressFor().attemptsUsed === 0);
 
     /* Swap a tile's letter behind the game's back so the answer no longer uses
        the letters on offer — the guard that catches a pasted or injected word. */
     A.clearInput();
-    typeWord(A.wordFor('word1'));
+    typeWord(A.wordFor());
     const realTiles = A.state.tiles;
     A.state.tiles = realTiles.map((t, i) => (i === 0 ? { letter: 'z' } : t));
     const verdict = A.submitGuess();
     A.state.tiles = realTiles;
     check('a guess using letters you do not have is refused, at no cost',
-          verdict === 'letters' && A.progressFor('word1').attemptsUsed === 0, verdict);
+          verdict === 'letters' && A.progressFor().attemptsUsed === 0, verdict);
 
     // a wrong but well-formed guess
     useDay(repeatDay.date);
-    const scrambled = A.scrambleFor('word1');
+    const scrambled = A.scrambleFor();
     typeWord(scrambled);                                  // the scramble itself is never the answer
     check('a wrong guess is accepted as an attempt', A.submitGuess() === 'wrong');
-    check('the attempt is counted', A.progressFor('word1').attemptsUsed === 1);
-    check('the guess is remembered', A.progressFor('word1').guesses[0] === scrambled);
+    check('the attempt is counted', A.progressFor().attemptsUsed === 1);
+    check('the guess is remembered', A.progressFor().guesses[0] === scrambled);
     check('the guess is shown in the history', d.querySelectorAll('#history .past-guess').length === 1);
     check('the input is cleared but the tiles remain',
           A.currentInput() === '' && tiles().length === scrambled.length);
@@ -170,7 +173,7 @@ document.getElementById('f').addEventListener('load', async () => {
 
     typeWord(scrambled);
     check('the same guess twice is refused', A.submitGuess() === 'duplicate');
-    check('a repeat costs no attempt', A.progressFor('word1').attemptsUsed === 1);
+    check('a repeat costs no attempt', A.progressFor().attemptsUsed === 1);
     A.clearInput();
 
     // ---------- shuffle is free ----------
@@ -178,71 +181,71 @@ document.getElementById('f').addEventListener('load', async () => {
     A.shuffleTiles();
     check('shuffle keeps the same letters',
           tiles().map(t => t.textContent).sort().join('') === beforeShuffle);
-    check('shuffle costs no attempt', A.progressFor('word1').attemptsUsed === 1);
+    check('shuffle costs no attempt', A.progressFor().attemptsUsed === 1);
 
-    // ---------- solving, and word 2 unlocking ----------
+    // ---------- solving ----------
     useDay(repeatDay.date);
-    check('word 2 starts locked', A.progressFor('word2').unlocked === false);
     check('a correct guess is accepted', solveCurrent() === 'correct');
-    check('the word is marked solved', A.progressFor('word1').solved && A.progressFor('word1').resolved);
+    check('the word is marked solved', A.progressFor().solved && A.progressFor().resolved);
     check('the answer and its definition are revealed',
-          !el('reveal').hidden && el('reveal-word').textContent === A.wordFor('word1').toUpperCase() &&
+          !el('reveal').hidden && el('reveal-word').textContent === A.wordFor().toUpperCase() &&
           el('reveal-def').textContent.length > 0);
-    check('word 2 is unlocked once word 1 resolves', A.progressFor('word2').unlocked === true);
     A.advance();
-    check('the game advances to word 2', A.state.activeSlot === 'word2');
-    check('word 2 is the longer word', A.wordFor('word2').length >= 7);
+    check('solving the word ends the day', A.state.gameStatus === 'dayComplete',
+          A.state.gameStatus);
+    check('and the results panel is up', !el('results').hidden);
 
     // ---------- hints ----------
+    useDay(repeatDay.date);
     check('no hint is offered before three wrong attempts', A.hintAvailable() === false);
-    for (let i = 1; i <= 3; i++) attempt('word2', i);
-    check('three wrong attempts are counted', A.progressFor('word2').attemptsUsed === 3);
+    for (let i = 1; i <= 3; i++) attempt(i);
+    check('three wrong attempts are counted', A.progressFor().attemptsUsed === 3);
     check('the hint is offered after three', A.hintAvailable() === true);
     check('the hint button is showing', !el('btn-hint').hidden && !el('btn-hint').disabled);
 
     A.clearInput();
     A.applyHint();
     check('the hint reveals the first letter',
-          A.currentInput()[0] === A.wordFor('word2')[0], A.currentInput());
-    check('the hint is recorded', A.progressFor('word2').hintUsed === true);
+          A.currentInput()[0] === A.wordFor()[0], A.currentInput());
+    check('the hint is recorded', A.progressFor().hintUsed === true);
     check('the hinted letter is locked in place',
-          A.removeAt(0) === false && A.currentInput()[0] === A.wordFor('word2')[0]);
+          A.removeAt(0) === false && A.currentInput()[0] === A.wordFor()[0]);
     A.clearInput();
-    check('clearing the answer leaves the hint alone', A.currentInput()[0] === A.wordFor('word2')[0]);
+    check('clearing the answer leaves the hint alone', A.currentInput()[0] === A.wordFor()[0]);
     check('only one hint per day', A.hintAvailable() === false && el('btn-hint').hidden);
 
     // ---------- running out of attempts ----------
-    for (let i = 4; i <= 12 && !A.progressFor('word2').resolved; i++) attempt('word2', i);
-    check('five attempts end the word', A.progressFor('word2').resolved && !A.progressFor('word2').solved);
+    for (let i = 4; i <= 12 && !A.progressFor().resolved; i++) attempt(i);
+    check('five attempts end the word', A.progressFor().resolved && !A.progressFor().solved);
     check('the answer is revealed on failure',
-          el('reveal-word').textContent === A.wordFor('word2').toUpperCase());
+          el('reveal-word').textContent === A.wordFor().toUpperCase());
     check('the definition is shown with it', el('reveal-def').textContent.length > 0);
-    check('the failure is filed in the distribution', A.save.stats.distribution.word2.failed >= 1);
+    check('the failure is filed in the distribution', A.save.stats.distribution.failed >= 1);
 
     // ---------- giving up ----------
     useDay(repeatDay.date);
     check('giving up resolves the word as a miss',
-          A.skipSlot() === true && A.progressFor('word1').resolved && !A.progressFor('word1').solved);
+          A.skipSlot() === true && A.progressFor().resolved && !A.progressFor().solved);
 
     // ---------- keyboard only (acceptance 5) ----------
     useDay(repeatDay.date);
     closeModals();
-    [...A.wordFor('word1')].forEach(c => press(w, c));
-    check('typing fills the answer', A.currentInput() === A.wordFor('word1'), A.currentInput());
+    [...A.wordFor()].forEach(c => press(w, c));
+    check('typing fills the answer', A.currentInput() === A.wordFor(), A.currentInput());
     press(w, 'Backspace');
-    check('backspace takes a letter back', A.currentInput().length === A.wordFor('word1').length - 1);
-    press(w, A.wordFor('word1').slice(-1));
+    check('backspace takes a letter back', A.currentInput().length === A.wordFor().length - 1);
+    press(w, A.wordFor().slice(-1));
     press(w, 'Enter');
     check('enter submits, and the whole word is playable from the keyboard',
-          A.progressFor('word1').solved === true);
+          A.progressFor().solved === true);
     press(w, 'Enter');
-    check('enter also dismisses the reveal', A.state.activeSlot === 'word2');
+    check('enter also dismisses the reveal', el('reveal').hidden === true);
 
     // ---------- pasting ----------
     useDay(repeatDay.date);
     check('a pasted answer is accepted when the letters fit',
-          A.applyPaste(' ' + A.wordFor('word1').toUpperCase() + '! ') === true &&
-          A.currentInput() === A.wordFor('word1'));
+          A.applyPaste(' ' + A.wordFor().toUpperCase() + '! ') === true &&
+          A.currentInput() === A.wordFor());
     A.clearInput();
     check('a paste using letters you do not have is refused whole',
           A.applyPaste('zzzz') === false && A.currentInput() === '');
@@ -250,8 +253,8 @@ document.getElementById('f').addEventListener('load', async () => {
 
     // ---------- announcements (acceptance 6) ----------
     useDay(repeatDay.date);
-    check('the slot is announced on arrival', el('live').textContent.includes('Word 1 of 2'),
-          el('live').textContent);
+    check('the word is announced on arrival',
+          el('live').textContent.includes(A.wordFor().length + ' letters'), el('live').textContent);
     A.shuffleTiles();
     check('shuffling is announced', el('live').textContent === 'Letters shuffled');
     A.typeLetter('z') || A.submitGuess();
@@ -293,11 +296,13 @@ document.getElementById('f').addEventListener('load', async () => {
     check('days played counted every day that was played', A.save.stats.daysPlayed === 6,
           String(A.save.stats.daysPlayed));
 
-    /* Solving both words must not count the day twice. */
+    /* The guard that used to stop two words counting one day twice. One word
+       cannot, but the record it protects is somebody's, so it stays checked. */
     A.save.stats = A.blankStats();
     A.state.puzzleDate = '2026-04-01';
     A.notePlayed(); A.noteSolved(); A.noteSolved();
-    check('two solved words in a day still count as one streak day', A.save.stats.currentStreak === 1);
+    check('a day can only ever count once towards the streak',
+          A.save.stats.currentStreak === 1);
 
     // ---------- share text (acceptance 4) ----------
     const permutations = [
@@ -308,54 +313,53 @@ document.getElementById('f').addEventListener('load', async () => {
       { solved: false, attemptsUsed: 5, hintUsed: true }
     ];
     /* Held to a strict template. "Anagram", "hint" and "day streak" are the only
-       prose allowed, so any letter of an answer leaking in would break the match.
-       Checking letter-by-letter instead would be meaningless: the fixed title
-       alone contains a, n, g, r and m. */
-    const MARKS = '[\u{1F7E9}\u{1F7E5}\u2B1C\u{1F4A1}]{5}';
+       prose allowed, so any letter of the answer leaking in would break the
+       match. Checking letter-by-letter instead would be meaningless: the fixed
+       title alone contains a, n, g, r and m. */
+    const MARKS = '[\u{1F7E9}\u{1F7E5}⬜\u{1F4A1}]{5}';
     const SCORE = '\\((?:[1-5](?:, hint)?|X)\\)';
     const TEMPLATE = new RegExp(
       '^Anagram #\\d+' +
-      '\\n1\uFE0F\u20E3 ' + MARKS + ' ' + SCORE +
-      '\\n2\uFE0F\u20E3 ' + MARKS + ' ' + SCORE +
+      '\\n' + MARKS + ' ' + SCORE +
       '(?:\\n\u{1F525} \\d+ day streak)?$', 'u');
 
     let offTemplate = '', leaked = '';
-    permutations.forEach(p1 => permutations.forEach(p2 => {
-      Object.assign(A.progressFor('word1'), p1, { resolved: true });
-      Object.assign(A.progressFor('word2'), p2, { resolved: true });
+    permutations.forEach(p => {
+      Object.assign(A.progressFor(), p, { resolved: true });
       const text = A.shareText();
       if (!TEMPLATE.test(text)) offTemplate = JSON.stringify(text);
-      if (text.toLowerCase().includes(A.wordFor('word1')) ||
-          text.toLowerCase().includes(A.wordFor('word2'))) leaked = text;
+      if (text.toLowerCase().includes(A.wordFor())) leaked = text;
       /* FR-7.6 is about a URL carrying the answer. The # in "Anagram #3" is a
          puzzle number, not a fragment, so match links rather than punctuation. */
       if (/https?:|www\.|\/\/|\.com/i.test(text)) leaked = text;
-    }));
+    });
     check('share text holds to the emoji template in every outcome, so no letter leaks',
           offTemplate === '', offTemplate);
-    check('share text contains neither answer, and no link that could carry one',
+    check('share text contains the answer nowhere, and no link that could carry it',
           leaked === '', leaked);
     check('share text carries the puzzle number',
           A.shareText().startsWith('Anagram #' + A.state.puzzleNumber), A.shareText().split('\n')[0]);
+    check('share text is one line of marks, not two',
+          A.shareText().split('\n').filter(l => /[\u{1F7E9}\u{1F7E5}⬜]/u.test(l)).length === 1,
+          JSON.stringify(A.shareText()));
 
-    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, hintUsed: false, resolved: true });
-    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 4, hintUsed: true, resolved: true });
+    Object.assign(A.progressFor(), { solved: true, attemptsUsed: 2, hintUsed: false, resolved: true });
     check('a solved word shows one marker per attempt',
-          A.shareLine('word1') === '1️⃣ \u{1F7E9}\u{1F7E9}⬜⬜⬜ (2)', A.shareLine('word1'));
+          A.shareLine() === '\u{1F7E9}\u{1F7E9}⬜⬜⬜ (2)', A.shareLine());
+    Object.assign(A.progressFor(), { solved: true, attemptsUsed: 4, hintUsed: true, resolved: true });
     check('a hint is flagged in the share text',
-          A.shareLine('word2').includes('\u{1F4A1}') && A.shareLine('word2').includes('hint'),
-          A.shareLine('word2'));
+          A.shareLine().includes('\u{1F4A1}') && A.shareLine().includes('hint'), A.shareLine());
     check('a missed word shares as X', (() => {
-      Object.assign(A.progressFor('word1'), { solved: false, attemptsUsed: 5, hintUsed: false });
-      return A.shareLine('word1').endsWith('(X)');
+      Object.assign(A.progressFor(), { solved: false, attemptsUsed: 5, hintUsed: false });
+      return A.shareLine().endsWith('(X)');
     })());
 
     // ---------- rollover mid-session ----------
     A.state.puzzleDate = '2026-03-01';             // pretend the tab has been open a while
-    const wordBefore = A.wordFor('word1');
+    const wordBefore = A.wordFor();
     A.checkRollover();
     check('a rollover shows a prompt', !el('banner').hidden);
-    check('the puzzle is not swapped underneath the player', A.wordFor('word1') === wordBefore);
+    check('the puzzle is not swapped underneath the player', A.wordFor() === wordBefore);
     el('banner').hidden = true;
 
     // ---------- countdown ----------
@@ -364,12 +368,39 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the countdown is computed from the clock',
           A.nextRolloverMs() > Date.now() && A.nextRolloverMs() - Date.now() <= 86400000);
 
-    // ---------- corrupt or foreign saved state ----------
+    // ---------- corrupt, foreign, or older saved state ----------
     w.localStorage.setItem(A.STORE_KEY, '{ this is not json');
     check('unparseable saved state is discarded, not surfaced',
           A.loadSave().stats.daysPlayed === 0);
     w.localStorage.setItem(A.STORE_KEY, JSON.stringify({ schemaVersion: 99, stats: { daysPlayed: 7 } }));
     check('a save from an unknown schema is discarded', A.loadSave().stats.daysPlayed === 0);
+
+    /* A record from the two-word day. The streak is the part somebody would
+       actually miss, so none of it is thrown away for the sake of a rename. */
+    w.localStorage.setItem(A.STORE_KEY, JSON.stringify({
+      schemaVersion: 1,
+      lastPlayedDate: '2026-05-01',
+      progress: { date: '2026-05-01', word1: { solved: true }, word2: { solved: false } },
+      stats: {
+        daysPlayed: 30, daysBothSolved: 21, currentStreak: 9, maxStreak: 14,
+        lastCompletedDate: '2026-05-01', lastStreakDate: '2026-05-01',
+        distribution: {
+          word1: { 1: 2, 2: 5, 3: 6, 4: 4, 5: 1, failed: 3 },
+          word2: { 1: 0, 2: 1, 3: 3, 4: 6, 5: 2, failed: 9 }
+        }
+      }
+    }));
+    const carried = A.loadSave();
+    check('a two-word record is carried over rather than dropped',
+          carried.stats.daysPlayed === 30 && carried.schemaVersion === A.SCHEMA_VERSION);
+    check('the streak survives the change', carried.stats.currentStreak === 9 &&
+          carried.stats.maxStreak === 14);
+    check('days both words fell become days solved', carried.stats.daysSolved === 21);
+    check('the distribution carries the word that still exists, and does not add the two together',
+          carried.stats.distribution[2] === 5 && carried.stats.distribution.failed === 3,
+          JSON.stringify(carried.stats.distribution));
+    check('and the half-finished old board is not restored as this one',
+          carried.progress === null);
     w.localStorage.removeItem(A.STORE_KEY);
 
     // ---------- playable without persistence (acceptance 9) ----------
@@ -383,7 +414,7 @@ document.getElementById('f').addEventListener('load', async () => {
     // ---------- 360px layout (acceptance 8) ----------
     closeModals();
     el('reveal').hidden = true;
-    useDay(A.manifest.days.find(x => x.w2.length === 8).date, 'word2');
+    useDay(A.manifest.days.find(x => x.w.length === 8).date);
     await wait(60);
     check('the page does not scroll sideways at 360px',
           d.documentElement.scrollWidth <= 360, 'scrollWidth ' + d.documentElement.scrollWidth);
@@ -411,9 +442,7 @@ document.getElementById('f').addEventListener('load', async () => {
       lastPlayedDate: today,
       progress: {
         date: today,
-        word1: { solved: true, attemptsUsed: 2, guesses: ['aaaaa', realDay.w1], resolved: true },
-        word2: { solved: false, attemptsUsed: 3, guesses: ['bbbbbbb'], resolved: false,
-                 hintUsed: true, unlocked: true }
+        word: { solved: false, attemptsUsed: 3, guesses: ['bbbbbbb'], resolved: false, hintUsed: true }
       },
       stats: Object.assign(A.blankStats(), { daysPlayed: 4, currentStreak: 3, maxStreak: 3 })
     }));
@@ -436,39 +465,41 @@ document.getElementById('f').addEventListener('load', async () => {
     const A2 = w2.ANAGRAM;
     d2.querySelectorAll('.modal:not([hidden])').forEach(m => (m.hidden = true));
 
-    check('a refresh returns to the word in play', A2.state.activeSlot === 'word2', A2.state.activeSlot);
-    check('attempts used survive the refresh', A2.progressFor('word2').attemptsUsed === 3);
-    check('the guess history survives', A2.progressFor('word2').guesses.length === 1);
-    check('the finished word stays finished', A2.progressFor('word1').resolved === true);
+    check('a refresh returns to the word in play', A2.state.activeSlot === A2.SLOT,
+          A2.state.activeSlot);
+    check('attempts used survive the refresh', A2.progressFor().attemptsUsed === 3);
+    check('the guess history survives', A2.progressFor().guesses.length === 1);
+    check('the word is still unfinished', A2.progressFor().resolved === false);
     check('the streak survives', A2.save.stats.currentStreak === 3);
     check('a revealed hint is still revealed',
-          A2.progressFor('word2').hintUsed === true &&
-          A2.currentInput()[0] === A2.wordFor('word2')[0],
+          A2.progressFor().hintUsed === true &&
+          A2.currentInput()[0] === A2.wordFor()[0],
           A2.currentInput());
     check('the hint is still locked after a refresh', A2.state.lockedSlots.length === 1);
+
     // ---------- practice, once the day is done ----------
     /* The day's puzzle stays one-shot; what changes is that finishing it no
        longer leaves you with nothing to play. */
     const manifest = A.manifest;
     check('the manifest ships a practice pool',
-          manifest.practice && manifest.practice.easy.length >= 40 &&
-          manifest.practice.hard.length >= 40,
-          manifest.practice ? manifest.practice.easy.length + ' pairs' : 'missing');
+          Array.isArray(manifest.practice) && manifest.practice.length >= 40,
+          Array.isArray(manifest.practice) ? manifest.practice.length + ' words' : 'missing');
 
-    const calendarWords = new Set(manifest.days.flatMap(day => [day.w1, day.w2]));
-    const practiceWords = [...manifest.practice.easy, ...manifest.practice.hard].map(x => x.w);
+    const calendarWords = new Set(manifest.days.map(day => day.w));
+    const practiceWords = manifest.practice.map(x => x.w);
     check('no practice word is ever a puzzle from the calendar',
           practiceWords.every(word => !calendarWords.has(word)));
     check('every practice word carries its definition and arrangement',
-          [...manifest.practice.easy, ...manifest.practice.hard].every(x => x.d && x.s > 0));
+          manifest.practice.every(x => x.d && x.s > 0));
+    check('practice words keep to the same 5 to 8 letters',
+          manifest.practice.every(x => x.w.length >= 5 && x.w.length <= 8));
 
     /* Set up a finished day with a record worth protecting. */
     const dayKey = A.todayKey();
     A.save.progress = A.blankProgress(dayKey);
-    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
-    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 3, resolved: true });
+    Object.assign(A.progressFor(), { solved: true, attemptsUsed: 2, resolved: true });
     A.save.stats = Object.assign(A.blankStats(), {
-      daysPlayed: 4, daysBothSolved: 3, currentStreak: 3, maxStreak: 5, lastStreakDate: dayKey
+      daysPlayed: 4, daysSolved: 3, currentStreak: 3, maxStreak: 5, lastStreakDate: dayKey
     });
     A.save.lastPlayedDate = dayKey;
     A.persist();
@@ -479,21 +510,19 @@ document.getElementById('f').addEventListener('load', async () => {
     check('a practice round can be started', A.startPractice() === true);
     check('the game knows it is practice', A.inPractice() === true);
     check('practice deals a word from the practice pool',
-          practiceWords.includes(A.wordFor('word1')), A.wordFor('word1'));
+          practiceWords.includes(A.wordFor()), A.wordFor());
     check('practice words are scrambled, not handed over',
-          A.scrambleFor('word1') !== A.wordFor('word1'), A.scrambleFor('word1'));
-    check('practice starts with a clean slate', A.progressFor('word1').attemptsUsed === 0);
+          A.scrambleFor() !== A.wordFor(), A.scrambleFor());
+    check('practice starts with a clean slate', A.progressFor().attemptsUsed === 0);
 
-    /* Play it out: solve one, fail the other, which would move every counter if
-       practice were being recorded. */
-    [...A.wordFor('word1')].forEach(c => A.typeLetter(c));
-    check('a practice answer is accepted', A.submitGuess() === 'correct');
-    A.advance();
+    /* Play it out and fail it, which would move every counter if practice were
+       being recorded. */
     for (let i = 0; i < A.ATTEMPTS; i++) {
       A.clearInput();
-      [...A.scrambleFor('word2')].forEach(c => A.typeLetter(c));
+      typeWord(wrongGuess(i + 1));
       A.submitGuess();
     }
+    check('a practice round can be played to its end', A.progressFor().resolved === true);
 
     check('practice leaves the streak and stats untouched',
           JSON.stringify(A.save.stats) === recordBefore);
@@ -503,33 +532,31 @@ document.getElementById('f').addEventListener('load', async () => {
 
     A.leavePractice();
     check('leaving practice returns to the day', A.inPractice() === false);
-    check('the day is still finished', A.progressFor('word1').resolved === true &&
-          A.progressFor('word2').resolved === true);
+    check('the day is still finished', A.progressFor().resolved === true);
     check('the day record is exactly as it was', JSON.stringify(A.save.stats) === recordBefore);
 
     check('another practice round can be started', A.startPractice() === true);
     A.leavePractice();
 
-    // ---------- the finished day shows both words ----------
-    /* A day is two words, so ending it on the second one alone hides half of
-       what was just played. */
+    // ---------- the finished day shows the word ----------
     A.save.progress = A.blankProgress(dayKey);
-    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
-    Object.assign(A.progressFor('word2'), { solved: false, attemptsUsed: 5, resolved: true });
+    Object.assign(A.progressFor(), { solved: false, attemptsUsed: 5, resolved: true });
     A.showResults();
     await wait(60);
 
     const finishedRows = [...d.querySelectorAll('#slots .finished-row')];
-    check('both words are shown, not just the last one', finishedRows.length === 2,
+    check('the day ends on one word, not a pair', finishedRows.length === 1,
           finishedRows.length + ' rows');
-    check('each word is spelled out in full',
-          finishedRows[0].textContent.includes(A.wordFor('word1').toUpperCase()) ||
-          finishedRows[0].textContent.toLowerCase().includes(A.wordFor('word1')),
-          finishedRows.map(r => r.textContent).join(' | '));
+    check('the word is spelled out in full',
+          finishedRows[0].textContent.toLowerCase().includes(A.wordFor()),
+          finishedRows[0].textContent);
     check('the word that beat you is marked as missed',
-          finishedRows[1].querySelectorAll('.answer-slot.missed').length === A.wordFor('word2').length &&
-          finishedRows[0].querySelectorAll('.answer-slot.missed').length === 0);
-    check('the label stops naming one word', el('slot-label').textContent.includes("Today"),
+          finishedRows[0].querySelectorAll('.answer-slot.missed').length === A.wordFor().length);
+    check('the answer line carries the word and how it went',
+          el('res-word').textContent === A.wordFor().toUpperCase() &&
+          el('res-attempt').textContent.length > 0,
+          el('res-word').textContent + ' / ' + el('res-attempt').textContent);
+    check('the label says the day is over', el('slot-label').textContent.includes('Today'),
           el('slot-label').textContent);
     check('the tray and controls step aside', el('tray').hidden && el('controls').hidden &&
           el('btn-submit').hidden && el('attempts-row').hidden);
@@ -543,7 +570,7 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the attempt dots are labelled with a number',
           el('attempts').textContent.trim() === A.ATTEMPTS + ' left',
           el('attempts').textContent.trim());
-    attempt('word1', 1);
+    attempt(1);
     check('the number goes down with each attempt',
           el('attempts').textContent.trim() === (A.ATTEMPTS - 1) + ' left',
           el('attempts').textContent.trim());
@@ -551,8 +578,7 @@ document.getElementById('f').addEventListener('load', async () => {
     A.save.stats = JSON.parse(recordAside);
     A.save.lastPlayedDate = playedAside;
     A.save.progress = A.blankProgress(dayKey);
-    Object.assign(A.progressFor('word1'), { solved: true, attemptsUsed: 2, resolved: true });
-    Object.assign(A.progressFor('word2'), { solved: true, attemptsUsed: 3, resolved: true });
+    Object.assign(A.progressFor(), { solved: true, attemptsUsed: 2, resolved: true });
     A.showResults();
     await wait(40);
 
@@ -574,7 +600,7 @@ document.getElementById('f').addEventListener('load', async () => {
     await wait(80);
     check('the Today button comes back to the day', A.inPractice() === false);
     check('the day is still finished, and still recorded',
-          A.progressFor('word1').resolved === true &&
+          A.progressFor().resolved === true &&
           JSON.stringify(A.save.stats) === recordBefore);
 
   } catch (err) {

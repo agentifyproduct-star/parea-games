@@ -281,10 +281,14 @@ main {
 /* Filled in because the word is over, not because you put it there. */
 .answer-slot.filled:disabled { cursor: default; }
 
-/* The finished day: both words, each behind its number. */
+/* The finished day: the answer, spelled out under the board. */
 .finished-row {
   display: flex;
   align-items: center;
+  /* Centred, now that there is one row and no number in front of it to hold
+     the left edge. Anything else leaves the answer hanging off the side of a
+     board that is centred above it. */
+  justify-content: center;
   gap: 10px;
   width: 100%;
   margin-bottom: 8px;
@@ -459,19 +463,6 @@ main {
 }
 
 .answer-line b { font-size: 17px; letter-spacing: 2px; }
-
-.answer-slot-no {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-colour);
-  font-size: 12px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-}
 
 .answer-outcome { margin-left: auto; font-size: 12.5px; color: var(--text-dim); }
 

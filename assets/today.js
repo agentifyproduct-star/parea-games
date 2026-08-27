@@ -95,7 +95,7 @@
   /* ---------------- the record, across all three ----------------
 
      Each game keeps its own statistics in its own key and its own words: two of
-     them count wins, the third counts days where both words fell. Reading all
+     them count wins, the third counts days it was solved. Reading all
      three is the only way to answer "how am I doing?" without opening three
      games, so the knowledge of where they live and what they call things is
      gathered here — one place to correct if a game ever changes its mind. */
@@ -116,8 +116,7 @@
   }
 
   /* Everything normalised to the same four numbers, whatever the game called
-     them. `solved` means the puzzle went the player's way: guessed in time for
-     Shabda and Snowman, both words for Anagram. */
+     them. `solved` means the puzzle went the player's way: guessed in time. */
   function statsFor(id) {
     const raw = readJSON(STATS_KEYS[id]);
     const blank = { played: 0, solved: 0, streak: 0, best: 0 };
@@ -127,7 +126,10 @@
       const stats = raw.stats || {};
       return {
         played: Number(stats.daysPlayed) || 0,
-        solved: Number(stats.daysBothSolved) || 0,
+        /* daysBothSolved is what this was called while a day held two words.
+           A save written before that changed still says so, and Anagram only
+           rewrites it the next time somebody plays — so read either. */
+        solved: Number(stats.daysSolved ?? stats.daysBothSolved) || 0,
         streak: Number(stats.currentStreak) || 0,
         best: Number(stats.maxStreak) || 0
       };

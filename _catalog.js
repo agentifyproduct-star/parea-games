@@ -77,14 +77,14 @@ const GAMES = [
   {
     id: 'anagram',
     title: 'Anagram',
-    tagline: 'Two jumbled words a day. Everyone gets the same two, so you can compare notes.',
-    description: 'Anagram is a free daily word game. Unscramble two jumbled words a day with ' +
-      'five tries each — everyone gets the same pair, so you can compare notes with whoever ' +
-      'else played today.',
+    tagline: 'One jumbled word a day. Everyone gets the same one, so you can compare notes.',
+    description: 'Anagram is a free daily word game. Unscramble the day’s jumbled word, five ' +
+      'to eight letters, in five tries — everyone in the world gets the same word, so you can ' +
+      'compare notes with whoever else played today.',
     art: 'assets/art/anagram.svg',
     alt: 'Scattered letter tiles settling into a solved word',
     accent: '#6c74d8',
-    facts: ['Two words daily', '5 tries each', 'Keep a streak'],
+    facts: ['One word daily', '5 to 8 letters', '5 tries'],
     status: 'live',
     path: 'games/anagram/',
     url: 'games/anagram/index.html'
@@ -136,8 +136,9 @@ const FAQ = [
   },
   {
     q: 'How do I play Anagram?',
-    a: 'Two scrambled words arrive each day, one short and one long. Unscramble each within ' +
-       'five tries. Everyone gets the same pair, so the day is the same puzzle for everybody.'
+    a: 'One scrambled word arrives each day, between five and eight letters long. Unscramble ' +
+       'it within five tries. Everyone gets the same word, so the day is the same puzzle for ' +
+       'everybody, and a hint is there after three wrong tries if you want it.'
   },
   {
     q: 'Can I play against my friends?',

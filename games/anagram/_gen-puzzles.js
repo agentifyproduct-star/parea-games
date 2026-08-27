@@ -14,8 +14,15 @@ const path = require('path');
 const SCRAMBLE = require('./scramble.js');
 
 const OUT_DIR = __dirname;
-const DAYS = 200;                    // FR-1.5 wants at least a 180-day runway
-const PRACTICE_WORDS = 60;           // pairs available once the day's puzzle is done
+const DAYS = 400;                    // FR-1.5 wants at least a 180-day runway
+const PRACTICE_WORDS = 80;           // words available once the day's puzzle is done
+
+/* What "keep it simple" is worth in numbers. The top three thousand words is
+   the band where an eight-letter anagram is still a word somebody recognises
+   on sight; past that the length stops being the puzzle and recall starts. */
+const RANK_LIMIT = 3000;
+const MIN_LETTERS = 5;
+const MAX_LETTERS = 8;
 const LAUNCH_DATE = '2026-08-18';
 const SCHEMA_VERSION = 1;
 
@@ -155,17 +162,23 @@ function buildPools(freq, enableSet) {
     return true;
   };
 
-  const easy = [];   // FR-1.3 / 6.1: 5-6 letters, top 2,000
-  const hard = [];   // 7-8 letters, 2,000 to 10,000
+  /* One pool, where there used to be a short-and-common one and a long-and-
+     rarer one. The day is a single word now, and the point of it is that people
+     keep coming back, so the length range widened and the rarity range did not:
+     an eight-letter day is CHILDREN or QUESTION, a word everybody knows the
+     moment the letters land, rather than something from the tail of the ten
+     thousand. Length carries the difficulty; obscurity is not asked to help. */
+  const pool = [];
 
   freq.forEach((word, i) => {
     const rank = i + 1;
+    if (rank > RANK_LIMIT) return;
+    if (word.length < MIN_LETTERS || word.length > MAX_LETTERS) return;
     if (!usable(word, rank)) return;
-    if (rank <= 2000 && word.length >= 5 && word.length <= 6) easy.push(word);
-    else if (rank > 2000 && rank <= 10000 && word.length >= 7 && word.length <= 8) hard.push(word);
+    pool.push(word);
   });
 
-  return { easy, hard };
+  return pool;
 }
 
 /* Fixed-seed shuffle so the running order is stable across regenerations: the
@@ -236,37 +249,33 @@ async function main() {
   const enableSet = new Set(enableLines.filter(Boolean));
   const freq = freqLines.filter(Boolean);
 
-  const pools = buildPools(freq, enableSet);
-  console.log(`pools after filtering: ${pools.easy.length} easy, ${pools.hard.length} hard`);
-  if (pools.easy.length < DAYS || pools.hard.length < DAYS) {
-    throw new Error(`not enough words for ${DAYS} days`);
+  const pool = buildPools(freq, enableSet);
+  console.log(`pool after filtering: ${pool.length} words of ${MIN_LETTERS}-${MAX_LETTERS} letters, top ${RANK_LIMIT}`);
+  if (pool.length < DAYS + PRACTICE_WORDS) {
+    throw new Error(`not enough words for ${DAYS} days and ${PRACTICE_WORDS} practice words`);
   }
 
-  const easy = shuffledPool(pools.easy, 'anagram-easy-v1');
-  const hard = shuffledPool(pools.hard, 'anagram-hard-v1');
+  /* A fresh seed. The old one dealt a different pool, so keeping it would only
+     imply a continuity that does not exist. */
+  const words = shuffledPool(pool, 'anagram-single-v2');
   const isWord = w => enableSet.has(w);
 
   const launchMs = Date.parse(LAUNCH_DATE + 'T00:00:00Z');
   const notes = [];
   const days = [];
 
-  /* Independent pointers: if a word cannot be scrambled cleanly it is skipped
-     rather than dropped onto a later date, so no word is ever used twice. */
-  let ei = 0, hi = 0;
+  /* One pointer, walking the pool. A word that cannot be scrambled cleanly is
+     skipped rather than pushed onto a later date, so no word is ever used
+     twice. */
+  let wi = 0;
 
   console.log('picking words and looking up definitions...');
 
   for (let n = 0; n < DAYS; n++) {
     const date = dateKey(launchMs + n * DAY_MS);
-    const slot1 = await takeWord(easy, () => ei++, `${date}:1`, isWord, notes, 'easy');
-    const slot2 = await takeWord(hard, () => hi++, `${date}:2`, isWord, notes, 'hard');
+    const pick = await takeWord(words, () => wi++, date, isWord, notes, 'daily');
 
-    days.push({
-      n: n + 1,
-      date,
-      w1: slot1.word, s1: slot1.attempt, d1: slot1.definition,
-      w2: slot2.word, s2: slot2.attempt, d2: slot2.definition
-    });
+    days.push({ n: n + 1, date, w: pick.word, s: pick.attempt, d: pick.definition });
 
     if ((n + 1) % 50 === 0) { saveDefinitions(); console.log(`  ${n + 1}/${DAYS} days`); }
   }
@@ -278,14 +287,16 @@ async function main() {
      next few days' answers. Each entry carries its own accepted scramble, so a
      practice word is checked against the dictionary exactly like a daily one. */
   console.log('picking practice words...');
-  const practice = { easy: [], hard: [] };
+  const practice = [];
 
   for (let i = 0; i < PRACTICE_WORDS; i++) {
-    const short = await takeWord(easy, () => ei++, `practice:${i}:1`, isWord, notes, 'easy');
-    const long = await takeWord(hard, () => hi++, `practice:${i}:2`, isWord, notes, 'hard');
-    practice.easy.push({ w: short.word, s: SCRAMBLE.scramble(short.word, `practice:${short.word}`, { isWord }).attempt, d: short.definition });
-    practice.hard.push({ w: long.word, s: SCRAMBLE.scramble(long.word, `practice:${long.word}`, { isWord }).attempt, d: long.definition });
-    if ((i + 1) % 20 === 0) { saveDefinitions(); console.log(`  ${i + 1}/${PRACTICE_WORDS} practice pairs`); }
+    const pick = await takeWord(words, () => wi++, `practice:${i}`, isWord, notes, 'practice');
+    practice.push({
+      w: pick.word,
+      s: SCRAMBLE.scramble(pick.word, `practice:${pick.word}`, { isWord }).attempt,
+      d: pick.definition
+    });
+    if ((i + 1) % 20 === 0) { saveDefinitions(); console.log(`  ${i + 1}/${PRACTICE_WORDS} practice words`); }
   }
   saveDefinitions();
 
@@ -307,10 +318,13 @@ async function main() {
     '   The manifest in puzzles.json, wrapped so it loads without a server. */\n' +
     'window.ANAGRAM_MANIFEST = ' + json + ';\n', 'utf8');
 
-  const missingDefs = days.filter(d => !d.d1 || !d.d2).length;   // should always be 0
+  const missingDefs = days.filter(d => !d.d).length;   // should always be 0
+  const byLength = {};
+  days.forEach(d => { byLength[d.w.length] = (byLength[d.w.length] || 0) + 1; });
   console.log(`\nwrote ${days.length} days: ${days[0].date} to ${days[days.length - 1].date}`);
   console.log(`manifest ${(json.length / 1024).toFixed(0)} KB, ${missingDefs} days missing a definition, ${lookups} fresh lookups`);
-  console.log(`practice pool: ${practice.easy.length} short words, ${practice.hard.length} long ones`);
+  console.log(`lengths: ${Object.keys(byLength).sort().map(k => `${k}:${byLength[k]}`).join('  ')}`);
+  console.log(`practice pool: ${practice.length} words`);
   notes.forEach(note => console.log('note: ' + note));
   verify(manifest, isWord);
 }
@@ -344,27 +358,29 @@ async function takeWord(pool, advance, seedKey, isWord, notes, label) {
    promises. This is the authoring-time half of acceptance criterion 7. */
 function verify(manifest, isWord) {
   const problems = [];
-  const seen = { w1: new Set(), w2: new Set() };
+  const seen = new Set();
 
-  manifest.days.forEach(day => {
-    [[day.w1, day.s1, `${day.date}:1`, 'w1'], [day.w2, day.s2, `${day.date}:2`, 'w2']]
-      .forEach(([word, take, seedKey, slot]) => {
-        const replay = SCRAMBLE.scramble(word, seedKey, { take });
-        if (replay.text === word) problems.push(`${seedKey} scramble equals the word`);
-        if (isWord(replay.text)) problems.push(`${seedKey} scramble "${replay.text}" is a word`);
-        if (SCRAMBLE.longestKeptRun(word, replay.text) > 2) problems.push(`${seedKey} keeps a run of 3`);
-        if (sortedKey(replay.text) !== sortedKey(word)) problems.push(`${seedKey} letters do not match`);
-        if (seen[slot].has(word)) problems.push(`${seedKey} repeats "${word}"`);
-        seen[slot].add(word);
-      });
+  /* The practice pool is swept alongside the calendar: a practice word is
+     played exactly like a daily one and has to hold up the same way. */
+  const entries = manifest.days.map(day => [day.w, day.s, day.date, day.date])
+    .concat(manifest.practice.map(e => [e.w, e.s, `practice:${e.w}`, `practice ${e.w}`]));
 
-    if (day.w1.length < 5 || day.w1.length > 6) problems.push(`${day.date} word 1 is the wrong length`);
-    if (day.w2.length < 7 || day.w2.length > 8) problems.push(`${day.date} word 2 is the wrong length`);
+  entries.forEach(([word, take, seedKey, label]) => {
+    const replay = SCRAMBLE.scramble(word, seedKey, { take });
+    if (replay.text === word) problems.push(`${label} scramble equals the word`);
+    if (isWord(replay.text)) problems.push(`${label} scramble "${replay.text}" is a word`);
+    if (SCRAMBLE.longestKeptRun(word, replay.text) > 2) problems.push(`${label} keeps a run of 3`);
+    if (sortedKey(replay.text) !== sortedKey(word)) problems.push(`${label} letters do not match`);
+    if (seen.has(word)) problems.push(`${label} repeats "${word}"`);
+    seen.add(word);
+    if (word.length < MIN_LETTERS || word.length > MAX_LETTERS) {
+      problems.push(`${label} is the wrong length`);
+    }
   });
 
   console.log(problems.length
     ? `\nSWEEP FAILED:\n  ${problems.slice(0, 20).join('\n  ')}`
-    : `\nsweep clean: ${manifest.days.length} days, every scramble differs from its word, spells nothing, keeps no run of three, and no word repeats`);
+    : `\nsweep clean: ${manifest.days.length} days and ${manifest.practice.length} practice words, every scramble differs from its word, spells nothing, keeps no run of three, and no word repeats anywhere`);
 }
 
 main().catch(err => { console.error(err.message); process.exit(1); });

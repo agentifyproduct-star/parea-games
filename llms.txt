@@ -10,7 +10,7 @@ account to make. Streaks are kept in the browser, not on a server.
 
 - [Shabda](https://pareagames.com/games/shabda/): Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.
 - [Snowman](https://pareagames.com/games/snowman/): Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.
-- [Anagram](https://pareagames.com/games/anagram/): Anagram is a free daily word game. Unscramble two jumbled words a day with five tries each — everyone gets the same pair, so you can compare notes with whoever else played today.
+- [Anagram](https://pareagames.com/games/anagram/): Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today.
 
 ## Questions
 
@@ -36,5 +36,5 @@ Call out one letter at a time to uncover a hidden word, knowing only its categor
 
 ### How do I play Anagram?
 
-Two scrambled words arrive each day, one short and one long. Unscramble each within five tries. Everyone gets the same pair, so the day is the same puzzle for everybody.
+One scrambled word arrives each day, between five and eight letters long. Unscramble it within five tries. Everyone gets the same word, so the day is the same puzzle for everybody, and a hint is there after three wrong tries if you want it.
 
