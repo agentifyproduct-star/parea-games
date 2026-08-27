@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Anagram">
+  <!-- Loose letters above, settled into a word below: the game in one picture,
+       and the only one of the three that needed the mark's tilt to say it. -->
+  <g fill="#c9c5bb">
+    <rect x="6"  y="5"  width="12" height="12" rx="3.5" transform="rotate(-14 12 11)" />
+    <rect x="28" y="4"  width="12" height="12" rx="3.5" transform="rotate(12 34 10)" />
+  </g>
+  <g fill="#6c74d8">
+    <rect x="2"  y="28" width="13" height="13" rx="3.8" />
+    <rect x="17.5" y="28" width="13" height="13" rx="3.8" />
+    <rect x="33" y="28" width="13" height="13" rx="3.8" />
+  </g>
+</svg>

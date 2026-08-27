@@ -28,10 +28,8 @@ function load() {
   });
 }
 
-const shown = (w, sel) => {
-  const node = w.document.querySelector(sel);
-  return !!node && w.getComputedStyle(node).display !== 'none';
-};
+const shown = (w, sel) => shownIn(w, w.document.querySelector(sel));
+const shownIn = (w, node) => !!node && w.getComputedStyle(node).display !== 'none';
 
 function seed(w, visits, splashSeen) {
   w.localStorage.clear();
@@ -160,27 +158,33 @@ const dayBefore = n => {
     const strip = w.document.querySelector('.strip');
     const stripItems = [...w.document.querySelectorAll('.strip-item')];
     const cols = w.getComputedStyle(strip).gridTemplateColumns;
-    check('compact: two games across, not three', cols.split(' ').length === 2, cols);
-    check('compact: the third takes the full width underneath',
-          Math.round(stripItems[2].getBoundingClientRect().width) >=
-          Math.round(strip.getBoundingClientRect().width) - 1,
-          Math.round(stripItems[2].getBoundingClientRect().width) + ' of ' +
-          Math.round(strip.getBoundingClientRect().width));
-    check('compact: and it sits on a row of its own',
-          stripItems[2].getBoundingClientRect().top >= stripItems[0].getBoundingClientRect().bottom);
+    check('compact: all three games on one row', cols.split(' ').length === 3, cols);
+    check('compact: on one row in the literal sense, too',
+          new Set(stripItems.map(i => Math.round(i.getBoundingClientRect().top))).size === 1);
 
-    /* The point of the two-up layout: three across left each picture about a
-       hundred pixels wide, which is too small to tell one game from another. */
-    const artwork = stripItems.map(i => i.querySelector('img').getBoundingClientRect());
-    check('compact: the artwork is big enough to read',
-          artwork.every(box => box.width >= 140 && box.height >= 85),
-          artwork.map(b => Math.round(b.width) + 'x' + Math.round(b.height)).join('  '));
+    /* A launcher, not a shelf of pictures. The full artwork needs room the
+       compact layout does not have; the mark does not. */
+    check('compact: each tile shows the mark, not the artwork',
+          stripItems.every(i => shownIn(w, i.querySelector('.strip-icon')) &&
+                                !shownIn(w, i.querySelector('.strip-art'))));
 
-    /* Cropping the wide one to a letterbox takes the top off the drawing, so it
-       keeps the ratio the art is drawn at. */
-    check('compact: no tile crops its artwork out of shape',
-          artwork.every(box => Math.abs(box.width / box.height - 8 / 5) < 0.05),
-          artwork.map(b => (b.width / b.height).toFixed(2)).join(', '));
+    const icons = stripItems.map(i => i.querySelector('.strip-icon').getBoundingClientRect());
+    check('compact: the marks are big enough to tell apart',
+          icons.every(box => box.width >= 36 && box.height >= 36),
+          icons.map(b => Math.round(b.width) + 'x' + Math.round(b.height)).join('  '));
+    check('compact: and every game has its own',
+          new Set(stripItems.map(i => i.querySelector('.strip-icon').getAttribute('src'))).size === 3);
+
+    /* The name sits under the mark rather than floating over a picture, which
+       is the difference between a tile and a captioned photo. */
+    const label = stripItems[0].querySelector('.strip-label');
+    check('compact: the name is in the flow beneath the mark',
+          w.getComputedStyle(label).position === 'static' &&
+          label.getBoundingClientRect().top >= icons[0].bottom - 1);
+
+    check('compact: the marks are decorative, the name does the naming',
+          stripItems.every(i => i.querySelector('.strip-icon').getAttribute('alt') === '' &&
+                                i.querySelector('.strip-label').textContent.trim().length > 2));
     check('compact: the feature rows are gone', !shown(w, '#games'));
     check('compact: so is the eyebrow and the hero note',
           !shown(w, '.eyebrow') && !shown(w, '.hero-note'));

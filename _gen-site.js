@@ -115,7 +115,10 @@ function analyticsMarkup() {
 function stripMarkup() {
   return live.map(game =>
     `        <a class="strip-item" data-game="${game.id}" href="${game.url}" aria-label="Play ${esc(game.title)}">` +
-    `<img src="${game.art}" alt="${esc(game.alt)}" />` +
+    `<img class="strip-art" src="${game.art}" alt="${esc(game.alt)}" />` +
+    /* The launcher icon, for the compact homepage. Both pictures ship and the
+       stylesheet picks one, the same way both homepage layouts do. */
+    `<img class="strip-icon" src="${game.icon}" alt="" />` +
     `<span class="strip-label">${esc(game.title)}</span></a>`
   ).join('\n');
 }

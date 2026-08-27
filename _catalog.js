@@ -52,6 +52,7 @@ const GAMES = [
       'four, five or six letter board — every correct letter lights up, and everyone in the ' +
       'world gets the same word each day.',
     art: 'assets/art/shabda.svg',
+    icon: 'assets/art/icon-shabda.svg',
     alt: 'A grid of letter tiles with one row solved in teal',
     accent: '#2f9e8f',
     facts: ['New word daily', '6 guesses', '4, 5 or 6 letters'],
@@ -67,6 +68,7 @@ const GAMES = [
       'to find the hidden word before the snowman melts away, with only its category to go on. ' +
       'A new word every day, and practice rounds whenever you want them.',
     art: 'assets/art/snowman.svg',
+    icon: 'assets/art/icon-snowman.svg',
     alt: 'A snowman that has lost its hat and scarf, beside a part-guessed word',
     accent: '#5a9e4f',
     facts: ['New word daily', '7 categories', 'Practice any time'],
@@ -82,6 +84,7 @@ const GAMES = [
       'to eight letters, in five tries — everyone in the world gets the same word, so you can ' +
       'compare notes with whoever else played today.',
     art: 'assets/art/anagram.svg',
+    icon: 'assets/art/icon-anagram.svg',
     alt: 'Scattered letter tiles settling into a solved word',
     accent: '#6c74d8',
     facts: ['One word daily', '5 to 8 letters', '5 tries'],

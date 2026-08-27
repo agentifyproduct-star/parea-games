@@ -262,7 +262,11 @@ a { color: inherit; }
 }
 
 .strip-item:hover { transform: translateY(-4px); box-shadow: 0 20px 44px rgba(22, 22, 26, .1); }
-.strip-item img { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
+.strip-art { width: 100%; aspect-ratio: 8 / 5; object-fit: cover; }
+
+/* The launcher icon rides along in the markup and waits for the compact
+   homepage, which is the only place it is ever shown. */
+.strip-icon { display: none; }
 
 .strip-label {
   position: absolute;
@@ -672,36 +676,58 @@ code {
      rows below repeat the same three pictures at the same width, so the site
      reads as six games rather than three. In compact those rows are gone, which
      makes the strip the games section rather than a duplicate of it. */
-  /* Two across, then one across the full width. Three in a row put every game
-     on screen but made each picture about a hundred pixels wide, which is too
-     small to read as anything — the art stopped saying which game it was and
-     became three grey smudges. Two up and one under gives each tile half the
-     width or all of it, and the pictures do the job they were drawn for.
+  /* A launcher, rather than a shelf of pictures.
 
-     The full-width one keeps the same 8:5 the artwork is drawn at rather than
-     being cropped to a letterbox. Every piece of this art centres its subject
-     with very little margin, so a wide crop takes the top off the thing you
-     were meant to be looking at. */
+     The artwork is drawn at 800 by 500 and needs room to say anything. Three of
+     them across a phone came out about a hundred pixels wide — three grey
+     smudges where three games should be — and giving them that room cost most
+     of the screen the compact layout exists to save.
+
+     So the compact board shows each game's mark instead: flat, square, in the
+     game's own colour, with the name underneath. Small on purpose. An icon is
+     legible at a size a painting is not, and three of them fit one row with
+     room left for a fourth game. */
   html.compact-home .strip {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
     margin-top: 20px;
   }
 
-  html.compact-home .strip-item:nth-child(3) { grid-column: 1 / -1; }
+  html.compact-home .strip-item {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 13px 8px 11px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(22, 22, 26, .05);
+  }
+
+  html.compact-home .strip-art { display: none; }
+
+  html.compact-home .strip-icon {
+    display: block;
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 9px;
+  }
 
   /* The whole tile is the tap target — it always was, being an anchor around
      the picture and the label both. This only guarantees the height. */
   html.compact-home .strip-item { min-height: 44px; }
 
-  /* Around 166px of tile at 375px of phone, and the full width for the third,
-     so the label goes back to the size it is everywhere else. */
+  /* Out from over the picture and back into the flow, which is what makes the
+     whole thing read as a tile rather than a photo with a caption on it. */
   html.compact-home .strip-label {
-    left: 10px;
-    bottom: 10px;
-    padding: 6px 12px;
-    font-size: 12px;
+    position: static;
+    display: block;
+    background: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -.01em;
   }
 }
 

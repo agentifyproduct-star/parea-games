@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Shabda">
+  <!-- A board working its way down to a solved row: three guesses, one letter
+       landing in the right place, then the word. Drawn to fill the square, so
+       it carries the same visual weight as the other two at 46px. Rounded at
+       the same generous radius as the mark. -->
+  <g fill="#c9c5bb">
+    <rect x="0.5"  y="0.5"  width="13" height="13" rx="3.6" />
+    <rect x="17.5" y="0.5"  width="13" height="13" rx="3.6" />
+    <rect x="34.5" y="0.5"  width="13" height="13" rx="3.6" />
+    <rect x="0.5"  y="17.5" width="13" height="13" rx="3.6" />
+    <rect x="34.5" y="17.5" width="13" height="13" rx="3.6" />
+  </g>
+  <rect x="17.5" y="17.5" width="13" height="13" rx="3.6" fill="#d3873c" />
+  <g fill="#2f9e8f">
+    <rect x="0.5"  y="34.5" width="13" height="13" rx="3.6" />
+    <rect x="17.5" y="34.5" width="13" height="13" rx="3.6" />
+    <rect x="34.5" y="34.5" width="13" height="13" rx="3.6" />
+  </g>
+</svg>

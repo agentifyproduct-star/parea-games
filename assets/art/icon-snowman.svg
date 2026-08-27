@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Snowman">
+  <!-- Body and head, hat squared off to keep the family resemblance to the
+       mark. The accent carries the snow so the three icons are told apart by
+       colour before anybody reads a word. -->
+  <g fill="#5a9e4f">
+    <circle cx="24" cy="34" r="11" />
+    <circle cx="24" cy="18" r="7.5" />
+  </g>
+  <g fill="#1e2a26">
+    <rect x="13" y="9" width="22" height="3.4" rx="1.7" />
+    <rect x="17.5" y="2" width="13" height="8" rx="2.4" />
+    <circle cx="21.2" cy="17.4" r="1.5" />
+    <circle cx="26.8" cy="17.4" r="1.5" />
+  </g>
+</svg>

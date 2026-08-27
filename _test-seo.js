@@ -137,6 +137,18 @@ check('the enhancement scripts sit after the page they enhance',
 check('the front page still names every game with no script having run',
   live.every(game => has(home.slice(0, home.indexOf('<script src="assets/daily.js')), game.title)));
 
+/* Every game ships two pictures: the artwork the front page shows on a wide
+   screen, and the mark the compact homepage shows instead. A game added without
+   the second one would land on a phone as an empty tile. */
+live.forEach(game => {
+  check(`${game.title} declares a launcher mark`, !!game.icon, game.icon || 'missing');
+  check(`and ${game.title}'s mark is a file that exists`,
+    !!game.icon && fs.existsSync(path.join(ROOT, game.icon)));
+});
+
+check('the front page carries a mark for every game',
+  live.every(game => has(home, game.icon)));
+
 /* ---------------- the splash must never be able to trap the page ----------------
 
    A full-screen sheet is the one piece of this site that can make everything
