@@ -104,7 +104,7 @@ const ANSWERS = [
   'volume','voyage','waffle','wallet','walnut','wander','warmth','wealth','weapon','weasel',
   'weekly','weight','wholly','wicked','widely','widget','willow','window','winner','winter',
   'wisdom','wither','within','wonder','wooden','worker','worthy','wrench','writer','yellow',
-  'yogurt','zealot','zigzag','zombie'
+  'yogurt','zealot','zigzag','zombie','remake','reboot'
 ];
 
 const VALID = [

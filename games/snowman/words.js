@@ -69,7 +69,15 @@ const CATEGORIES = {
     'director', 'screenplay', 'soundtrack', 'popcorn', 'sequel', 'trailer', 'cameo',
     'subtitle', 'blockbuster', 'red carpet', 'box office', 'sound stage', 'stunt double',
     'premiere', 'silent film', 'the matrix', 'casablanca', 'psycho', 'toy story',
-    'frozen', 'finding nemo', 'star wars', 'gladiator', 'inception', 'titanic'
+    'frozen', 'finding nemo', 'star wars', 'gladiator', 'inception', 'titanic',
+    'actress', 'villain', 'preview', 'feature', 'cartoon', 'fantasy', 'suspense',
+    'matinee', 'screening', 'projector', 'flashback', 'voiceover', 'storyboard',
+    'costume', 'film reel', 'film score', 'film crew', 'movie star', 'plot twist',
+    'final cut', 'wide shot', 'best actor', 'love story', 'leading man', 'end credits',
+    'film studio', 'movie night', 'green screen', 'sound effect', 'award season',
+    'king kong', 'the shining', 'goodfellas', 'pulp fiction', 'la la land', 'the martian',
+    'moulin rouge', 'vertigo', 'metropolis', 'top gun', 'die hard', 'alien', 'rocky',
+    'shrek', 'moana', 'avatar', 'tangled'
   ],
   'Nature': [
     'rainbow', 'waterfall', 'thunder', 'blossom', 'meadow', 'canyon', 'iceberg',

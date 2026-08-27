@@ -94,7 +94,7 @@ const ANSWERS = [
   'weary','wedge','weigh','weird','whale','wheat','wheel','where','which','while',
   'white','whole','whose','widow','width','windy','witch','woman','world','worry',
   'worse','worst','worth','would','wound','wrist','write','wrong','yield','young',
-  'yours','youth','zebra'
+  'yours','youth','zebra','genre','cameo','stunt','usher'
 ];
 
 const VALID = [

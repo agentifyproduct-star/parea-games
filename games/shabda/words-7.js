@@ -98,7 +98,8 @@ const ANSWERS = [
   'unified','ignored','precise','invoice','forming','embassy','amongst','horizon','toolbox','surfing',
   'attract','disable','succeed','lending','karaoke','observe','terrace','replied','seafood','playboy',
   'durable','spencer','wanting','custody','beneath','seventh','soonest','fitting','surplus','gravity',
-  'essence','stomach','anatomy','clarity','settled','folding','airfare','vaccine','tension','eternal'
+  'essence','stomach','anatomy','clarity','settled','folding','airfare','vaccine','tension','eternal',
+  'actress','villain','popcorn','scenery','matinee','prequel','spinoff','dubbing','montage'
 ];
 
 const VALID = [
