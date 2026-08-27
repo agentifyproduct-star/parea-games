@@ -2,7 +2,27 @@
    Reads the per-length lists registered by words-4.js / words-5.js / words-6.js
    and turns them into a daily schedule, one independent run per length. */
 
-const LENGTHS = [4, 5, 6];
+const LENGTHS = [4, 5, 6, 7];
+
+/* How often each board comes up, in both modes alike. The dip at five is
+   deliberate: four is a quick win, six and seven are where the game has room to
+   be a game, and five sits close enough to six to feel like a repeat of it.
+
+   Weights rather than a rotation, because the board is no longer something the
+   player picks. Take one away or change a number and the game reweights; there
+   is nothing else to keep in step. */
+const LENGTH_WEIGHTS = [[4, 20], [5, 10], [6, 40], [7, 30]];
+const WEIGHT_TOTAL = LENGTH_WEIGHTS.reduce((sum, pair) => sum + pair[1], 0);
+
+/* One draw from the table, given something that returns 0..1. */
+function pickLength(rnd) {
+  let roll = rnd() * WEIGHT_TOTAL;
+  for (let i = 0; i < LENGTH_WEIGHTS.length; i++) {
+    roll -= LENGTH_WEIGHTS[i][1];
+    if (roll < 0) return LENGTH_WEIGHTS[i][0];
+  }
+  return LENGTH_WEIGHTS[LENGTH_WEIGHTS.length - 1][0];
+}
 
 /* Puzzle #1 is 16 Feb 2026, so the six months up to today are all back-filled.
    Which day it is comes from assets/daily.js: midnight in New York, the same
@@ -98,14 +118,23 @@ const WORDS = {
     return DAILY.key(date);
   },
 
-  /* Which board today's word is played on. The three lengths are dealt in
-     shuffled blocks of three, so every length comes round once every three days
-     without Mondays always being the short one. Same for everybody. */
+  /* Which board today's word is played on: a draw from the weight table, seeded
+     off the puzzle number so it is the same draw for everybody, everywhere, and
+     the same one again tomorrow if you come back to yesterday. */
   dailyLength(date = new Date()) {
-    const n = this.puzzleNumber(date) - 1;
-    const block = Math.floor(n / LENGTHS.length);
-    const order = shuffled(LENGTHS, 0xB0A2D + block * 0x9E3779B1);
-    return order[((n % LENGTHS.length) + LENGTHS.length) % LENGTHS.length];
+    return pickLength(mulberry32(0xB0A2D + this.puzzleNumber(date) * 0x9E3779B1));
+  },
+
+  /* Unlimited draws fresh every word. The same table, none of the calendar:
+     nobody else is playing your unlimited round, so there is nothing to agree
+     with. Rolled per word rather than per session, so a run of unlimited words
+     is a run of different boards. */
+  unlimitedLength() {
+    return pickLength(Math.random);
+  },
+
+  weights() {
+    return LENGTH_WEIGHTS.map(pair => ({ len: pair[0], weight: pair[1] }));
   },
 
   /* Everyone gets the same word for a given length on a given calendar day. */

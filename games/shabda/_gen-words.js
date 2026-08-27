@@ -1,4 +1,4 @@
-/* Regenerates games/shabda/words-{4,5,6}.js with a full guess lexicon.
+/* Regenerates games/shabda/words-{4,5,6,7}.js with a full guess lexicon.
    ANSWERS are preserved verbatim and in order — the daily schedule is a seeded
    shuffle of that array, so any reordering would rewrite six months of history. */
 const fs = require('fs'), vm = require('vm'), os = require('os'), path = require('path');
@@ -18,7 +18,7 @@ async function loadEnable() {
     console.log('cached at ' + CACHE);
   }
   return new Set(fs.readFileSync(CACHE, 'utf8').split(/\r?\n/)
-    .map(s => s.trim().toLowerCase()).filter(w => /^[a-z]{4,6}$/.test(w)));
+    .map(s => s.trim().toLowerCase()).filter(w => /^[a-z]{4,7}$/.test(w)));
 }
 
 /* Words in daily use that both lexicons miss: ENABLE was frozen in 1997 and the
@@ -27,11 +27,11 @@ const MODERN = `blog blogs vlog vlogs wiki wikis wifi apps emoji meme memes text
   login logout online email emails inbox spammy unmute reboot router laptop tablet screen
   selfie avatar upload stream tweet tweets geeky techie zoomed reblog unsend
   sudoku ramen latte lattes nachos vegan sushi wasabi taco tacos kimchi quinoa panini
-  detox vape vapes decaf combo hoodie sneaker`.split(/\s+/).filter(w => /^[a-z]{4,6}$/.test(w));
+  detox vape vapes decaf combo hoodie sneaker`.split(/\s+/).filter(w => /^[a-z]{4,7}$/.test(w));
 
 /* Load what is there now: answers (curated, order-critical) and the old extras. */
 const ctx = { console }; ctx.window = ctx; vm.createContext(ctx);
-for (const f of ['words-4.js', 'words-5.js', 'words-6.js'])
+for (const f of ['words-4.js', 'words-5.js', 'words-6.js', 'words-7.js'])
   vm.runInContext(fs.readFileSync(GAME + f, 'utf8').replace(/^\uFEFF/, ''), ctx, { filename: f });
 const CURRENT = ctx.WORD_LISTS;
 
@@ -41,7 +41,7 @@ const chunk = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n
 async function main() {
 const enable = await loadEnable();
 const report = [];
-for (const len of [4, 5, 6]) {
+for (const len of [4, 5, 6, 7]) {
   const answers = usable(CURRENT[len].answers, len);          // exactly what BANK uses today
   const extras  = usable(CURRENT[len].extra || [], len);
 
@@ -63,7 +63,7 @@ for (const len of [4, 5, 6]) {
     .map(row => '  ' + row.join(',')).join(',\n');
   const validBlock = chunk(valid, 20).map(row => `  '${row.join('')}'`).join(',\n');
 
-  const word = { 4: 'Four', 5: 'Five', 6: 'Six' }[len];
+  const word = { 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven' }[len];
   const file = `/* ${word}-letter word data for Shabda.
 
    ANSWERS - the pool the daily and random solutions are drawn from: common,

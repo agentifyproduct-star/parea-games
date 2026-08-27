@@ -613,7 +613,7 @@ function startPractice() {
   state.activeSlot = SLOT;
   el('results').hidden = true;
   beginSlot();
-  toast('Practice round — nothing counts');
+  toast('Your streak is safe here');
   return true;
 }
 
@@ -649,7 +649,7 @@ function showResults() {
     note: el('next-game-note')
   });
 
-  el('results-heading').textContent = inPractice ? 'Practice round over' : 'Done for today';
+  el('results-heading').textContent = inPractice ? 'That one is yours' : 'Done for today';
   el('btn-share').hidden = inPractice;
   el('btn-back-to-today').hidden = !inPractice;
   el('practice-note').hidden = !inPractice;
@@ -659,7 +659,7 @@ function showResults() {
   el('res-attempt').textContent = outcomeText();
 
   updateCountdown();
-  announce((inPractice ? 'Practice round over. ' : 'Puzzle complete. ') +
+  announce((inPractice ? 'Unlimited word finished. ' : 'Puzzle complete. ') +
            shareText().split(String.fromCharCode(10)).join('. '));
 }
 
@@ -775,7 +775,7 @@ function render() {
 
   const finished = state.gameStatus === 'dayComplete';
   el('slot-label').textContent = finished
-    ? (practice ? 'Practice word' : "Today's word")
+    ? (practice ? 'Unlimited word' : "Today's word")
     : `${wordFor().length} letters`;
 
   /* Nothing left to do with the tray, the controls or the attempt count. */
@@ -786,7 +786,11 @@ function render() {
   el('streak').textContent = save.stats.currentStreak;
   /* During practice the day number would be a lie, and the streak is not at
      stake either way. */
-  el('puzzle-no').textContent = practice ? 'Practice' : '#' + state.puzzleNumber;
+  /* R3: the chip used to read "Practice" here, which is the word already
+     printed on the pressed tab two inches above it. In Unlimited there is no
+     puzzle number to give, so the chip simply stands down. */
+  el('puzzle-no').hidden = !!practice;
+  el('puzzle-no').textContent = '#' + state.puzzleNumber;
 
   const playing = state.gameStatus === 'playing';
   el('btn-submit').disabled = !playing;
@@ -985,7 +989,7 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
          someone to ask about — just say what happened. */
       const spent = progressFor().attemptsUsed;
       leavePractice();
-      if (spent) toast('Practice round dropped');
+      if (spent) toast('Unlimited word dropped');
       return;
     }
 

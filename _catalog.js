@@ -47,15 +47,15 @@ const GAMES = [
   {
     id: 'shabda',
     title: 'Shabda',
-    tagline: 'Six guesses, one hidden word. Play a short board or a long one.',
+    tagline: 'Six guesses, one hidden word. The board is four to seven letters, and it picks you.',
     description: 'Shabda is a free daily word game. Guess the hidden word in six tries on a ' +
-      'four, five or six letter board — every correct letter lights up, and everyone in the ' +
+      'board of four to seven letters — every correct letter lights up, and everyone in the ' +
       'world gets the same word each day.',
     art: 'assets/art/shabda.svg',
     icon: 'assets/art/icon-shabda.svg',
     alt: 'A grid of letter tiles with one row solved in teal',
     accent: '#2f9e8f',
-    facts: ['New word daily', '6 guesses', '4, 5 or 6 letters'],
+    facts: ['New word daily', '6 guesses', '4 to 7 letters'],
     status: 'live',
     path: 'games/shabda/',
     url: 'games/shabda/index.html'
@@ -66,12 +66,12 @@ const GAMES = [
     tagline: 'Hangman by another name. Call out letters before he melts away, with only the category to go on.',
     description: 'Snowman is a free daily word game — hangman by another name. Call out letters ' +
       'to find the hidden word before the snowman melts away, with only its category to go on. ' +
-      'A new word every day, and practice rounds whenever you want them.',
+      'A new word every day, and unlimited words whenever you want more.',
     art: 'assets/art/snowman.svg',
     icon: 'assets/art/icon-snowman.svg',
     alt: 'A snowman that has lost its hat and scarf, beside a part-guessed word',
     accent: '#5a9e4f',
-    facts: ['New word daily', '7 categories', 'Practice any time'],
+    facts: ['New word daily', '7 categories', 'Unlimited words'],
     status: 'live',
     path: 'games/snowman/',
     url: 'games/snowman/index.html'

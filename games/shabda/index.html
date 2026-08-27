@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Shabda &mdash; Parea Games</title>
-<meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
 <link rel="stylesheet" href="shabda.css?v=66a135ca" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Parea Games" />
 <meta property="og:title" content="Shabda — Parea Games" />
-<meta property="og:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<meta property="og:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
 <meta property="og:url" content="https://pareagames.com/games/shabda/" />
 <meta property="og:image" content="https://pareagames.com/assets/brand/share-shabda.png" />
 <meta property="og:image:width" content="1200" />
@@ -22,7 +22,7 @@
 <meta property="og:locale" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Shabda — Parea Games" />
-<meta name="twitter:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day." />
+<meta name="twitter:description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
 <meta name="twitter:image" content="https://pareagames.com/assets/brand/share-shabda.png" />
 <script type="application/ld+json">
 {
@@ -30,7 +30,7 @@
   "@type": "VideoGame",
   "name": "Shabda",
   "url": "https://pareagames.com/games/shabda/",
-  "description": "Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.",
+  "description": "Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day.",
   "image": "https://pareagames.com/assets/brand/share-shabda.png",
   "genre": [
     "Word game",
@@ -75,12 +75,10 @@
     </div>
   </header>
 
-  <!-- Today's word, then practice on whichever board you fancy -->
+  <!-- Today's word, or as many more as you like -->
   <div class="lengths" role="group" aria-label="Word to play">
-    <button class="len-btn today" data-len="daily" type="button">Today</button>
-    <button class="len-btn" data-len="4" type="button">4 letters</button>
-    <button class="len-btn" data-len="5" type="button">5 letters</button>
-    <button class="len-btn" data-len="6" type="button">6 letters</button>
+    <button class="len-btn mode-btn today" data-mode="daily" type="button">Today</button>
+    <button class="len-btn mode-btn" data-mode="unlimited" type="button">Unlimited</button>
   </div>
 
   <div id="toast-area" class="toast-area" aria-live="polite"></div>
@@ -89,7 +87,7 @@
     <div id="board" class="board" role="grid" aria-label="Guess grid"></div>
     <div id="keyboard" class="keyboard" role="group" aria-label="Keyboard"></div>
 
-    <!-- Shown only once today's puzzle is over: practice has no deadline. -->
+    <!-- Shown only once today's puzzle is over: unlimited has no deadline. -->
     <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
   </main>
 
@@ -101,10 +99,11 @@
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
 <!-- intro:start -->
-      <p class="lede">Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.</p>
+      <p class="lede">Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day.</p>
 <!-- intro:end -->
       <p>Find the hidden word in <b>6 guesses</b>. <b>Today</b> is one word for everybody,
-         on a board of <b>4</b>, <b>5</b> or <b>6</b> letters &mdash; which one changes day to day.</p>
+         on a board of <b>4</b> to <b>7</b> letters. Which one changes day to day, and you
+         do not choose it.</p>
       <p>After every guess the tiles change colour to show how close you got.</p>
 
       <div class="example">
@@ -134,9 +133,10 @@
         holding it against you &mdash; random letters will just get handed back.
       </p>
       <p class="fine plain">
-        Today's word is the only one that counts towards your record and streak. The
-        <b>4</b>, <b>5</b> and <b>6</b> buttons deal practice words as often as you like, and
-        those count for nothing. A new day starts at midnight New York time.
+        Today's word is the one that counts towards your record and streak.
+        <b>Unlimited</b> deals another word whenever you want one, on a board drawn the
+        same way. Your streak is safe there: nothing you do in Unlimited can end it.
+        A new day starts at midnight New York time.
       </p>
     </div>
   </div>
@@ -178,8 +178,9 @@
   <script src="words-4.js?v=9f169271"></script>
   <script src="words-5.js?v=e7d67d33"></script>
   <script src="words-6.js?v=8cc7f3da"></script>
-  <script src="words.js?v=32294e53"></script>
-  <script src="shabda.js?v=1ddfd7cd"></script>
+  <script src="words-7.js?v=a08ec319"></script>
+  <script src="words.js?v=63789953"></script>
+  <script src="shabda.js?v=886859cc"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

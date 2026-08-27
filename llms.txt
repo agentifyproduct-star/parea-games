@@ -8,8 +8,8 @@ account to make. Streaks are kept in the browser, not on a server.
 
 ## Games
 
-- [Shabda](https://pareagames.com/games/shabda/): Shabda is a free daily word game. Guess the hidden word in six tries on a four, five or six letter board — every correct letter lights up, and everyone in the world gets the same word each day.
-- [Snowman](https://pareagames.com/games/snowman/): Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.
+- [Shabda](https://pareagames.com/games/shabda/): Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day.
+- [Snowman](https://pareagames.com/games/snowman/): Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more.
 - [Anagram](https://pareagames.com/games/anagram/): Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today.
 
 ## Questions

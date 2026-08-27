@@ -25,7 +25,7 @@ const KEY_ROWS = [
   ['z', 'x', 'c', 'v', 'b', 'n', 'm']
 ];
 
-/* The record belongs to the word of the day and nothing else. Practice rounds are
+/* The record belongs to the word of the day and nothing else. Unlimited rounds are
    unlimited, so counting them would turn a streak into a measure of free time. */
 /* These keys are frozen. They read oddly now the site is called Parea, but
    they are the address of every player's streak: rename one and that
@@ -34,7 +34,6 @@ const STORE_STATS = 'arcade.snowman.stats';
 const STORE_DAILY = 'arcade.snowman.daily';
 const STORE_USED = level => `arcade.snowman.used.${level}`;
 const STORE_GAME = 'arcade.snowman.game';
-const STORE_LEVEL = 'arcade.snowman.level';
 const STORE_HELP = 'arcade.snowman.seenHelp';
 
 const wordEl = document.getElementById('word');
@@ -45,11 +44,11 @@ const categoryEl = document.getElementById('category');
 const toastArea = document.getElementById('toast-area');
 const wordGuessForm = document.getElementById('word-guess');
 const wordGuessInput = document.getElementById('word-guess-input');
-const levelBtns = [...document.querySelectorAll('.level-btn')];
+const modeBtns = [...document.querySelectorAll('.mode-btn')];
 
 const state = {
   level: DEFAULT_LEVEL,
-  daily: true,           // false once the player asks for a practice word
+  daily: true,           // false once the player asks for an unlimited word
   puzzle: 0,
   secretWord: '',        // lowercase, may contain spaces or hyphens
   category: '',
@@ -140,7 +139,7 @@ function saveGame() {
     status: state.status
   };
 
-  /* The day's game is kept apart from practice, so starting a practice round
+  /* The day's game is kept apart from unlimited, so starting an unlimited round
      never loses where you had got to on today's word. */
   saveJSON(state.daily ? STORE_DAILY : STORE_GAME, snapshot);
 }
@@ -239,7 +238,7 @@ function finishTurn() {
   /* The record only moves on the word of the day, so only the day's game has
      anything to show afterwards. */
   if (state.daily) setTimeout(openStats, state.status === 'won' ? 1400 : 2000);
-  else setTimeout(() => toast('Practice round — not counted', 2400), 1600);
+  else setTimeout(() => toast('Your streak is safe here', 2400), 1600);
 }
 
 const WIN_WORDS = ['Flawless', 'Superb', 'Neat', 'Nicely done', 'Close one', 'By a thread'];
@@ -356,7 +355,7 @@ function renderLives() {
 
 /* ---------------- next puzzle ----------------
    Only worth showing once today's word is settled: while you are still playing
-   there is no deadline, and a practice round has nothing to wait for. */
+   there is no deadline, and an unlimited round has nothing to wait for. */
 
 function updateCountdown() {
   const show = state.daily && state.status !== 'playing';
@@ -447,14 +446,15 @@ function startDaily() {
 
   stats = loadStats();
   TODAY.set('snowman', 'playing');
-  markLevelButtons();
+  markModeButtons();
   render();
   saveGame();
 }
 
-/* A practice word at the chosen difficulty. Unlimited, and counts for nothing. */
-function startGame(level = state.level) {
-  state.level = SNOWMAN_WORDS.levels.includes(level) ? level : DEFAULT_LEVEL;
+/* An unlimited word. The tier is rolled per word off the gentler of the two
+   tables, so nobody picks it and hard never turns up here. */
+function startGame() {
+  state.level = SNOWMAN_WORDS.unlimitedLevel();
 
   const pick = SNOWMAN_WORDS.pick(state.level, loadUsed(state.level));
   state.daily = false;
@@ -467,8 +467,7 @@ function startGame(level = state.level) {
 
   stats = loadStats();
   rememberUsed(state.level, state.secretWord);
-  saveJSON(STORE_LEVEL, state.level);
-  markLevelButtons();
+  markModeButtons();
   render();
   saveGame();
 }
@@ -497,7 +496,7 @@ function restore(key, { finished = false } = {}) {
 
   stats = loadStats();
   if (state.daily) TODAY.set('snowman', state.status);
-  markLevelButtons();
+  markModeButtons();
   render();
   return true;
 }
@@ -508,22 +507,17 @@ function restoreGame() {
   return restore(STORE_GAME);
 }
 
-function markLevelButtons() {
-  levelBtns.forEach(btn => {
-    const isDaily = btn.dataset.level === 'daily';
-    const on = isDaily ? state.daily : (!state.daily && btn.dataset.level === state.level);
-    btn.setAttribute('aria-pressed', String(on));
+function markModeButtons() {
+  modeBtns.forEach(btn => {
+    const isDaily = btn.dataset.mode === 'daily';
+    btn.setAttribute('aria-pressed', String(isDaily ? state.daily : !state.daily));
   });
 }
 
-levelBtns.forEach(btn => {
+modeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    const level = btn.dataset.level;
-    const wantsDaily = level === 'daily';
-
-    if (wantsDaily && state.daily) return;
-    if (!wantsDaily && !state.daily && level === state.level &&
-        state.status === 'playing' && !state.guessedLetters.size) return;
+    const wantsDaily = btn.dataset.mode === 'daily';
+    if (wantsDaily === state.daily) return;
 
     const dropping = !state.daily && state.status === 'playing' && state.guessedLetters.size > 0;
 
@@ -534,9 +528,8 @@ levelBtns.forEach(btn => {
       return;
     }
 
-    startGame(level);
-    toast(dropping ? 'Practice word dropped'
-                   : `${level[0].toUpperCase()}${level.slice(1)} — practice word`);
+    startGame();
+    toast(dropping ? 'Unlimited word dropped' : 'Your streak is safe here');
   });
 });
 
@@ -555,8 +548,8 @@ document.getElementById('btn-help').addEventListener('click', () => openModal('h
 document.getElementById('btn-stats').addEventListener('click', openStats);
 
 document.getElementById('btn-new').addEventListener('click', () => {
-  startGame(state.level);
-  toast('Practice word — good luck');
+  startGame();
+  toast('Your streak is safe here');
 });
 
 document.getElementById('btn-play-again').addEventListener('click', () => {
@@ -614,7 +607,7 @@ function openStats() {
 
 buildKeyboard();
 
-/* Today's word is the front door. A practice round left half-finished is picked
+/* Today's word is the front door. An unlimited round left half-finished is picked
    up only if the day's word is already done. */
 if (!restore(STORE_DAILY)) {
   const dailyDone = restore(STORE_DAILY, { finished: true });

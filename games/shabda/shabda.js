@@ -15,20 +15,19 @@ const KEY_LAYOUT = [
 
 /* One record, for the word of the day. The board size is the day's business
    rather than the player's, so a per-length record would only fragment the same
-   streak three ways. Practice never lands here at all. */
+   streak three ways. Unlimited never lands here at all. */
 /* These keys are frozen. They read oddly now the site is called Parea, but
    they are the address of every player's streak: rename one and that
    player starts again from nothing. */
 const STORE_STATS = 'arcade.shabda.stats';
 const STORE_DAILY = 'arcade.shabda.daily';
-const STORE_LEN = 'arcade.shabda.len';
 const STORE_DICT = 'arcade.shabda.dict';
 const STORE_HELP = 'arcade.shabda.seenHelp';
 
 const boardEl = document.getElementById('board');
 const keyboardEl = document.getElementById('keyboard');
 const toastArea = document.getElementById('toast-area');
-const lengthBtns = [...document.querySelectorAll('.len-btn')];
+const modeBtns = [...document.querySelectorAll('.mode-btn')];
 
 const state = {
   len: DEFAULT_LEN,
@@ -77,7 +76,7 @@ function loadStats() {
 
 let stats = loadStats();
 
-/* The daily record. Never called for a practice round. */
+/* The daily record. Never called for an unlimited round. */
 function recordResult(won, guessCount) {
   stats.played += 1;
   if (won) {
@@ -416,9 +415,9 @@ function finishTurn(rowIndex, guess) {
     toast(state.answer.toUpperCase(), 4000);
   }
 
-  /* Only the word of the day counts. Practice rounds are unlimited, so letting
-     them touch the record would make the streak and the distribution meaningless
-     — a twenty-day streak in ten minutes without a day passing. */
+  /* Only the word of the day counts here. Unlimited rounds have no day to be
+     counted against, so letting them touch this record would make the streak
+     meaningless: twenty days of streak in ten minutes, without a day passing. */
   if (state.status !== 'playing' && state.daily) {
     recordResult(state.status === 'won', state.guesses.length);
     TODAY.set('shabda', state.status);
@@ -428,7 +427,7 @@ function finishTurn(rowIndex, guess) {
   updateCountdown();
   if (state.status !== 'playing') {
     if (state.daily) setTimeout(openStats, state.status === 'won' ? 2000 : 2400);
-    else setTimeout(() => toast('Practice round — not counted', 2400), 1200);
+    else setTimeout(() => toast('Your streak is safe here', 2400), 1200);
   }
 }
 
@@ -449,7 +448,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------------- next puzzle ----------------
    Only worth showing once today's word is settled: while you are still playing
-   there is no deadline, and a practice round has nothing to wait for. */
+   there is no deadline, and an unlimited round has nothing to wait for. */
 
 function updateCountdown() {
   const show = state.daily && state.status !== 'playing';
@@ -480,12 +479,12 @@ document.getElementById('btn-stats').addEventListener('click', openStats);
 document.getElementById('btn-new').addEventListener('click', () => {
   /* Asking for a new word is the whole point of the button; there is nothing to
      confirm. Today's game is saved and comes back from the Today button. */
-  startGame({ len: state.len, daily: false });
+  startGame({ daily: false });
 });
 
 document.getElementById('btn-play-again').addEventListener('click', () => {
   closeModal(document.getElementById('stats-modal'));
-  startGame({ len: state.len, daily: false });
+  startGame({ daily: false });
 });
 
 function openStats() {
@@ -535,7 +534,7 @@ function shareText() {
   const score = state.status === 'won' ? state.guesses.length : 'X';
   const label = state.daily
     ? `Shabda #${state.puzzle} · ${state.len} letters`
-    : `Shabda · ${state.len} letters (practice)`;
+    : `Shabda · ${state.len} letters (unlimited)`;
   const grid = state.guesses
     .map(g => scoreGuess(g, state.answer).map(v => EMOJI[v]).join(''))
     .join('\n');
@@ -564,43 +563,40 @@ document.getElementById('btn-share').addEventListener('click', async () => {
 
 /* ---------------- length picker ---------------- */
 
-function markLengthButtons() {
-  lengthBtns.forEach(b => {
-    const isToday = b.dataset.len === 'daily';
-    const on = isToday ? state.daily : (!state.daily && Number(b.dataset.len) === state.len);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+function markModeButtons() {
+  modeBtns.forEach(b => {
+    const isToday = b.dataset.mode === 'daily';
+    b.setAttribute('aria-pressed', (isToday ? state.daily : !state.daily) ? 'true' : 'false');
   });
 }
 
-lengthBtns.forEach(btn => {
+modeBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     if (state.busy) return;
 
-    const wantsToday = btn.dataset.len === 'daily';
-    const len = Number(btn.dataset.len);
-    if (wantsToday && state.daily) return;
-    if (!wantsToday && !state.daily && len === state.len) return;
+    const wantsToday = btn.dataset.mode === 'daily';
+    if (wantsToday === state.daily) return;
 
-    /* No dialog either way: today's game is saved as you go, and a practice game
-       is unlimited. Dropping one is worth a word, not a decision. */
+    /* No dialog either way: today's game is saved as you go, and an unlimited
+       game is unlimited. Dropping one is worth a word, not a decision. */
     const dropping = !state.daily && state.status === 'playing' && state.guesses.length > 0;
 
     if (wantsToday) {
-      startGame({ len: state.len, daily: true });
-      toast(dropping ? 'Practice word dropped'
+      startGame({ daily: true });
+      toast(dropping ? 'Unlimited word dropped'
                      : state.status === 'playing' ? "Today's word" : "Today's word is already done");
       return;
     }
-    startGame({ len, daily: false });
+    startGame({ daily: false });
   });
 });
 
 /* ---------------- game setup ---------------- */
 
-function startGame({ len, daily }) {
-  /* Today's word decides its own board size; practice takes whichever the
-     player asked for. */
-  const wanted = daily ? WORDS.dailyLength() : len;
+function startGame({ daily }) {
+  /* Nobody picks a board any more. Today's comes off the calendar and every
+     unlimited word rolls its own, both from the same weight table. */
+  const wanted = daily ? WORDS.dailyLength() : WORDS.unlimitedLength();
   state.len = WORDS.supports(wanted) ? wanted : DEFAULT_LEN;
   state.daily = daily;
   state.guesses = [];
@@ -610,11 +606,10 @@ function startGame({ len, daily }) {
   state.puzzle = WORDS.puzzleNumber();
 
   stats = loadStats();
-  if (!daily) saveJSON(STORE_LEN, state.len);
 
   buildBoard();
   buildKeyboard();
-  markLengthButtons();
+  markModeButtons();
 
   if (daily) {
     const saved = loadJSON(STORE_DAILY, null);
@@ -634,12 +629,12 @@ function startGame({ len, daily }) {
     saveDaily();
   } else {
     state.answer = WORDS.randomWord(state.len);
-    toast('Practice word — good luck');
+    toast(`${state.len} letters. Your streak is safe here.`);
   }
 }
 
 /* Today's word is the front door, on whichever board today calls for. */
-startGame({ len: WORDS.dailyLength(), daily: true });
+startGame({ daily: true });
 
 // First-time visitors get the rules up front.
 if (!localStorage.getItem(STORE_HELP)) {

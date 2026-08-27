@@ -199,16 +199,56 @@ document.getElementById('f').addEventListener('load', async () => {
     check('a fresh game starts with the snowman back', meltedParts() === 0 && !puddleShown());
     closeModals();
 
-    // ---------- difficulty ----------
-    d.querySelector('.level-btn[data-level="hard"]').click();
+    // ---------- the two modes, and the difficulty behind them ----------
+    const modeBtn = mode => d.querySelector(`.mode-btn[data-mode="${mode}"]`);
+    check('there are two modes and no difficulty picker',
+          d.querySelectorAll('.mode-btn').length === 2 && d.querySelector('[data-level]') === null);
+    check('they read Today and Unlimited',
+          [...d.querySelectorAll('.mode-btn')].map(b => b.textContent).join('/') === 'Today/Unlimited',
+          [...d.querySelectorAll('.mode-btn')].map(b => b.textContent).join('/'));
+
+    modeBtn('unlimited').click();
     await wait(60);
-    check('the difficulty picker deals a practice word from that tier',
-          w.state.level === 'hard' && w.state.daily === false &&
-          w.SNOWMAN_WORDS.difficultyOf(w.state.secretWord) === 'hard',
-          w.state.secretWord);
-    check('the picked difficulty is marked',
-          d.querySelector('.level-btn[data-level="hard"]').getAttribute('aria-pressed') === 'true' &&
-          d.querySelector('.level-btn[data-level="easy"]').getAttribute('aria-pressed') === 'false');
+    check('Unlimited deals a word nobody picked the difficulty of',
+          w.state.daily === false && w.state.secretWord.length > 2, w.state.secretWord);
+    check('Unlimited is the one marked',
+          modeBtn('unlimited').getAttribute('aria-pressed') === 'true' &&
+          modeBtn('daily').getAttribute('aria-pressed') === 'false');
+
+    /* Unlimited is the gentler of the two tables and never serves hard. */
+    const unlimitedTiers = {};
+    for (let i = 0; i < 4000; i++) {
+      const tier = w.SNOWMAN_WORDS.unlimitedLevel();
+      unlimitedTiers[tier] = (unlimitedTiers[tier] || 0) + 1;
+    }
+    check('Unlimited never serves a hard word', !unlimitedTiers.hard,
+          JSON.stringify(unlimitedTiers));
+    check('and splits the rest 70 to 30',
+          Math.abs(unlimitedTiers.easy / 40 - 70) <= 3 && Math.abs(unlimitedTiers.medium / 40 - 30) <= 3,
+          JSON.stringify(unlimitedTiers));
+
+    /* Today keeps hard, at one day in twenty. */
+    const dailyTiers = { easy: 0, medium: 0, hard: 0 };
+    for (let i = 0; i < 2000; i++) {
+      dailyTiers[w.SNOWMAN_WORDS.dailyLevel(
+        new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000))]++;
+    }
+    check('Today follows 65 / 30 / 5',
+          Math.abs(dailyTiers.easy / 20 - 65) <= 3 &&
+          Math.abs(dailyTiers.medium / 20 - 30) <= 3 &&
+          Math.abs(dailyTiers.hard / 20 - 5) <= 2,
+          JSON.stringify(dailyTiers));
+    check('so hard survives only in the daily rotation',
+          dailyTiers.hard > 0 && !unlimitedTiers.hard);
+
+    check('the day is dealt from the tier the day drew',
+          [0, 1, 2, 3, 4, 5, 6, 7].every(i => {
+            const when = new Date(Date.parse('2026-09-01T12:00:00Z') + i * 86400000);
+            return w.SNOWMAN_WORDS.daily(when).level === w.SNOWMAN_WORDS.dailyLevel(when);
+          }));
+
+    modeBtn('daily').click();
+    await wait(60);
     closeModals();
 
     // ---------- the word of the day ----------
@@ -224,11 +264,36 @@ document.getElementById('f').addEventListener('load', async () => {
           w.SNOWMAN_WORDS.daily(new Date('2026-09-01T12:00:00Z')).phrase !==
           w.SNOWMAN_WORDS.daily(new Date('2026-09-02T12:00:00Z')).phrase);
 
-    const sweep = new Set();
-    for (let i = 0; i < 170; i++) {
-      sweep.add(w.SNOWMAN_WORDS.daily(new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000)).phrase);
+    /* The daily used to be one shuffled run through the whole book, which was a
+       clean 170 days before anything repeated. Weighting the day by difficulty
+       means dealing it from that difficulty's pile instead, and the easy pile is
+       70 words drawn on 65% of days, so easy is what empties first. Measured
+       against this seed the first repeat falls on day 96, where the old single
+       run gave 170. Asserted at 90 so the floor is a decision rather than a
+       surprise, and so a reshuffle that made it worse would be caught. */
+    const runway = [];
+    for (let i = 0; i < 200; i++) {
+      runway.push(w.SNOWMAN_WORDS.daily(new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000)).phrase);
     }
-    check('no word comes round again for 170 days', sweep.size === 170, sweep.size + ' distinct');
+    const firstRepeat = runway.findIndex((word, i) => runway.indexOf(word) !== i);
+    check('three months pass without a word coming round again',
+          firstRepeat >= 90, 'first repeat on day ' + (firstRepeat + 1));
+
+    /* The promise that survives the change, and the one that matters: within a
+       tier, the run is walked in order and nothing repeats until that pile is
+       used up. */
+    ['easy', 'medium', 'hard'].forEach(tier => {
+      const drawn = [];
+      for (let i = 0; i < 200; i++) {
+        const when = new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000);
+        if (w.SNOWMAN_WORDS.dailyLevel(when) === tier) drawn.push(w.SNOWMAN_WORDS.daily(when).phrase);
+      }
+      const pool = w.SNOWMAN_WORDS.atLevel(tier).length;
+      const run = drawn.slice(0, Math.min(drawn.length, pool));
+      check(`${tier} words do not repeat until the ${tier} pile is empty`,
+            new Set(run).size === run.length,
+            run.length + ' of a ' + pool + ' word pile');
+    });
 
     w.startDaily();
     check('the daily is marked as the daily', w.state.daily === true);

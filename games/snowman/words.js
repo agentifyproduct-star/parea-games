@@ -112,9 +112,50 @@ const ALL = Object.keys(CATEGORIES).flatMap(category =>
   }))
 );
 
-/* A shuffle rather than a date hash, so no word can come round again until the
-   whole book has been through. 170 words is 170 days. */
-const SCHEDULE = shuffled(ALL, 0xC01D5E);
+/* How often each tier comes up, and it is not the same question in the two
+   modes. Today keeps hard in the rotation at one day in twenty, which is about
+   one hard day every three weeks. Unlimited never serves hard at all: it is
+   where somebody goes to keep playing, and the hardest words in the book are
+   not what that is for. */
+const LEVEL_WEIGHTS = {
+  daily: [['easy', 65], ['medium', 30], ['hard', 5]],
+  unlimited: [['easy', 70], ['medium', 30]]
+};
+
+function pickLevel(table, rnd) {
+  const total = table.reduce((sum, pair) => sum + pair[1], 0);
+  let roll = rnd() * total;
+  for (let i = 0; i < table.length; i++) {
+    roll -= table[i][1];
+    if (roll < 0) return table[i][0];
+  }
+  return table[table.length - 1][0];
+}
+
+/* One shuffled run per tier, rather than the single run through the whole book
+   this used to be. Weighting the day by difficulty means the day has to be dealt
+   from that difficulty, and dealing from a shuffle is still what stops a word
+   coming round twice.
+
+   It does cost some runway. The book is 70 easy, 74 medium and 26 hard; at 65%
+   easy the easy pile is the one that empties first, after about 108 days rather
+   than the 170 a single run gave. Worth knowing before it happens. */
+const SCHEDULES = {};
+LEVELS.forEach((level, i) => {
+  SCHEDULES[level] = shuffled(ALL.filter(w => w.level === level), 0xC01D5E + i * 0x9E3779B1);
+});
+
+/* How many of the days before this one drew the same tier, which is this day's
+   place in that tier's run. Counted rather than hashed, so the run is walked in
+   order and nothing repeats until the pile is used up. Cheap: one small PRNG
+   call per elapsed day, and the epoch is 2026. */
+function placeInRun(n, level) {
+  let seen = 0;
+  for (let i = 0; i < n; i++) {
+    if (pickLevel(LEVEL_WEIGHTS.daily, mulberry32(0x5C01D + i * 0x9E3779B1)) === level) seen++;
+  }
+  return seen;
+}
 
 window.SNOWMAN_WORDS = {
   levels: LEVELS,
@@ -126,11 +167,31 @@ window.SNOWMAN_WORDS = {
     return DAILY.daysBetween(EPOCH_KEY, DAILY.key(date)) + 1;
   },
 
+  /* Which tier today is played at: a weighted draw seeded off the puzzle
+     number, so it is the same draw for everybody and the same one again if you
+     come back to an old day. */
+  dailyLevel(date = new Date()) {
+    const n = this.puzzleNumber(date) - 1;
+    return pickLevel(LEVEL_WEIGHTS.daily, mulberry32(0x5C01D + n * 0x9E3779B1));
+  },
+
   /* The word of the day: the same one for everybody, everywhere. */
   daily(date = new Date()) {
     const n = this.puzzleNumber(date) - 1;
-    const size = SCHEDULE.length;
-    return SCHEDULE[((n % size) + size) % size];
+    const level = this.dailyLevel(date);
+    const run = SCHEDULES[level];
+    if (!run.length) return SCHEDULES.medium[0] || ALL[0];
+    const place = placeInRun(n, level);
+    return run[((place % run.length) + run.length) % run.length];
+  },
+
+  /* Unlimited rolls its own tier per word, off the gentler table. */
+  unlimitedLevel() {
+    return pickLevel(LEVEL_WEIGHTS.unlimited, Math.random);
+  },
+
+  weights(mode) {
+    return (LEVEL_WEIGHTS[mode] || []).map(pair => ({ level: pair[0], weight: pair[1] }));
   },
 
   all() {

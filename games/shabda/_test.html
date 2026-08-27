@@ -29,10 +29,10 @@ document.getElementById('f').addEventListener('load', async () => {
     if (!help.hidden) help.querySelector('[data-close]').click();
 
     // ---------- word banks for every length ----------
-    check('supports 4, 5 and 6', [4,5,6].every(n => w.WORDS.supports(n)));
-    check('rejects unsupported lengths', !w.WORDS.supports(3) && !w.WORDS.supports(7));
+    check('supports 4 through 7', [4,5,6,7].every(n => w.WORDS.supports(n)));
+    check('rejects unsupported lengths', !w.WORDS.supports(3) && !w.WORDS.supports(8));
 
-    for (const n of [4,5,6]) {
+    for (const n of [4,5,6,7]) {
       const pool = w.WORDS.answers(n);
       check(`${n}-letter pool is populated`, pool.length > 200, pool.length + ' words');
       check(`${n}-letter pool is all ${n}-letter a-z`,
@@ -43,10 +43,13 @@ document.getElementById('f').addEventListener('load', async () => {
     }
 
     // lengths must not bleed into each other
-    check('4-letter guess not valid at other lengths', w.WORDS.isValid('bear') && !w.WORDS.isValid('bearded'));
+    check('4-letter guess not valid at other lengths', w.WORDS.isValid('bear') && !w.WORDS.isValid('beardless'));
     check('length inferred from the word', w.WORDS.isValid('planet') && w.WORDS.isValid('crane') && w.WORDS.isValid('gold'));
     check('junk rejected at every length',
-          !w.WORDS.isValid('zzzz') && !w.WORDS.isValid('zzzzz') && !w.WORDS.isValid('zzzzzz'));
+          !w.WORDS.isValid('zzzz') && !w.WORDS.isValid('zzzzz') &&
+          !w.WORDS.isValid('zzzzzz') && !w.WORDS.isValid('zzzzzzz'));
+    check('ordinary seven-letter words are accepted',
+          ['picture', 'freedom', 'morning', 'company'].every(x => w.WORDS.isValid(x)));
 
     /* Ordinary words that are not in the answer pool must still be accepted
        outright, with no dictionary call. These were all refused before the
@@ -108,30 +111,46 @@ document.getElementById('f').addEventListener('load', async () => {
      dialog stops a headless run dead. Answer it here. */
   w.confirm = () => true;
 
-  const btn = n => d.querySelector(`.len-btn[data-len="${n}"]`);
+  const btn = mode => d.querySelector(`.mode-btn[data-mode="${mode}"]`);
     check('opens on today, not on a fixed board',
           w.state.daily === true && tiles(d, 0).length === w.WORDS.dailyLength(),
           tiles(d, 0).length + ' letters');
+    check('there are two modes and no board picker',
+          d.querySelectorAll('.mode-btn').length === 2 &&
+          d.querySelector('[data-len]') === null);
+    check('they read Today and Unlimited',
+          [...d.querySelectorAll('.mode-btn')].map(b => b.textContent).join('/') === 'Today/Unlimited',
+          [...d.querySelectorAll('.mode-btn')].map(b => b.textContent).join('/'));
     check('Today is the one marked active',
           btn('daily').getAttribute('aria-pressed') === 'true' &&
-          btn(4).getAttribute('aria-pressed') === 'false');
+          btn('unlimited').getAttribute('aria-pressed') === 'false');
 
-    btn(4).click();
+    btn('unlimited').click();
     await wait(150);
-    check('switching to 4 rebuilds the board', tiles(d, 0).length === 4, tiles(d,0).length);
-    check('board has 6 rows of 4', d.querySelectorAll('.tile[data-row]').length === 24,
-          d.querySelectorAll('.tile[data-row]').length);
-    check('4 is marked active, 5 is not',
-          btn(4).getAttribute('aria-pressed') === 'true' && btn(5).getAttribute('aria-pressed') === 'false');
-    check('grid css uses 4 columns',
-          w.getComputedStyle(d.querySelector('.row')).gridTemplateColumns.split(' ').length === 4,
+    check('Unlimited deals a word', w.state.daily === false && w.state.answer.length >= 4);
+    check('the board is built to the word it dealt',
+          tiles(d, 0).length === w.state.answer.length, tiles(d, 0).length + ' tiles');
+    check('Unlimited is marked active, Today is not',
+          btn('unlimited').getAttribute('aria-pressed') === 'true' &&
+          btn('daily').getAttribute('aria-pressed') === 'false');
+    check('grid css follows the word',
+          w.getComputedStyle(d.querySelector('.row')).gridTemplateColumns.split(' ').length ===
+          w.state.answer.length,
           w.getComputedStyle(d.querySelector('.row')).gridTemplateColumns);
 
-    btn(6).click();
+    /* Every unlimited word rolls its own board rather than locking one for the
+       session, so a run of them has to reach more than one length. */
+    const dealt = {};
+    for (let i = 0; i < 120; i++) {
+      d.getElementById('btn-new').click();
+      dealt[w.state.answer.length] = (dealt[w.state.answer.length] || 0) + 1;
+    }
+    check('a run of unlimited words reaches every board',
+          [4, 5, 6, 7].every(n => dealt[n] > 0), JSON.stringify(dealt));
+
+    /* Put a six-letter board up for the guessing checks that follow. */
+    while (w.state.answer.length !== 6) d.getElementById('btn-new').click();
     await wait(150);
-    check('switching to 6 rebuilds the board', tiles(d, 0).length === 6, tiles(d,0).length);
-    check('grid css uses 6 columns',
-          w.getComputedStyle(d.querySelector('.row')).gridTemplateColumns.split(' ').length === 6);
 
     // ---------- playing a 6-letter game ----------
     since();
@@ -147,31 +166,46 @@ document.getElementById('f').addEventListener('load', async () => {
     check('5 letters is too short on the 6 board', since().includes('Not enough letters'));
     for (let i = 0; i < 6; i++) press(w, 'Backspace');
 
-    // ---------- today, and the practice boards ----------
-    /* One word a day, on a board today picks. The other buttons are practice. */
+    // ---------- which board a word is played on ----------
+    /* Nobody picks the board any more. Both modes draw from one weight table,
+       20 / 10 / 40 / 30 across four, five, six and seven. */
     const todayLen = w.WORDS.dailyLength();
-    check('today has a board size of its own', [4, 5, 6].includes(todayLen), todayLen + ' letters');
+    check('today has a board size of its own', [4, 5, 6, 7].includes(todayLen), todayLen + ' letters');
     check('the same day always gives the same board',
           w.WORDS.dailyLength(new Date('2026-09-01T12:00:00Z')) ===
           w.WORDS.dailyLength(new Date('2026-09-01T12:00:00Z')));
+    check('and a different day usually gives a different one',
+          new Set([0, 1, 2, 3, 4, 5].map(i =>
+            w.WORDS.dailyLength(new Date(Date.parse('2026-09-01T12:00:00Z') + i * 86400000)))).size > 1);
 
-    /* The boards are dealt in shuffled blocks of three, so the real promise is
-       that each run of three days uses each board exactly once. */
-    const blocks = {};
-    for (let i = 0; i < 90; i++) {
-      const when = new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000);
-      const block = Math.floor((w.WORDS.puzzleNumber(when) - 1) / 3);
-      (blocks[block] = blocks[block] || []).push(w.WORDS.dailyLength(when));
-    }
-    const whole = Object.values(blocks).filter(b => b.length === 3);
-    check('each run of three days uses each board once',
-          whole.length > 25 && whole.every(b => new Set(b).size === 3),
-          whole.length + ' complete runs checked');
+    const declared = {};
+    w.WORDS.weights().forEach(row => { declared[row.len] = row.weight; });
+    check('the table is the one the requirement asks for',
+          JSON.stringify(declared) === JSON.stringify({ 4: 20, 5: 10, 6: 40, 7: 30 }),
+          JSON.stringify(declared));
 
-    const spread = {};
-    Object.values(blocks).flat().forEach(len => { spread[len] = (spread[len] || 0) + 1; });
-    check('no board is favoured over three months',
-          [4, 5, 6].every(len => Math.abs(spread[len] - 30) <= 1), JSON.stringify(spread));
+    /* Four thousand days is enough that a weight being wrong by a tenth shows,
+       and few enough that the run is instant. */
+    const tally = draw => {
+      const seen = { 4: 0, 5: 0, 6: 0, 7: 0 };
+      for (let i = 0; i < 4000; i++) seen[draw(i)]++;
+      return seen;
+    };
+    const within = (seen, slack) => [4, 5, 6, 7].every(len =>
+      Math.abs((seen[len] / 4000) * 100 - declared[len]) <= slack);
+
+    const overDays = tally(i =>
+      w.WORDS.dailyLength(new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000)));
+    check('the daily board follows the table', within(overDays, 2.5),
+          JSON.stringify(overDays));
+
+    const overRolls = tally(() => w.WORDS.unlimitedLength());
+    check('and so does every unlimited word', within(overRolls, 2.5),
+          JSON.stringify(overRolls));
+
+    check('five is the dip, six is the peak',
+          overDays[5] < overDays[4] && overDays[6] > overDays[7] && overDays[7] > overDays[4],
+          JSON.stringify(overDays));
 
     btn('daily').click();
     await wait(200);
@@ -179,9 +213,10 @@ document.getElementById('f').addEventListener('load', async () => {
           w.state.daily === true && w.state.len === todayLen, w.state.len + ' letters');
     check('Today is the day word for that board', w.state.answer === w.WORDS.dailyWord(todayLen));
 
-    btn(4).click();
+    btn('unlimited').click();
     await wait(200);
-    check('a board button deals practice, not another daily', w.state.daily === false && w.state.len === 4);
+    check('Unlimited deals its own word, not another daily',
+          w.state.daily === false && w.state.answer !== w.WORDS.dailyWord(w.state.len));
 
     btn('daily').click();
     await wait(250);
@@ -193,15 +228,19 @@ document.getElementById('f').addEventListener('load', async () => {
 
     // ---------- winning today ----------
     const ans4 = w.state.answer;
+    /* A seven-letter board flips for 2.3 seconds before the game even finishes,
+       and the statistics follow two seconds after that. The old 4.2 was tuned
+       when six letters was the longest board there was. */
     type(w, ans4); press(w, 'Enter');
-    await wait(4200);
+    await wait(5600);
     check('a win turns the row green',
           d.querySelectorAll('.tile[data-row="0"].correct').length === todayLen,
           d.querySelectorAll('.tile[data-row="0"].correct').length + ' green');
     check('stats dialog opens', !d.getElementById('stats-modal').hidden);
-    /* Today's board is 4, 5 or 6 letters depending on the day, so both of these
-       are read against the length actually being played. Hardcoding 4 made the
-       suite pass only on the days the rotation happened to agree. */
+    /* Today's board is anywhere from 4 to 7 letters depending on the day, so
+       both of these are read against the length actually being played.
+       Hardcoding one made the suite pass only on the days it happened to
+       agree. */
     check('stats name the length being played',
           d.getElementById('st-len').textContent === String(todayLen),
           d.getElementById('st-len').textContent + ' vs ' + todayLen);
@@ -218,31 +257,33 @@ document.getElementById('f').addEventListener('load', async () => {
           /^\d{2}:\d{2}:\d{2}$/.test(d.getElementById('countdown').textContent),
           d.getElementById('countdown').textContent);
 
-    /* ---------- a practice round must not touch the record ----------
-       The ↻ button deals unlimited random words. If those counted, a streak
+    /* ---------- an unlimited round must not touch the record ----------
+       Unlimited deals as many words as you want. If those counted, a streak
        would mean nothing more than persistence in one sitting. */
     const beforePractice = w.localStorage.getItem('arcade.shabda.stats');
-    w.startGame({ len: 4, daily: false });
+    w.startGame({ daily: false });
     await wait(120);
-    check('a practice round is marked as practice', w.state.daily === false);
+    check('an unlimited round is marked as such', w.state.daily === false);
 
     type(w, w.state.answer);
     press(w, 'Enter');
-    /* The row flip runs before the game finishes, and the practice notice lands a
-       beat after that, so this has to wait out both. */
-    await wait(3200);
+    /* The row flip runs before the game finishes, and the streak notice lands a
+       beat after that, so this has to wait out both, at the longest board. */
+    await wait(4400);
     const practiceToasts = since();
 
-    check('winning a practice round leaves the record alone',
+    check('winning an unlimited round leaves the record alone',
           w.localStorage.getItem('arcade.shabda.stats') === beforePractice,
           w.localStorage.getItem('arcade.shabda.stats'));
-    check('a practice win says so', practiceToasts.includes('Practice'), practiceToasts);
-    check('practice does not open the stats panel', d.getElementById('stats-modal').hidden);
-    check('practice shows no countdown, having no deadline',
+    check('and says the streak is safe rather than that nothing counts',
+          practiceToasts.includes('streak is safe') && !/[Pp]ractice/.test(practiceToasts),
+          practiceToasts);
+    check('unlimited does not open the stats panel', d.getElementById('stats-modal').hidden);
+    check('unlimited shows no countdown, having no deadline',
           d.getElementById('next-up').hidden);
 
     // ---------- one record, whichever board the day lands on ----------
-    btn(6).click();
+    btn('unlimited').click();
     await wait(200);
     d.getElementById('btn-stats').click();
     await wait(120);

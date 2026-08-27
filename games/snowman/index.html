@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Snowman &mdash; Parea Games</title>
-<meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
 <link rel="stylesheet" href="snowman.css?v=f81dc47d" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Parea Games" />
 <meta property="og:title" content="Snowman — Parea Games" />
-<meta property="og:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<meta property="og:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
 <meta property="og:url" content="https://pareagames.com/games/snowman/" />
 <meta property="og:image" content="https://pareagames.com/assets/brand/share-snowman.png" />
 <meta property="og:image:width" content="1200" />
@@ -22,7 +22,7 @@
 <meta property="og:locale" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Snowman — Parea Games" />
-<meta name="twitter:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them." />
+<meta name="twitter:description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
 <meta name="twitter:image" content="https://pareagames.com/assets/brand/share-snowman.png" />
 <script type="application/ld+json">
 {
@@ -30,7 +30,7 @@
   "@type": "VideoGame",
   "name": "Snowman",
   "url": "https://pareagames.com/games/snowman/",
-  "description": "Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.",
+  "description": "Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more.",
   "image": "https://pareagames.com/assets/brand/share-snowman.png",
   "genre": [
     "Word game",
@@ -75,12 +75,10 @@
     </div>
   </header>
 
-  <!-- Today's word, then practice at whichever difficulty you fancy -->
+  <!-- Today's word, or as many more as you like -->
   <div class="levels" role="group" aria-label="Word to play">
-    <button class="level-btn today" data-level="daily"  type="button">Today</button>
-    <button class="level-btn" data-level="easy"   type="button">Easy</button>
-    <button class="level-btn" data-level="medium" type="button">Medium</button>
-    <button class="level-btn" data-level="hard"   type="button">Hard</button>
+    <button class="level-btn mode-btn today" data-mode="daily" type="button">Today</button>
+    <button class="level-btn mode-btn" data-mode="unlimited" type="button">Unlimited</button>
   </div>
 
   <div id="toast-area" class="toast-area" aria-live="polite"></div>
@@ -163,7 +161,7 @@
 
     <div id="keyboard" class="keyboard" role="group" aria-label="Letters"></div>
 
-    <!-- Shown only once today's puzzle is over: practice has no deadline. -->
+    <!-- Shown only once today's puzzle is over: unlimited has no deadline. -->
     <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
   </main>
 
@@ -175,7 +173,7 @@
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
 <!-- intro:start -->
-      <p class="lede">Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and practice rounds whenever you want them.</p>
+      <p class="lede">Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more.</p>
 <!-- intro:end -->
       <p>Same rules as hangman, with a snowman in the middle.</p>
       <p>Pick letters to uncover the hidden word. Every letter that is not in there melts a
@@ -202,12 +200,13 @@
       <h3>Today, and the rest</h3>
       <p><b>Today</b> is one word for everybody, everywhere, and it is the only one that
          counts towards your record and your streak. It changes at midnight New York time.</p>
-      <p>Feel like more? <b>Easy</b>, <b>medium</b> and <b>hard</b> deal practice words as often
-         as you like &mdash; they never touch your record. Difficulty comes down to how many
-         different letters a word hides, and how odd they are.</p>
+      <p>Feel like more? <b>Unlimited</b> deals another word whenever you want one, as often as
+         you like. Your streak is safe there: nothing you do in Unlimited can end it.</p>
+      <p>You do not pick the difficulty any more, and Unlimited is the gentler of the two.
+         The hardest words in the book are kept for the daily one.</p>
 
       <p class="fine">
-        No practice word comes back until you have seen every other one at that level.
+        No word comes back until you have seen every other one at its level.
       </p>
     </div>
   </div>
@@ -245,8 +244,8 @@
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
   <script src="../../assets/today.js?v=aaa86048"></script>
-  <script src="words.js?v=88930eba"></script>
-  <script src="snowman.js?v=8df6cfcd"></script>
+  <script src="words.js?v=d9e2b290"></script>
+  <script src="snowman.js?v=d3ceca67"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->
