@@ -211,6 +211,69 @@ const dayBefore = n => {
           w.document.querySelector('.strip').getBoundingClientRect().bottom <= w.innerHeight,
           Math.round(w.document.querySelector('.strip').getBoundingClientRect().bottom) + ' of ' + w.innerHeight);
 
+    // ---------- About and Questions, folded away ----------
+
+    /* Unfolded they are 634 and 1211 pixels tall, which is what turned a layout
+       built to fit one screen into two thousand pixels of scroll. */
+    check('compact: the whole page fits the screen, with nothing to scroll',
+          w.document.documentElement.scrollHeight <= w.innerHeight,
+          w.document.documentElement.scrollHeight + ' of ' + w.innerHeight);
+
+    const folds = ['about', 'questions'].map(id => {
+      const section = w.document.getElementById(id);
+      return { id, section, button: section.querySelector('.section-toggle'),
+               body: section.querySelector('.section-body') };
+    });
+
+    check('compact: both sections fold', folds.every(f => f.button && f.body));
+    check('compact: and start closed',
+          folds.every(f => f.button.getAttribute('aria-expanded') === 'false' && f.body.hidden));
+    check('compact: the bar says which section it is',
+          folds.map(f => f.button.textContent.trim()).join('/') === 'About/Questions',
+          folds.map(f => f.button.textContent.trim()).join('/'));
+
+    /* A heading is not a control, so the button goes inside it rather than
+       around it — the level still has to be announced. */
+    check('compact: the control is a button inside the heading, pointed at its own body',
+          folds.every(f => f.button.tagName === 'BUTTON' &&
+                           f.button.parentElement.tagName === 'H2' &&
+                           f.button.getAttribute('aria-controls') === f.body.id));
+
+    const bar = folds[1].button.getBoundingClientRect();
+    check('compact: the whole bar is the tap target, not the word',
+          bar.height >= 44 && bar.width > 200, Math.round(bar.width) + 'x' + Math.round(bar.height));
+
+    /* Folded is not gone. A crawler never gets this layout, but the content has
+       to be in the document either way. */
+    check('compact: folding hides the reading without removing it',
+          folds.every(f => f.body.textContent.length > 200),
+          folds.map(f => f.body.textContent.length).join(', '));
+
+    folds[1].button.click();
+    await wait(60);
+    check('compact: a tap opens it',
+          folds[1].button.getAttribute('aria-expanded') === 'true' && !folds[1].body.hidden);
+    check('compact: and the answers are on screen',
+          folds[1].body.getBoundingClientRect().height > 200);
+    check('compact: the other one stays shut',
+          folds[0].button.getAttribute('aria-expanded') === 'false');
+
+    folds[1].button.click();
+    await wait(60);
+    check('compact: a second tap closes it again',
+          folds[1].button.getAttribute('aria-expanded') === 'false' && folds[1].body.hidden);
+    check('compact: and the page is back to one screen',
+          w.document.documentElement.scrollHeight <= w.innerHeight);
+
+    /* Deliberately not remembered: carrying an opened section across loads would
+       hand somebody back the long page they were being spared. */
+    folds[1].button.click();
+    await wait(40);
+    w = await load();
+    await wait(120);
+    check('compact: an opened section does not stay open next visit',
+          w.document.querySelector('#questions .section-toggle').getAttribute('aria-expanded') === 'false');
+
     // ---------- and the full layout is untouched ----------
     seed(w, { count: 1, last: dayBefore(1) }, true);
     w = await load();
@@ -218,6 +281,9 @@ const dayBefore = n => {
     check('full: the feature rows are back', shown(w, '#games'));
     check('full: the strip stays hidden on a phone, as it was', !shown(w, '.strip'));
     check('full: no compact hero', !shown(w, '.hero-mark') && !shown(w, '#hero-progress'));
+    check('full: About and Questions are open and unfolded',
+          !w.document.querySelector('.section-toggle') &&
+          shown(w, '#about') && shown(w, '#questions'));
 
     // ---------- the splash ----------
     seed(w, { count: 9, last: dayBefore(1) }, false);

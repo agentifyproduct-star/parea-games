@@ -171,7 +171,15 @@ check('the splash is only ever a phone thing',
    not a smaller page. If this ever stops being true, everything the two tests
    above guarantee about a scriptless reader quietly stops being true with it. */
 check('the compact homepage hides nothing from the HTML itself',
-  has(home, 'id="games"') && has(home, 'class="strip"') && has(home, 'class="hero-note"'));
+  has(home, 'id="games"') && has(home, 'class="strip"') && has(home, 'class="hero-note"') &&
+  has(home, 'id="about"') && has(home, 'id="questions"'));
+
+/* About and Questions are folded shut on the compact homepage, by home.js and
+   nowhere else. That fold happens after the document has loaded, so every word
+   of both still has to be in the HTML a crawler fetches — which is what the
+   answer-engine tests above are for, and what this keeps honest. */
+check('the folded sections are still whole in the shipped HTML',
+  questions.every(item => has(home, item.a.slice(0, 60))));
 
 questions.forEach(item => {
   check(`the page shows the answer to "${item.q}"`, has(home, item.a.slice(0, 50)));

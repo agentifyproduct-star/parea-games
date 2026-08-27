@@ -137,3 +137,62 @@
     if (event.key === 'Escape' && !sheet.hidden) close();
   });
 })();
+
+
+/* ---------------- folding away the reading, on the compact homepage ----------------
+
+   About and Questions are 634 and 1211 pixels tall. On a phone they turned a
+   layout built to put three games on one screen into two thousand pixels of
+   scroll, with the games occupying ninety-five of it.
+
+   They are folded rather than hidden, because the site navigation is display:
+   none below 860px — so hiding them outright would leave a returning visitor on
+   a phone with no route to that content at all, and "when does the new puzzle
+   arrive?" is a fair question on somebody's fourth visit.
+
+   Closed on every load, deliberately: remembering that somebody once opened the
+   questions would hand them back the long page they were being spared.
+
+   Only ever runs on the compact layout. A first-time visitor, a wide screen and
+   a crawler all get both sections open and entire, which is also why none of
+   this touches the structured data. */
+
+(function () {
+  if (!document.documentElement.classList.contains('compact-home')) return;
+
+  document.querySelectorAll('#about, #questions').forEach(section => {
+    const head = section.querySelector('.section-head');
+    const heading = head && head.querySelector('h2');
+    if (!heading) return;
+
+    /* Everything below the heading is what folds. Moving it into one wrapper
+       gives aria-controls something real to point at, and hiding one element
+       beats hiding four. */
+    const body = document.createElement('div');
+    body.className = 'section-body';
+    body.id = section.id + '-body';
+    while (head.nextSibling) body.appendChild(head.nextSibling);
+    section.appendChild(body);
+
+    /* The button goes inside the heading rather than around it: the level still
+       has to be announced, and a heading is not a control. */
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'section-toggle';
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-controls', body.id);
+    button.textContent = heading.textContent;
+    heading.textContent = '';
+    heading.appendChild(button);
+
+    body.hidden = true;
+    section.classList.add('is-folded');
+
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!open));
+      body.hidden = open;
+      section.classList.toggle('is-folded', open);
+    });
+  });
+})();

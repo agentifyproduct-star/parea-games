@@ -717,6 +717,75 @@ code {
      the picture and the label both. This only guarantees the height. */
   html.compact-home .strip-item { min-height: 44px; }
 
+  /* ---- About and Questions, folded ----
+     Built by home.js, which only runs the fold on this layout. Everything here
+     therefore describes a page that already has the class and the script; a
+     first-time visitor and a crawler never meet any of it. */
+
+  /* The heading is the whole bar, so the tap target is the width of the page
+     rather than the width of a word. */
+  html.compact-home .section-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  /* A chevron off two borders rather than a glyph: no font to load, and it
+     turns rather than swaps. */
+  html.compact-home .section-toggle::after {
+    content: '';
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    margin-right: 3px;
+    border-right: 2px solid var(--ink-soft);
+    border-bottom: 2px solid var(--ink-soft);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform .2s ease;
+  }
+
+  html.compact-home .section-toggle[aria-expanded="true"]::after {
+    transform: rotate(-135deg) translate(-2px, -2px);
+  }
+
+  /* Folded, the head is the entire section, so the air it keeps underneath for
+     the reading below it is air under nothing. */
+  html.compact-home .about,
+  html.compact-home .questions { padding: 0; }
+
+  html.compact-home .section-head {
+    margin-bottom: 0;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  html.compact-home .is-folded .section-head { border-bottom: 0; }
+
+  html.compact-home .section-head h2 { font-size: 19px; width: 100%; }
+
+  /* The subtitle is a second voice on a bar that is already a control. */
+  html.compact-home .section-head .muted { display: none; }
+
+  html.compact-home .section-body { padding: 4px 0 26px; }
+
+  /* Two columns of prose at 375px is two columns of one word. */
+  html.compact-home .about-grid,
+  html.compact-home .faq-grid { grid-template-columns: 1fr; }
+
+  /* The footer is a sign-off, not a section, and on a page this short it was
+     taking more room than the games. */
+  html.compact-home .site-footer { padding: 20px 0 22px; }
+
   /* Out from over the picture and back into the flow, which is what makes the
      whole thing read as a tile rather than a photo with a caption on it. */
   html.compact-home .strip-label {
