@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>t</title></head>
+<body>
+<iframe id="f" width="390" height="780" style="border:0"></iframe>
+<pre id="out">running</pre>
+<script>
+/* The two mobile homepage features, driven through the real front page in a
+   phone-width frame: the visit counter that promotes somebody to the compact
+   layout, and the once-a-session splash.
+
+   Both decisions are made in an inline head script before the first paint, so
+   almost every check here has to be made on a *fresh document*. The frame is
+   reloaded between cases and storage is seeded beforehand, which is the only
+   way to test a thing that has already happened by the time you can look. */
+
+const results = [];
+const check = (n, c, x) => results.push((c ? 'PASS ' : 'FAIL ') + n + (x !== undefined && x !== '' ? ' :: ' + x : ''));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+window.addEventListener('error', e => results.push('FAIL pageerror :: ' + e.message));
+
+const frame = document.getElementById('f');
+
+/* Load index.html fresh and hand back its window once the head script has run. */
+function load() {
+  return new Promise(resolve => {
+    frame.onload = () => resolve(frame.contentWindow);
+    frame.src = 'index.html?t=' + Math.random();
+  });
+}
+
+const shown = (w, sel) => {
+  const node = w.document.querySelector(sel);
+  return !!node && w.getComputedStyle(node).display !== 'none';
+};
+
+function seed(w, visits, splashSeen) {
+  w.localStorage.clear();
+  w.sessionStorage.clear();
+  if (visits !== null) w.localStorage.setItem('parea_visits', JSON.stringify(visits));
+  if (splashSeen) w.sessionStorage.setItem('parea_splash_seen', '1');
+}
+
+const dayBefore = n => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+};
+
+(async () => {
+  try {
+    let w = await load();
+
+    // ---------- the visit counter ----------
+    seed(w, null, false);
+    w = await load();
+    check('a first-ever visit is recorded as one',
+          JSON.parse(w.localStorage.getItem('parea_visits')).count === 1);
+    check('and gets the full homepage',
+          !w.document.documentElement.classList.contains('compact-home'));
+
+    /* Same day again: a refresh must not promote anybody. */
+    const before = w.localStorage.getItem('parea_visits');
+    w = await load();
+    check('a refresh on the same day does not count again',
+          w.localStorage.getItem('parea_visits') === before, w.localStorage.getItem('parea_visits'));
+
+    /* Walk the boundary. Seeding `count: n` and loading on a later day makes
+       that load the (n+1)th visit, so `count: 2` is somebody's third. */
+    for (const prior of [1, 2]) {
+      seed(w, { count: prior, last: dayBefore(1) }, false);
+      w = await load();
+      const state = JSON.parse(w.localStorage.getItem('parea_visits'));
+      check(`visit ${prior + 1} stays on the full homepage`,
+            state.count === prior + 1 && !w.document.documentElement.classList.contains('compact-home'),
+            'count ' + state.count);
+    }
+
+    /* Three days already banked, arriving on a new day: this load is the 4th. */
+    seed(w, { count: 3, last: dayBefore(1) }, false);
+    w = await load();
+    const fourth = w.document.documentElement.classList.contains('compact-home');
+    check('the 4th distinct-day visit lands on the compact homepage',
+          fourth && JSON.parse(w.localStorage.getItem('parea_visits')).count === 4);
+
+    seed(w, { count: 2, last: dayBefore(1) }, false);
+    w = await load();
+    check('so the line falls between the 3rd visit and the 4th, not a day later',
+          fourth && !w.document.documentElement.classList.contains('compact-home'));
+
+    seed(w, { count: 40, last: dayBefore(2) }, false);
+    w = await load();
+    check('and every visit after it', w.document.documentElement.classList.contains('compact-home'));
+
+    seed(w, { count: 99, last: dayBefore(1) }, false);
+    w = await load();
+    check('the count is capped at 99',
+          JSON.parse(w.localStorage.getItem('parea_visits')).count === 99);
+
+    seed(w, 'not json at all', false);
+    w.localStorage.setItem('parea_visits', '{{{');
+    w = await load();
+    check('corrupt storage falls back to the full homepage without throwing',
+          !w.document.documentElement.classList.contains('compact-home'));
+
+    // ---------- the compact layout ----------
+    seed(w, { count: 9, last: dayBefore(1) }, true);
+    w = await load();
+    await wait(120);
+    check('compact: the three games are on screen', shown(w, '.strip'));
+    check('compact: in three equal columns',
+          w.getComputedStyle(w.document.querySelector('.strip')).gridTemplateColumns.split(' ').length === 3,
+          w.getComputedStyle(w.document.querySelector('.strip')).gridTemplateColumns);
+    check('compact: the feature rows are gone', !shown(w, '#games'));
+    check('compact: so is the eyebrow and the hero note',
+          !shown(w, '.eyebrow') && !shown(w, '.hero-note'));
+    check('compact: the mark is up top', shown(w, '.hero-mark'));
+    check('compact: the About section is still there', shown(w, '#about'));
+    check('compact: the page still has its h1', shown(w, 'h1.display'));
+
+    const tile = w.document.querySelector('.strip-item').getBoundingClientRect();
+    check('compact: the whole tile is the tap target',
+          w.document.querySelector('.strip-item').tagName === 'A' &&
+          tile.height >= 44, Math.round(tile.width) + 'x' + Math.round(tile.height));
+
+    const line = w.document.getElementById('hero-progress');
+    check('compact: the hero line says where the day stands',
+          shown(w, '#hero-progress') && /done today|first up/.test(line.textContent),
+          JSON.stringify(line.textContent));
+
+    check('compact: nothing scrolls sideways',
+          w.document.documentElement.scrollWidth <= w.innerWidth,
+          w.document.documentElement.scrollWidth + ' vs ' + w.innerWidth);
+
+    /* The games must be reachable without scrolling, which is the whole point. */
+    check('compact: all three games are above the fold',
+          w.document.querySelector('.strip').getBoundingClientRect().bottom <= w.innerHeight,
+          Math.round(w.document.querySelector('.strip').getBoundingClientRect().bottom) + ' of ' + w.innerHeight);
+
+    // ---------- and the full layout is untouched ----------
+    seed(w, { count: 1, last: dayBefore(1) }, true);
+    w = await load();
+    await wait(120);
+    check('full: the feature rows are back', shown(w, '#games'));
+    check('full: the strip stays hidden on a phone, as it was', !shown(w, '.strip'));
+    check('full: no compact hero', !shown(w, '.hero-mark') && !shown(w, '#hero-progress'));
+
+    // ---------- the splash ----------
+    seed(w, { count: 9, last: dayBefore(1) }, false);
+    w = await load();
+    check('the splash shows on the first load of a session',
+          w.document.documentElement.classList.contains('splash-on') &&
+          shown(w, '.splash'));
+    check('and marks itself seen straight away',
+          w.sessionStorage.getItem('parea_splash_seen') === '1');
+    check('it announces itself as a status, with a name',
+          w.document.getElementById('splash').getAttribute('role') === 'status' &&
+          !!w.document.getElementById('splash').getAttribute('aria-label'));
+    check('the wordmark is not read out letter by letter',
+          w.document.querySelector('.splash-word').getAttribute('aria-hidden') === 'true');
+
+    const splash = w.document.getElementById('splash');
+    check('the splash is not gone before the floor',
+          !splash.classList.contains('is-out'));
+
+    /* Where the letters come to rest, which is the thing that actually has to be
+       right — the journey is decoration, the destination is the wordmark. A
+       headless browser runs its timer clock and its animation clock at different
+       rates, so waiting and then looking proves nothing; the animations are
+       finished by hand and then measured. */
+    const word = w.document.querySelector('.splash-word');
+    const letters = [...word.querySelectorAll('span')];
+    letters.forEach(node => (node.getAnimations ? node.getAnimations() : []).forEach(a => a.finish()));
+
+    const shift = node => {
+      const t = w.getComputedStyle(node).transform;
+      return t === 'none' ? 0 : new w.DOMMatrix(t).m41;
+    };
+    check('every letter converges onto its place and stops there',
+          letters.every(node => Math.abs(shift(node)) < 0.5),
+          letters.map(node => shift(node).toFixed(1)).join(', '));
+
+    /* clientWidth, not innerWidth: innerWidth counts the scrollbar this frame
+       has and a phone does not, which would put the centre 7 or 8 pixels off
+       and make a correctly centred wordmark look wrong. */
+    const box = word.getBoundingClientRect();
+    const layoutWidth = w.document.documentElement.clientWidth;
+    check('and the wordmark comes to rest centred',
+          Math.abs((box.left + box.right) / 2 - layoutWidth / 2) < 2,
+          ((box.left + box.right) / 2).toFixed(1) + ' of ' + layoutWidth);
+
+    check('the tagline and the accent mark arrive after the letters have settled',
+          w.getComputedStyle(w.document.querySelector('.splash-tag')).animationDelay === '0.9s' &&
+          w.getComputedStyle(w.document.querySelector('.splash-dot')).animationDelay === '0.82s');
+
+    await wait(1500);
+    check('it has lifted by the time the floor and a loaded page are both past',
+          splash.classList.contains('is-out'), 'is-out=' + splash.classList.contains('is-out'));
+
+    await wait(500);
+    check('and is taken out of the page entirely',
+          !shown(w, '.splash') && !w.document.documentElement.classList.contains('splash-on'),
+          w.getComputedStyle(splash).display);
+    check('so nothing behind it is covered, and the page is reachable',
+          w.document.elementFromPoint(w.innerWidth / 2, 40) !== splash &&
+          !splash.contains(w.document.elementFromPoint(w.innerWidth / 2, 40)));
+
+    /* Second load, same session. */
+    w = await load();
+    check('the splash does not come back later in the session',
+          !w.document.documentElement.classList.contains('splash-on') && !shown(w, '.splash'));
+
+    /* A fresh session. */
+    w.sessionStorage.clear();
+    w = await load();
+    check('a new session earns a new splash',
+          w.document.documentElement.classList.contains('splash-on'));
+  } catch (e) {
+    results.push('FAIL threw :: ' + (e && e.message));
+  }
+
+  const failed = results.filter(r => r.startsWith('FAIL'));
+  document.getElementById('out').textContent =
+    results.join('\n') + '\n\n' + (failed.length ? failed.length + ' FAILED' : 'all ' + results.length + ' passed');
+  document.title = failed.length ? 'FAIL' : 'OK';
+})();
+</script>
+</body>
+</html>

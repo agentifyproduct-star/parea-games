@@ -85,10 +85,33 @@ const questions = FAQ.filter(item => (SITE.roomsLive ? !item.solo : !item.rooms)
 const scripts = [...home.matchAll(/<script([^>]*)>/g)].map(m => m[1]);
 const executable = scripts.filter(attrs => !/application\/ld\+json/.test(attrs));
 const sources = executable.map(attrs => (attrs.match(/src="([^"]+)"/) || [])[1] || '');
+const external = sources.filter(Boolean);
 
-check('every script on the front page is one of ours or the host counter',
-  sources.every(src => /^(assets\/|home\.js)/.test(src) || src === '/_vercel/insights/script.js'),
-  sources.join(' | '));
+check('every external script on the front page is one of ours or the host counter',
+  external.every(src => /^(assets\/|home\.js|splash\.js)/.test(src) || src === '/_vercel/insights/script.js'),
+  external.join(' | '));
+
+/* One inline script is allowed, and exactly one: the decision in the head that
+   picks which of the two homepage layouts a returning visitor gets. It is the
+   single thing on this page exempt from the rule below about sitting after the
+   content, because running before the first frame is its entire purpose — a
+   layout chosen after mount is a layout the visitor watches change.
+
+   It earns that exemption by never producing content. Both layouts are in the
+   HTML whatever happens, so a reader that does not run it is not shown less;
+   it is shown the fuller of the two. These checks are what hold that line. */
+const inline = sources.filter(src => src === '');
+const head = home.slice(0, home.indexOf('</head>'));
+
+check('the front page carries at most one inline script', inline.length <= 1, String(inline.length));
+
+check('the inline script runs before the first paint', /<script>/.test(head));
+
+check('the inline script only picks a layout, it never writes content',
+  !/document\.write|innerHTML|insertAdjacent|appendChild|createElement/.test(head));
+
+check('and it only ever reaches for storage inside a guard',
+  (head.match(/localStorage|sessionStorage/g) || []).length <= (head.match(/\btry\s*\{/g) || []).length * 3);
 
 check('nothing on the front page is fetched from another domain',
   !/src="https?:/.test(home));
@@ -98,6 +121,30 @@ check('the enhancement scripts sit after the page they enhance',
 
 check('the front page still names every game with no script having run',
   live.every(game => has(home.slice(0, home.indexOf('<script src="assets/daily.js')), game.title)));
+
+/* ---------------- the splash must never be able to trap the page ----------------
+
+   A full-screen sheet is the one piece of this site that can make everything
+   behind it unreachable, so neither of the two ways out is allowed to depend on
+   a script arriving. Without JavaScript it is never shown at all; with it, the
+   stylesheet lifts it on a timer whether or not splash.js ever loads. */
+
+const css = read('styles.css');
+
+check('a reader with no JavaScript never sees the splash at all',
+  /\.splash\s*\{\s*display:\s*none/.test(css));
+
+check('the splash lifts on its own even if its script never runs',
+  /animation:\s*splash-backstop/.test(css) && /@keyframes\s+splash-backstop/.test(css));
+
+check('the splash is only ever a phone thing',
+  /matchMedia\('\(max-width: 860px\)'\)/.test(home));
+
+/* Both layouts stay in the document; the compact one is a stylesheet decision,
+   not a smaller page. If this ever stops being true, everything the two tests
+   above guarantee about a scriptless reader quietly stops being true with it. */
+check('the compact homepage hides nothing from the HTML itself',
+  has(home, 'id="games"') && has(home, 'class="strip"') && has(home, 'class="hero-note"'));
 
 questions.forEach(item => {
   check(`the page shows the answer to "${item.q}"`, has(home, item.a.slice(0, 50)));

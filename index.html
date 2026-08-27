@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
-<link rel="stylesheet" href="styles.css?v=d64b52da" />
+<link rel="stylesheet" href="styles.css?v=30f566c1" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -135,8 +135,73 @@
 }
 </script>
 <!-- seo:end -->
+<!-- Two decisions that have to be made before the first paint, or the page
+     renders one way and then visibly changes its mind. Both layouts are in the
+     DOM below; these two classes pick between them.
+
+     Everything here is wrapped, because Safari in private browsing throws on a
+     storage write rather than failing quietly, and a front page that dies on a
+     storage error is a far worse outcome than one that forgets who you are. -->
+<script>
+(function () {
+  var el = document.documentElement;
+
+  /* Distinct days rather than page loads, so a refresh or a back-navigation
+     cannot promote anybody early.
+
+     Counted on the visitor's own calendar rather than in UTC: an evening in New
+     York is already tomorrow by UTC, which would score one sitting as two days
+     for half the audience and one day for the other half.
+
+     The count is incremented here rather than after mount, so that the fourth
+     visit is the fourth visit. Reading the stored count first and incrementing
+     later would show the full page on the day someone qualifies and the compact
+     one only the day after. */
+  try {
+    var now = new Date();
+    var today = now.getFullYear() + '-' +
+      ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+      ('0' + now.getDate()).slice(-2);
+
+    var visits = JSON.parse(localStorage.getItem('parea_visits')) || { count: 0, last: null };
+    if (visits.last !== today) {
+      visits.count = Math.min((visits.count || 0) + 1, 99);
+      visits.last = today;
+      localStorage.setItem('parea_visits', JSON.stringify(visits));
+    }
+    if (visits.count >= 4) el.classList.add('compact-home');
+  } catch (e) { /* no storage: everybody is a first-time visitor, which is the full page */ }
+
+  /* The splash: once a session, and only on a phone. Marked seen at the moment
+     it is decided rather than when it finishes, so a tap through to a game two
+     hundred milliseconds in does not earn a second one on the way back. */
+  var phone = !!(window.matchMedia && matchMedia('(max-width: 860px)').matches);
+  try {
+    if (phone && !sessionStorage.getItem('parea_splash_seen')) {
+      sessionStorage.setItem('parea_splash_seen', '1');
+      el.classList.add('splash-on');
+    }
+  } catch (e) {
+    /* No sessionStorage at all. Showing it is the specified fallback: it simply
+       becomes once per load instead of once per session. */
+    if (phone) el.classList.add('splash-on');
+  }
+})();
+</script>
 </head>
 <body>
+
+  <!-- The session splash. First thing in the body so it is painted with the
+       first frame rather than dropped over a page that has already shown
+       itself. It is inert markup: splash.js takes it away early, and the
+       stylesheet takes it away regardless. -->
+  <div class="splash" id="splash" role="status" aria-label="Parea Games">
+    <div class="splash-inner">
+      <p class="splash-word" aria-hidden="true"><span>p</span><span>a</span><span>r</span><span>e</span><span>a</span><i class="splash-dot"></i></p>
+      <p class="splash-tag">Your people, every day</p>
+    </div>
+  </div>
+
   <header class="site-header">
     <a class="brand" href="index.html">
       <img class="brand-mark" src="assets/brand/mark.svg" alt="" width="31" height="31" />
@@ -155,6 +220,12 @@
 
   <main>
     <section class="hero">
+      <!-- The compact homepage's own opening: the mark, and where the day
+           stands. Both are hidden everywhere else. Somebody on their fourth
+           day does not need to be told what the site is, so the row goes to
+           the one thing they cannot already know. -->
+      <img class="hero-mark" src="assets/brand/mark.svg" alt="" width="44" height="44" />
+
       <!-- Four claims of equal weight, separated by the mark's own tiles rather
            than by a dot: the brand signing its own line. -->
       <p class="eyebrow">
@@ -172,6 +243,11 @@
 <!-- heronote:start -->
       <p class="hero-note">Short enough for the two minutes you actually have. A new puzzle for everybody at midnight, so today is the same day wherever you are playing from.</p>
 <!-- heronote:end -->
+
+      <!-- Filled by home.js from the same day-state the tick marks and the
+           button already read. It holds its own height empty, so the numbers
+           arriving does not shove the games down the screen. -->
+      <p class="hero-progress" id="hero-progress"></p>
 
       <!-- The three games at a glance, before any words about them -->
       <div class="strip" id="strip">
@@ -313,9 +389,10 @@
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->
 <!-- home:start -->
+  <script src="splash.js?v=40dbdfc6"></script>
   <script src="assets/daily.js?v=cb789ce2"></script>
   <script src="assets/today.js?v=98868351"></script>
-  <script src="home.js?v=b7abd012"></script>
+  <script src="home.js?v=25f0f378"></script>
 <!-- home:end -->
 </body>
 </html>

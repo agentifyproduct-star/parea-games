@@ -41,6 +41,24 @@
     cta.classList.add('is-done');
   }
 
+  /* ---------- the compact homepage's one line ----------
+
+     Only ever visible on the compact layout, where the hero has given up
+     describing the site. Somebody on their fourth day knows what Parea is; what
+     they cannot know without opening three games is how much of today is left,
+     so that is what the row is spent on. Written from the same day-state the
+     tick marks and the button above already read — no second source, and
+     nothing new in storage. */
+
+  const progress = document.getElementById('hero-progress');
+  if (progress) {
+    const { done, total } = TODAY.counts();
+    progress.textContent =
+      !upcoming ? `All ${total} done today`
+      : done ? `${done} of ${total} done today — ${upcoming.title} is next`
+      : `Nothing played yet today — ${upcoming.title} is first up`;
+  }
+
   /* ---------- the record, across all three ---------- */
 
   const sheet = document.getElementById('stats-modal');

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Splash timing — Parea Games</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* This page only. The splash normally decides for itself whether to show;
+     here it is driven by the controls below, so the class goes on by hand. */
+  html { scroll-behavior: auto; }
+  body { padding-bottom: 200px; }
+
+  .rig {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 200;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    padding: 16px calc((100% - var(--page)) / 2) 20px;
+    box-shadow: 0 -14px 40px rgba(22, 22, 26, .08);
+  }
+
+  .rig h2 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .rig-note { margin: 0 0 14px; font-size: 13px; color: var(--ink-soft); }
+  .rig-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .rig-row label { flex: 0 0 108px; font-size: 13px; font-weight: 600; }
+  .rig-row input[type="range"] { flex: 1 1 auto; }
+  .rig-row output { flex: 0 0 72px; font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+  .rig-actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .rig-read { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .rig-read b { color: var(--ink); }
+</style>
+</head>
+<body>
+
+  <!-- The real splash markup, copied from index.html. If the two ever drift,
+       this page stops being worth reviewing against. -->
+  <div class="splash" id="splash" role="status" aria-label="Parea Games">
+    <div class="splash-inner">
+      <p class="splash-word" aria-hidden="true"><span>p</span><span>a</span><span>r</span><span>e</span><span>a</span><i class="splash-dot"></i></p>
+      <p class="splash-tag">Your people, every day</p>
+    </div>
+  </div>
+
+  <!-- A stand-in for what is behind the splash on a phone: the compact
+       homepage's two rows. Enough to judge the handoff against, not a copy of
+       the front page. -->
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <img class="brand-mark" src="assets/brand/mark.svg" alt="" width="31" height="31" />
+      <span class="brand-name">parea<span> games</span></span>
+    </a>
+    <a class="btn btn-ink" href="games/shabda/index.html">Play today</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-mark" src="assets/brand/mark.svg" alt="" width="44" height="44" style="display:block;margin:0 auto 16px" />
+      <h1 class="display"><span>Three games.</span><span>Every day.</span></h1>
+      <p class="hero-progress" style="display:block;margin:14px 0 0;color:var(--ink-soft);font-size:13.5px;font-weight:600">2 of 3 done today — Anagram is next</p>
+
+      <div class="strip" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:22px">
+        <a class="strip-item" href="games/shabda/index.html" aria-label="Play Shabda"><img src="assets/art/shabda.svg" alt="" /><span class="strip-label" style="left:8px;bottom:8px;padding:5px 9px;font-size:11px">Shabda</span></a>
+        <a class="strip-item" href="games/snowman/index.html" aria-label="Play Snowman"><img src="assets/art/snowman.svg" alt="" /><span class="strip-label" style="left:8px;bottom:8px;padding:5px 9px;font-size:11px">Snowman</span></a>
+        <a class="strip-item" href="games/anagram/index.html" aria-label="Play Anagram"><img src="assets/art/anagram.svg" alt="" /><span class="strip-label" style="left:8px;bottom:8px;padding:5px 9px;font-size:11px">Anagram</span></a>
+      </div>
+    </section>
+  </main>
+
+  <div class="rig">
+    <h2>Splash timing</h2>
+    <p class="rig-note">
+      Shipped values are 900 / 1800 / 340. Replay uses whatever the sliders say and
+      reports what actually happened, so the number to lock in section 5.3 is the one
+      that still reads as a moment rather than a wait on a real phone.
+    </p>
+
+    <div class="rig-row">
+      <label for="r-min">Minimum</label>
+      <input type="range" id="r-min" min="0" max="2000" step="50" value="900" />
+      <output id="o-min">900 ms</output>
+    </div>
+    <div class="rig-row">
+      <label for="r-max">Maximum</label>
+      <input type="range" id="r-max" min="200" max="4000" step="100" value="1800" />
+      <output id="o-max">1800 ms</output>
+    </div>
+    <div class="rig-row">
+      <label for="r-fade">Fade</label>
+      <input type="range" id="r-fade" min="0" max="900" step="20" value="340" />
+      <output id="o-fade">340 ms</output>
+    </div>
+    <div class="rig-row">
+      <label for="r-load">Fake load at</label>
+      <input type="range" id="r-load" min="0" max="4000" step="100" value="400" />
+      <output id="o-load">400 ms</output>
+    </div>
+
+    <div class="rig-actions">
+      <button class="btn btn-ink" id="replay" type="button">Replay</button>
+      <span class="rig-read" id="readout">Ready.</span>
+    </div>
+  </div>
+
+<script>
+/* A stand-alone copy of splash.js's race, with the constants opened up and the
+   load event faked so a slow connection can be reviewed without having one.
+   The logic is deliberately the same shape: minimum floor, maximum ceiling,
+   whichever the page-ready signal lands between. */
+(function () {
+  const splash = document.getElementById('splash');
+  const readout = document.getElementById('readout');
+  const el = id => document.getElementById(id);
+
+  const controls = [
+    ['r-min', 'o-min'], ['r-max', 'o-max'], ['r-fade', 'o-fade'], ['r-load', 'o-load']
+  ];
+  controls.forEach(([input, out]) => {
+    const sync = () => { el(out).textContent = el(input).value + ' ms'; };
+    el(input).addEventListener('input', sync);
+    sync();
+  });
+
+  let run = 0;
+
+  function play() {
+    const token = ++run;
+    const min = +el('r-min').value;
+    const max = +el('r-max').value;
+    const fade = +el('r-fade').value;
+    const load = +el('r-load').value;
+
+    splash.hidden = false;
+    splash.classList.remove('is-out');
+    /* The stylesheet's backstop is pinned to the shipped 1800ms, so this page
+       drives the hold itself and the animation is taken out of the way. */
+    splash.style.animation = 'none';
+    splash.style.opacity = '1';
+    splash.style.visibility = 'visible';
+    splash.style.transition = 'none';
+    document.documentElement.classList.add('splash-on');
+
+    /* Restart the letter convergence, which otherwise only plays once. */
+    splash.querySelectorAll('.splash-word span, .splash-dot, .splash-tag').forEach(node => {
+      node.style.animation = 'none';
+      void node.offsetWidth;
+      node.style.animation = '';
+    });
+
+    const started = performance.now();
+    readout.textContent = 'Running…';
+    let done = false;
+
+    const finish = why => {
+      if (done || token !== run) return;
+      done = true;
+      const at = Math.round(performance.now() - started);
+      splash.style.transition = 'opacity ' + fade + 'ms ease';
+      splash.style.opacity = '0';
+      readout.innerHTML = 'Gone at <b>' + at + ' ms</b> (' + why +
+        '), fully clear at <b>' + (at + fade) + ' ms</b>.';
+      setTimeout(() => {
+        if (token !== run) return;
+        document.documentElement.classList.remove('splash-on');
+        splash.hidden = true;
+      }, fade + 40);
+    };
+
+    /* The load event, faked. */
+    setTimeout(() => {
+      const waited = performance.now() - started;
+      if (waited >= min) finish('page ready, floor already served');
+      else setTimeout(() => finish('page ready, held to the floor'), min - waited);
+    }, load);
+
+    setTimeout(() => finish('ceiling'), max);
+  }
+
+  el('replay').addEventListener('click', play);
+  play();
+})();
+</script>
+</body>
+</html>

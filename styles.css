@@ -16,6 +16,9 @@
   --teal: #2f9e8f;           /* Shabda */
   --green: #5a9e4f;          /* Snowman */
   --indigo: #6c74d8;         /* Anagram */
+  --terracotta: #c2562c;     /* the warm tile in the mark, and the splash accent */
+  --aegean: #10394b;         /* splash ground only: deep enough that the handoff
+                                to the paper-white page reads as a curtain up */
   --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
   --page: min(1180px, 100% - 10vw);
 }
@@ -621,4 +624,187 @@ code {
     background-image: none;
     color: var(--ink);
   }
+}
+
+
+/* ---------- the compact homepage ----------
+   For a visitor on their fourth distinct day or later, on a phone. Both
+   layouts are in the DOM at once and this picks between them, off a class the
+   inline script in the head has already put on <html> — so the right one is
+   there in the first frame rather than a beat after it.
+
+   Desktop is untouched at every visit count. */
+
+/* Off by default, which is also what a crawler and a first-time visitor get. */
+.hero-mark,
+.hero-progress { display: none; }
+
+@media (max-width: 860px) {
+  html.compact-home .hero-mark { display: block; margin: 0 auto 16px; }
+
+  html.compact-home .hero-progress {
+    display: block;
+    /* Holds the line before home.js has anything to put in it. Without this the
+       games jump down the screen the moment the day-state arrives. */
+    min-height: 1.5em;
+    margin: 14px 0 0;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+
+  /* Exactly two rows between the header and the About section: the hero, and
+     the games. The eyebrow lists four things a fourth-visit reader has already
+     read three times, and the feature rows are a screen and a half of copy
+     about games whose names they know. */
+  html.compact-home .eyebrow,
+  html.compact-home .hero-note,
+  html.compact-home #games,
+  html.compact-home .rooms { display: none; }
+
+  html.compact-home .hero { padding: 22px 0 0; }
+
+  /* Still the page's one h1, just no longer the whole of the first screen. */
+  html.compact-home .display { font-size: clamp(28px, 8.5vw, 42px); }
+
+  /* The strip is hidden on phones normally, and for a good reason: the feature
+     rows below repeat the same three pictures at the same width, so the site
+     reads as six games rather than three. In compact those rows are gone, which
+     makes the strip the games section rather than a duplicate of it. */
+  html.compact-home .strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  /* The whole tile is the tap target — it always was, being an anchor around
+     the picture and the label both. This only guarantees the height. */
+  html.compact-home .strip-item { min-height: 44px; }
+
+  /* Roughly 105px of tile at 375px of phone, so the label gives back the inset
+     and a little of its own padding rather than running out of the picture. */
+  html.compact-home .strip-label {
+    left: 8px;
+    bottom: 8px;
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+}
+
+/* ---------- the session splash ----------
+   A brand moment on the first load of a session, and never a wait. It is a
+   fixed sheet over a page that is already fully built underneath, so nothing
+   here delays anything: it is only ever hiding a page that is ready. */
+
+.splash { display: none; }
+
+html.splash-on .splash {
+  display: grid;
+  place-items: center;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--aegean);
+  /* The backstop, and the reason this is a stylesheet rule rather than a line
+     of script. If splash.js never arrives — blocked, failed, thrown — the
+     splash still lifts on its own. A brand moment that cannot be dismissed is
+     an unusable site, and that failure must not depend on the same file that
+     would have to be working to prevent it. */
+  animation: splash-backstop 340ms ease 1800ms forwards;
+}
+
+@keyframes splash-backstop { to { opacity: 0; visibility: hidden; } }
+
+/* What splash.js adds once the page has loaded and the minimum has been served.
+   Cancelling the animation hands the element back to the transition. */
+.splash.is-out {
+  animation: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 340ms ease, visibility 0s linear 340ms;
+}
+
+.splash-inner { text-align: center; padding: 0 24px; }
+
+/* Five letters that start spread apart and gather, because that is what the
+   name means: a parea is the group, not the person. */
+.splash-word {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0;
+  color: var(--paper);
+  font-size: clamp(40px, 14vw, 62px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+
+.splash-word span {
+  display: block;
+  animation: splash-converge 820ms cubic-bezier(.22, .68, .24, 1) both;
+}
+
+.splash-word span:nth-child(1) { --dx: -1.9em; }
+.splash-word span:nth-child(2) { --dx: -.95em; }
+.splash-word span:nth-child(3) { --dx: 0em; }
+.splash-word span:nth-child(4) { --dx: .95em; }
+.splash-word span:nth-child(5) { --dx: 1.9em; }
+
+@keyframes splash-converge {
+  from { transform: translateX(var(--dx)); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* The mark's own warm tile, landing after the letters have settled. */
+.splash-dot {
+  width: .15em;
+  height: .15em;
+  margin: 0 0 .2em .12em;
+  border-radius: .035em;
+  background: var(--terracotta);
+  transform: rotate(-10deg);
+  animation: splash-settle 320ms ease 820ms both;
+}
+
+.splash-tag {
+  margin: 20px 0 0;
+  color: rgba(242, 241, 236, .6);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  animation: splash-settle 320ms ease 900ms both;
+}
+
+@keyframes splash-settle {
+  from { opacity: 0; transform: translateY(6px) rotate(-10deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(-10deg); }
+}
+
+/* The tagline is not the tile and should not inherit its tilt. */
+@keyframes splash-settle-flat {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.splash-tag { animation-name: splash-settle-flat; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* The convergence goes; the fade stays. A cross-fade carries no movement, and
+     a full-screen sheet that vanishes between two frames is more jarring than
+     one that lifts. Saying it out loud is necessary because the sheet-wide rule
+     further up flattens every transition on the page to nothing. */
+  .splash-word span,
+  .splash-dot,
+  .splash-tag {
+    animation: none;
+    opacity: 1;
+  }
+
+  .splash-word span { transform: none; }
+  .splash-dot { transform: rotate(-10deg); }
+  .splash.is-out { transition-duration: 340ms, 0s !important; }
 }

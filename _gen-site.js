@@ -260,6 +260,9 @@ function buildHome() {
   html = block(html, 'summary', `        <p>${esc(summary)}</p>`);
   html = html.replace(/<span id="game-count">\d+<\/span>/, `<span id="game-count">${live.length}</span>`);
   html = block(html, 'home', [
+    /* splash.js first and on its own: it is the only one of the four that has a
+       deadline, and it depends on nothing the other three set up. */
+    '  <script src="splash.js"></script>',
     '  <script src="assets/daily.js"></script>',
     '  <script src="assets/today.js"></script>',
     '  <script src="home.js"></script>'

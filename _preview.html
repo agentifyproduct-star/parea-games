@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mobile homepage preview — Parea Games</title>
+<style>
+  :root {
+    --paper: #f2f1ec;
+    --card: #fff;
+    --ink: #16161a;
+    --dim: #6a6862;
+    --line: #e2e0d8;
+    --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    gap: 32px;
+    padding: 28px;
+    background: #e6e4dd;
+    color: var(--ink);
+    font-family: var(--font);
+  }
+  .panel { flex: 0 0 320px; }
+  h1 { margin: 0 0 6px; font-size: 19px; letter-spacing: -.01em; }
+  .lede { margin: 0 0 22px; font-size: 13.5px; line-height: 1.6; color: var(--dim); }
+  h2 {
+    margin: 22px 0 9px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  button {
+    display: block;
+    width: 100%;
+    margin-bottom: 7px;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--ink); }
+  button b { display: block; }
+  button span { display: block; margin-top: 2px; font-weight: 400; font-size: 12px; color: var(--dim); }
+  .state {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    font-size: 12.5px;
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .state b { font-weight: 700; }
+  .phone {
+    flex: 0 0 auto;
+    width: 390px;
+    height: 844px;
+    border-radius: 26px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 26px 70px rgba(22, 22, 26, .28);
+  }
+  iframe { width: 390px; height: 844px; border: 0; display: block; }
+  a { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>Mobile homepage preview</h1>
+  <p class="lede">
+    Both features are invisible on a desktop-width window, and the compact layout
+    only appears from somebody's fourth distinct day. These buttons seed the
+    storage and reload the real front page in a phone-sized frame — nothing here
+    is a mock-up.
+  </p>
+
+  <h2>Who is arriving</h2>
+  <button data-visits="1" data-splash="1">
+    <b>First-time visitor</b>
+    <span>Visit 1 &middot; full homepage, no splash</span>
+  </button>
+  <button data-visits="3" data-splash="1">
+    <b>Third visit</b>
+    <span>Still the full homepage &mdash; one short of the line</span>
+  </button>
+  <button data-visits="4" data-splash="1">
+    <b>Fourth visit</b>
+    <span>The compact homepage, first time</span>
+  </button>
+  <button data-visits="26" data-splash="1">
+    <b>Regular</b>
+    <span>Compact, as it stays from here on</span>
+  </button>
+
+  <h2>With the splash</h2>
+  <button data-visits="1" data-splash="0">
+    <b>New session, first-time visitor</b>
+    <span>Splash, then the full homepage</span>
+  </button>
+  <button data-visits="26" data-splash="0">
+    <b>New session, regular</b>
+    <span>Splash, then compact &mdash; the 5.2 tension, on screen</span>
+  </button>
+
+  <h2>Also</h2>
+  <button data-reload="1">
+    <b>Reload, keeping the state</b>
+    <span>What a refresh does to the visit count</span>
+  </button>
+
+  <div class="state" id="state">reading…</div>
+
+  <p class="lede" style="margin-top:18px">
+    Splash durations get reviewed on
+    <a href="_parea-splash-test.html">the timing page</a>.
+  </p>
+</div>
+
+<div class="phone"><iframe id="f" src="index.html"></iframe></div>
+
+<script>
+const frame = document.getElementById('f');
+const stateBox = document.getElementById('state');
+
+/* Seeded a day in the past, so the load that follows counts as a new day and
+   lands on exactly the visit number the button promises. */
+function yesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+}
+
+function apply(visits, splashSeen) {
+  const w = frame.contentWindow;
+  w.localStorage.setItem('parea_visits', JSON.stringify({ count: Math.max(0, visits - 1), last: yesterday() }));
+  if (splashSeen) w.sessionStorage.setItem('parea_splash_seen', '1');
+  else w.sessionStorage.removeItem('parea_splash_seen');
+  frame.src = 'index.html?r=' + Date.now();
+}
+
+document.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.reload) return (frame.src = 'index.html?r=' + Date.now());
+    apply(+btn.dataset.visits, btn.dataset.splash === '1');
+  });
+});
+
+frame.addEventListener('load', () => {
+  const w = frame.contentWindow;
+  let visits = {};
+  try { visits = JSON.parse(w.localStorage.getItem('parea_visits')) || {}; } catch (e) {}
+  const cls = w.document.documentElement.classList;
+  const line = w.document.getElementById('hero-progress');
+
+  stateBox.innerHTML = [
+    'visit count: <b>' + (visits.count === undefined ? '—' : visits.count) + '</b>',
+    'layout: <b>' + (cls.contains('compact-home') ? 'compact' : 'full') + '</b>',
+    'splash: <b>' + (cls.contains('splash-on') ? 'showing' : 'not this load') + '</b>',
+    'hero line: <b>' + ((line && line.textContent) || '—') + '</b>'
+  ].join('<br>');
+});
+</script>
+</body>
+</html>
