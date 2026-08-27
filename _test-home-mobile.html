@@ -156,9 +156,31 @@ const dayBefore = n => {
     w = await load();
     await wait(120);
     check('compact: the three games are on screen', shown(w, '.strip'));
-    check('compact: in three equal columns',
-          w.getComputedStyle(w.document.querySelector('.strip')).gridTemplateColumns.split(' ').length === 3,
-          w.getComputedStyle(w.document.querySelector('.strip')).gridTemplateColumns);
+
+    const strip = w.document.querySelector('.strip');
+    const stripItems = [...w.document.querySelectorAll('.strip-item')];
+    const cols = w.getComputedStyle(strip).gridTemplateColumns;
+    check('compact: two games across, not three', cols.split(' ').length === 2, cols);
+    check('compact: the third takes the full width underneath',
+          Math.round(stripItems[2].getBoundingClientRect().width) >=
+          Math.round(strip.getBoundingClientRect().width) - 1,
+          Math.round(stripItems[2].getBoundingClientRect().width) + ' of ' +
+          Math.round(strip.getBoundingClientRect().width));
+    check('compact: and it sits on a row of its own',
+          stripItems[2].getBoundingClientRect().top >= stripItems[0].getBoundingClientRect().bottom);
+
+    /* The point of the two-up layout: three across left each picture about a
+       hundred pixels wide, which is too small to tell one game from another. */
+    const artwork = stripItems.map(i => i.querySelector('img').getBoundingClientRect());
+    check('compact: the artwork is big enough to read',
+          artwork.every(box => box.width >= 140 && box.height >= 85),
+          artwork.map(b => Math.round(b.width) + 'x' + Math.round(b.height)).join('  '));
+
+    /* Cropping the wide one to a letterbox takes the top off the drawing, so it
+       keeps the ratio the art is drawn at. */
+    check('compact: no tile crops its artwork out of shape',
+          artwork.every(box => Math.abs(box.width / box.height - 8 / 5) < 0.05),
+          artwork.map(b => (b.width / b.height).toFixed(2)).join(', '));
     check('compact: the feature rows are gone', !shown(w, '#games'));
     check('compact: so is the eyebrow and the hero note',
           !shown(w, '.eyebrow') && !shown(w, '.hero-note'));

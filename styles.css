@@ -672,24 +672,36 @@ code {
      rows below repeat the same three pictures at the same width, so the site
      reads as six games rather than three. In compact those rows are gone, which
      makes the strip the games section rather than a duplicate of it. */
+  /* Two across, then one across the full width. Three in a row put every game
+     on screen but made each picture about a hundred pixels wide, which is too
+     small to read as anything — the art stopped saying which game it was and
+     became three grey smudges. Two up and one under gives each tile half the
+     width or all of it, and the pictures do the job they were drawn for.
+
+     The full-width one keeps the same 8:5 the artwork is drawn at rather than
+     being cropped to a letterbox. Every piece of this art centres its subject
+     with very little margin, so a wide crop takes the top off the thing you
+     were meant to be looking at. */
   html.compact-home .strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 22px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
   }
+
+  html.compact-home .strip-item:nth-child(3) { grid-column: 1 / -1; }
 
   /* The whole tile is the tap target — it always was, being an anchor around
      the picture and the label both. This only guarantees the height. */
   html.compact-home .strip-item { min-height: 44px; }
 
-  /* Roughly 105px of tile at 375px of phone, so the label gives back the inset
-     and a little of its own padding rather than running out of the picture. */
+  /* Around 166px of tile at 375px of phone, and the full width for the third,
+     so the label goes back to the size it is everywhere else. */
   html.compact-home .strip-label {
-    left: 8px;
-    bottom: 8px;
-    padding: 5px 9px;
-    font-size: 11px;
+    left: 10px;
+    bottom: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
