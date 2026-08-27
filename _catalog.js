@@ -71,7 +71,7 @@ const GAMES = [
     icon: 'assets/art/icon-snowman.svg',
     alt: 'A snowman that has lost its hat and scarf, beside a part-guessed word',
     accent: '#5a9e4f',
-    facts: ['New word daily', '11 categories', 'Unlimited words'],
+    facts: ['New word daily', '12 categories', 'Unlimited words'],
     status: 'live',
     path: 'games/snowman/',
     url: 'games/snowman/index.html'

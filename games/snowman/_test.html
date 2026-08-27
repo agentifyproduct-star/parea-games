@@ -269,25 +269,27 @@ document.getElementById('f').addEventListener('load', async () => {
        means dealing it from that difficulty's pile instead, so easy is what
        empties first: it is drawn on 65% of days.
 
-       That cost 170 days down to 96, until four more categories took the book
-       from 170 words to 270 and the easy pile from 70 to 123. Measured against
-       this seed the first repeat now falls on day 177, past where the single
-       run ever reached. Asserted at 150 so the floor is a decision rather than
-       a surprise, and so a reshuffle that made it worse would be caught. */
+       That cost 170 days down to 96. Five more categories then took the book
+       from 170 words to 428 and the easy pile from 70 to 218, and the first
+       repeat now falls on day 325. Countries did most of that work: country
+       names are vowel-rich, so difficultyOf() scores most of them easy, which
+       is the only pile that was ever binding. Asserted at 280 so the floor is a
+       decision rather than a surprise, and so a reshuffle that made it worse
+       would be caught. */
     const runway = [];
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 700; i++) {
       runway.push(w.SNOWMAN_WORDS.daily(new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000)).phrase);
     }
     const firstRepeat = runway.findIndex((word, i) => runway.indexOf(word) !== i);
-    check('five months pass without a word coming round again',
-          firstRepeat >= 150, 'first repeat on day ' + (firstRepeat + 1));
+    check('most of a year passes without a word coming round again',
+          firstRepeat >= 280, 'first repeat on day ' + (firstRepeat + 1));
 
     /* The promise that survives the change, and the one that matters: within a
        tier, the run is walked in order and nothing repeats until that pile is
        used up. */
     ['easy', 'medium', 'hard'].forEach(tier => {
       const drawn = [];
-      for (let i = 0; i < 400; i++) {
+      for (let i = 0; i < 700; i++) {
         const when = new Date(Date.parse('2026-08-19T12:00:00Z') + i * 86400000);
         if (w.SNOWMAN_WORDS.dailyLevel(when) === tier) drawn.push(w.SNOWMAN_WORDS.daily(when).phrase);
       }

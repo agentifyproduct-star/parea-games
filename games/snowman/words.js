@@ -8,9 +8,19 @@
    Difficulty is derived rather than hand-assigned, so adding a word is a
    one-line change and no tier can drift out of date. See difficultyOf().
 
-   Places is countries and cities. Global is the things that cross them:
-   languages, currencies, and the machinery of travel and time. Keeping the two
-   apart is what stops the standing clue being useless in either. */
+   Places is the mixed one, countries beside cities. Countries is only
+   countries, and it is there because the daily runway is governed by the easy
+   pile: country names are vowel-rich, so difficultyOf() scores most of them
+   easy, which is exactly the pile that empties first.
+
+   The list is UN member states, which is the one line that can be drawn without
+   picking a side. That leaves out Taiwan, Kosovo and Palestine, and leaves out
+   anything whose English name runs past twelve characters, which is the widest
+   phrase the board has ever had to fit.
+
+   Global is the things that cross borders: languages, currencies, and the
+   machinery of travel and time. Keeping the three apart is what stops the
+   standing clue being useless in any of them. */
 
 const CATEGORIES = {
   'Animals': [
@@ -78,6 +88,30 @@ const CATEGORIES = {
     'dollar', 'peso', 'yuan', 'olympics', 'world cup', 'passport', 'embassy', 'ambassador',
     'equator', 'time zone', 'continent', 'hemisphere', 'longitude', 'airport', 'customs',
     'translator', 'summit', 'treaty'
+  ],
+  'Countries': [
+    'afghanistan', 'albania', 'algeria', 'andorra', 'angola', 'armenia', 'australia',
+    'austria', 'azerbaijan', 'bahamas', 'bahrain', 'bangladesh', 'barbados', 'belarus',
+    'belgium', 'belize', 'benin', 'bhutan', 'bolivia', 'botswana', 'brazil', 'brunei',
+    'bulgaria', 'burkina faso', 'burundi', 'cambodia', 'cameroon', 'canada', 'cape verde',
+    'chad', 'chile', 'china', 'colombia', 'comoros', 'croatia', 'cuba', 'cyprus',
+    'denmark', 'djibouti', 'dominica', 'ecuador', 'egypt', 'el salvador', 'eritrea',
+    'estonia', 'eswatini', 'fiji', 'finland', 'france', 'gabon', 'gambia', 'georgia',
+    'germany', 'ghana', 'greece', 'grenada', 'guatemala', 'guinea', 'guyana', 'haiti',
+    'honduras', 'hungary', 'india', 'indonesia', 'iran', 'iraq', 'ireland', 'israel',
+    'italy', 'ivory coast', 'jamaica', 'japan', 'jordan', 'kazakhstan', 'kenya',
+    'kiribati', 'kuwait', 'kyrgyzstan', 'laos', 'latvia', 'lebanon', 'lesotho', 'liberia',
+    'libya', 'lithuania', 'luxembourg', 'madagascar', 'malawi', 'malaysia', 'maldives',
+    'mali', 'malta', 'mauritania', 'mauritius', 'mexico', 'micronesia', 'moldova',
+    'monaco', 'mongolia', 'montenegro', 'mozambique', 'myanmar', 'namibia', 'nauru',
+    'nepal', 'nicaragua', 'niger', 'nigeria', 'north korea', 'norway', 'oman', 'pakistan',
+    'palau', 'panama', 'paraguay', 'peru', 'philippines', 'poland', 'qatar', 'romania',
+    'russia', 'rwanda', 'samoa', 'san marino', 'saudi arabia', 'senegal', 'serbia',
+    'seychelles', 'sierra leone', 'slovakia', 'slovenia', 'somalia', 'south africa',
+    'south sudan', 'spain', 'sudan', 'suriname', 'sweden', 'switzerland', 'syria',
+    'tajikistan', 'tanzania', 'timor leste', 'togo', 'tonga', 'tunisia', 'turkey',
+    'turkmenistan', 'tuvalu', 'uganda', 'ukraine', 'uruguay', 'uzbekistan', 'vanuatu',
+    'venezuela', 'yemen', 'zambia', 'zimbabwe'
   ]
 };
 
