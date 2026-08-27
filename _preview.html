@@ -106,6 +106,16 @@
     <span>Compact, as it stays from here on</span>
   </button>
 
+  <h2>Or by playing</h2>
+  <button data-visits="1" data-splash="1" data-played="shabda:3">
+    <b>Day one, three rounds of Shabda</b>
+    <span>Compact without the visit count &mdash; depth, not days</span>
+  </button>
+  <button data-visits="1" data-splash="1" data-played="shabda:2">
+    <b>Day one, two rounds</b>
+    <span>One short &mdash; still the full homepage</span>
+  </button>
+
   <h2>With the splash</h2>
   <button data-visits="1" data-splash="0">
     <b>New session, first-time visitor</b>
@@ -144,9 +154,21 @@ function yesterday() {
   return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
 }
 
-function apply(visits, splashSeen) {
+function apply(visits, splashSeen, played) {
   const w = frame.contentWindow;
+  w.localStorage.clear();
   w.localStorage.setItem('parea_visits', JSON.stringify({ count: Math.max(0, visits - 1), last: yesterday() }));
+
+  /* "shabda:3" — rounds played in one game, written in that game's own shape. */
+  if (played) {
+    const [game, rounds] = played.split(':');
+    if (game === 'anagram') {
+      w.localStorage.setItem('arcade.anagram.v1', JSON.stringify({ stats: { daysPlayed: +rounds } }));
+    } else {
+      w.localStorage.setItem('arcade.' + game + '.stats', JSON.stringify({ played: +rounds }));
+    }
+  }
+
   if (splashSeen) w.sessionStorage.setItem('parea_splash_seen', '1');
   else w.sessionStorage.removeItem('parea_splash_seen');
   frame.src = 'index.html?r=' + Date.now();
@@ -155,7 +177,7 @@ function apply(visits, splashSeen) {
 document.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.reload) return (frame.src = 'index.html?r=' + Date.now());
-    apply(+btn.dataset.visits, btn.dataset.splash === '1');
+    apply(+btn.dataset.visits, btn.dataset.splash === '1', btn.dataset.played);
   });
 });
 
@@ -166,8 +188,18 @@ frame.addEventListener('load', () => {
   const cls = w.document.documentElement.classList;
   const line = w.document.getElementById('hero-progress');
 
+  const rounds = ['shabda', 'snowman', 'anagram'].map(g => {
+    let r = null;
+    try {
+      r = JSON.parse(w.localStorage.getItem(g === 'anagram' ? 'arcade.anagram.v1' : 'arcade.' + g + '.stats'));
+    } catch (e) {}
+    const n = g === 'anagram' ? ((r || {}).stats || {}).daysPlayed : (r || {}).played;
+    return n ? g + ' ' + n : null;
+  }).filter(Boolean);
+
   stateBox.innerHTML = [
     'visit count: <b>' + (visits.count === undefined ? '—' : visits.count) + '</b>',
+    'rounds played: <b>' + (rounds.length ? rounds.join(', ') : 'none') + '</b>',
     'layout: <b>' + (cls.contains('compact-home') ? 'compact' : 'full') + '</b>',
     'splash: <b>' + (cls.contains('splash-on') ? 'showing' : 'not this load') + '</b>',
     'hero line: <b>' + ((line && line.textContent) || '—') + '</b>'

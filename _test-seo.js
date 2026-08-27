@@ -113,6 +113,21 @@ check('the inline script only picks a layout, it never writes content',
 check('and it only ever reaches for storage inside a guard',
   (head.match(/localStorage|sessionStorage/g) || []).length <= (head.match(/\btry\s*\{/g) || []).length * 3);
 
+/* The head script has to know where each game keeps its record, because it runs
+   before assets/today.js — the file that is otherwise the only place that
+   knowledge lives. Two copies of the same fact is a bug waiting for the day a
+   game changes its key, so they are held against each other here. */
+const todayJs = read('assets/today.js');
+const gameKeys = [...todayJs.matchAll(/'(arcade\.[a-z0-9.]+)'/g)].map(m => m[1])
+  .filter(key => !key.startsWith('arcade.today'));
+
+check('today.js still names a storage key for every live game',
+  gameKeys.length === live.length, gameKeys.join(', '));
+
+check('the head script reads the same keys today.js does',
+  gameKeys.every(key => has(head, `'${key}'`)),
+  gameKeys.filter(key => !has(head, `'${key}'`)).join(', ') || 'all present');
+
 check('nothing on the front page is fetched from another domain',
   !/src="https?:/.test(home));
 

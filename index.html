@@ -172,6 +172,34 @@
     if (visits.count >= 4) el.classList.add('compact-home');
   } catch (e) { /* no storage: everybody is a first-time visitor, which is the full page */ }
 
+  /* The other way in. Somebody three rounds deep in any one game knows what
+     this site is, whatever their visit count happens to say — a person who
+     found us on Monday and played Shabda three times before Tuesday should not
+     be read the introduction again.
+
+     Either route is enough on its own, so this only ever adds.
+
+     These three keys are also written down in assets/today.js, which is
+     supposed to be the only file that knows where each game keeps its record.
+     They are repeated here because that file has not loaded yet and cannot:
+     the layout has to be settled before the first frame, and a decision made
+     after today.js arrives is a decision the visitor watches happen. _test-seo.js
+     holds the two lists to each other so they cannot drift apart in silence. */
+  try {
+    var PLAYED = [
+      ['arcade.shabda.stats', function (s) { return s.played; }],
+      ['arcade.snowman.stats', function (s) { return s.played; }],
+      ['arcade.anagram.v1', function (s) { return (s.stats || {}).daysPlayed; }]
+    ];
+    for (var i = 0; i < PLAYED.length; i++) {
+      var record = JSON.parse(localStorage.getItem(PLAYED[i][0]) || 'null');
+      if (record && (PLAYED[i][1](record) || 0) >= 3) {
+        el.classList.add('compact-home');
+        break;
+      }
+    }
+  } catch (e) { /* same deal: unreadable storage just means the fuller page */ }
+
   /* The splash: once a session, and only on a phone. Marked seen at the moment
      it is decided rather than when it finishes, so a tap through to a game two
      hundred milliseconds in does not earn a second one on the way back. */

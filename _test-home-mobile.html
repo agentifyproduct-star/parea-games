@@ -40,6 +40,15 @@ function seed(w, visits, splashSeen) {
   if (splashSeen) w.sessionStorage.setItem('parea_splash_seen', '1');
 }
 
+/* Rounds played in one game, in that game's own shape. */
+function seedPlayed(w, game, played) {
+  if (game === 'anagram') {
+    w.localStorage.setItem('arcade.anagram.v1', JSON.stringify({ stats: { daysPlayed: played } }));
+  } else {
+    w.localStorage.setItem('arcade.' + game + '.stats', JSON.stringify({ played }));
+  }
+}
+
 const dayBefore = n => {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -101,6 +110,46 @@ const dayBefore = n => {
     w = await load();
     check('corrupt storage falls back to the full homepage without throwing',
           !w.document.documentElement.classList.contains('compact-home'));
+
+    // ---------- the other way in: three rounds of any one game ----------
+
+    /* Every case here is a first- or second-day visitor, so the visit counter
+       could not be the thing letting them through. */
+    for (const game of ['shabda', 'snowman', 'anagram']) {
+      seed(w, { count: 1, last: dayBefore(1) }, true);
+      seedPlayed(w, game, 3);
+      w = await load();
+      check(`three rounds of ${game} is enough on its own`,
+            w.document.documentElement.classList.contains('compact-home'));
+
+      seed(w, { count: 1, last: dayBefore(1) }, true);
+      seedPlayed(w, game, 2);
+      w = await load();
+      check(`two rounds of ${game} is not`,
+            !w.document.documentElement.classList.contains('compact-home'));
+    }
+
+    /* Two rounds each of three different games is still two rounds of any one
+       game. The rule counts depth, not spread. */
+    seed(w, { count: 1, last: dayBefore(1) }, true);
+    ['shabda', 'snowman', 'anagram'].forEach(g => seedPlayed(w, g, 2));
+    w = await load();
+    check('two rounds each of all three does not add up to three of one',
+          !w.document.documentElement.classList.contains('compact-home'));
+
+    seed(w, { count: 1, last: dayBefore(1) }, true);
+    w.localStorage.setItem('arcade.snowman.stats', '{{{ not json');
+    seedPlayed(w, 'shabda', 4);
+    w = await load();
+    check('one unreadable game record does not stop the others counting',
+          w.document.documentElement.classList.contains('compact-home'));
+
+    /* Both routes at once must not fight: either is enough, neither is required. */
+    seed(w, { count: 9, last: dayBefore(1) }, true);
+    seedPlayed(w, 'shabda', 0);
+    w = await load();
+    check('a long-standing visitor who has never played still gets compact',
+          w.document.documentElement.classList.contains('compact-home'));
 
     // ---------- the compact layout ----------
     seed(w, { count: 9, last: dayBefore(1) }, true);
