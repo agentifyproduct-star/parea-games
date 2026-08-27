@@ -6,7 +6,11 @@
    which is what makes a phrase like "kuala lumpur" fair rather than cruel.
 
    Difficulty is derived rather than hand-assigned, so adding a word is a
-   one-line change and no tier can drift out of date. See difficultyOf(). */
+   one-line change and no tier can drift out of date. See difficultyOf().
+
+   Places is countries and cities. Global is the things that cross them:
+   languages, currencies, and the machinery of travel and time. Keeping the two
+   apart is what stops the standing clue being useless in either. */
 
 const CATEGORIES = {
   'Animals': [
@@ -50,6 +54,30 @@ const CATEGORIES = {
     'wardrobe', 'mattress', 'radiator', 'toaster', 'vacuum', 'curtain', 'laundry',
     'dishwasher', 'light bulb', 'front door', 'coffee mug', 'alarm clock',
     'bookshelf', 'hairbrush', 'scissors', 'keyboard', 'pillow', 'candle'
+  ],
+  'Movies': [
+    'director', 'screenplay', 'soundtrack', 'popcorn', 'sequel', 'trailer', 'cameo',
+    'subtitle', 'blockbuster', 'red carpet', 'box office', 'sound stage', 'stunt double',
+    'premiere', 'silent film', 'the matrix', 'casablanca', 'psycho', 'toy story',
+    'frozen', 'finding nemo', 'star wars', 'gladiator', 'inception', 'titanic'
+  ],
+  'Nature': [
+    'rainbow', 'waterfall', 'thunder', 'blossom', 'meadow', 'canyon', 'iceberg',
+    'sunrise', 'wildfire', 'seashell', 'acorn', 'pebble', 'coral reef', 'sand dune',
+    'rainforest', 'tide pool', 'avalanche', 'estuary', 'wetland', 'driftwood', 'hailstone',
+    'monsoon', 'riverbank', 'treeline', 'snowdrift'
+  ],
+  'Companies': [
+    'samsung', 'toyota', 'nintendo', 'spotify', 'unilever', 'siemens', 'panasonic',
+    'starbucks', 'volkswagen', 'ikea', 'adidas', 'lego', 'canon', 'philips', 'shell',
+    'visa', 'airbnb', 'netflix', 'pixar', 'bosch', 'kodak', 'ferrari', 'michelin',
+    'heineken', 'nestle'
+  ],
+  'Global': [
+    'mandarin', 'swahili', 'portuguese', 'arabic', 'esperanto', 'rupee', 'euro',
+    'dollar', 'peso', 'yuan', 'olympics', 'world cup', 'passport', 'embassy', 'ambassador',
+    'equator', 'time zone', 'continent', 'hemisphere', 'longitude', 'airport', 'customs',
+    'translator', 'summit', 'treaty'
   ]
 };
 
