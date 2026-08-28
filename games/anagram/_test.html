@@ -592,13 +592,13 @@ document.getElementById('f').addEventListener('load', async () => {
     const size = manifest.practice.length;
     const dealt = [];
     for (let i = 0; i < size; i++) {
-      A.startPractice();
+      A.startPractice({ deal: true });
       dealt.push(A.wordFor());
     }
     check('Unlimited deals the whole pool before it repeats anything',
           new Set(dealt).size === size, new Set(dealt).size + ' distinct of ' + size);
 
-    A.startPractice();
+    A.startPractice({ deal: true });
     check('and then starts the pool again rather than dead-ending',
           dealt.includes(A.wordFor()));
     check('the memory resets rather than growing without end',
@@ -671,6 +671,49 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the day is still finished, and still recorded',
           A.progressFor().resolved === true &&
           JSON.stringify(A.save.stats) === recordBefore);
+
+    /* ---------- an Unlimited round survives leaving the page ----------
+       The round used to be held in memory alone, so leaving the page threw away
+       the word and every tile placed on it. */
+    A.startPractice({ deal: true });
+    await wait(300);
+    const unWord = A.wordFor();
+    A.clearInput();
+    A.typeLetter(unWord[0]);
+    A.typeLetter(unWord[1]);
+    await wait(150);
+    const typed = A.currentInput();
+    check('unlimited: two tiles are on the board', typed.length === 2, typed);
+
+    modeBtn('daily').click();
+    await wait(300);
+    modeBtn('practice').click();
+    await wait(300);
+    check('unlimited: stepping away to today and back keeps the word',
+          A.wordFor() === unWord, A.wordFor() + ' vs ' + unWord);
+    check('unlimited: and the tiles are where they were left',
+          A.currentInput() === typed, A.currentInput());
+
+    const again = document.createElement('iframe');
+    again.width = 700;
+    again.height = 900;
+    again.src = 'index.html';
+    document.body.appendChild(again);
+    await new Promise(done => again.addEventListener('load', done, { once: true }));
+    await wait(900);
+
+    const aA = again.contentWindow.ANAGRAM;
+    check('unlimited: a fresh page comes back to the round, not to today',
+          aA.inPractice() === true && aA.wordFor() === unWord,
+          aA.wordFor() + ' vs ' + unWord);
+    check('unlimited: with the tiles still placed',
+          aA.currentInput() === typed, aA.currentInput());
+
+    again.contentDocument.getElementById('btn-practice').click();
+    await wait(500);
+    check('unlimited: Play another deals a new word instead of resuming',
+          aA.currentInput() === '');
+    again.remove();
 
   } catch (err) {
     check('suite ran to the end', false, err.message + ' @ ' + (err.stack || '').split('\n')[1]);

@@ -391,6 +391,46 @@ document.getElementById('f').addEventListener('load', async () => {
     w.localStorage.setItem('arcade.snowman.daily', JSON.stringify(stale));
     check('a game saved on an earlier day is not offered up as today', w.restore('arcade.snowman.daily') === false);
 
+    /* ---------- an Unlimited round survives leaving the page ----------
+       Switching to Unlimited used to deal a new word every time, so a round in
+       progress cost you the word and every letter spent on it. */
+    modeBtn('unlimited').click();
+    await wait(400);
+    const unWord = w.state.secretWord;
+    const pick = 'aeiou'.split('').find(c => !w.state.guessedLetters.has(c));
+    press(w, pick);
+    await wait(200);
+
+    modeBtn('daily').click();
+    await wait(300);
+    modeBtn('unlimited').click();
+    await wait(300);
+    check('unlimited: stepping away to today and back keeps the word',
+          w.state.secretWord === unWord, w.state.secretWord + ' vs ' + unWord);
+    check('unlimited: and keeps the letters already called',
+          w.state.guessedLetters.has(pick), [...w.state.guessedLetters].join(''));
+
+    const again = document.createElement('iframe');
+    again.width = 700;
+    again.height = 900;
+    again.src = 'index.html';
+    document.body.appendChild(again);
+    await new Promise(done => again.addEventListener('load', done, { once: true }));
+    await wait(700);
+
+    const aw = again.contentWindow;
+    check('unlimited: a fresh page comes back to the round, not to today',
+          aw.state.daily === false && aw.state.secretWord === unWord,
+          'daily=' + aw.state.daily + ' ' + aw.state.secretWord);
+    check('unlimited: with the letters still called',
+          aw.state.guessedLetters.has(pick));
+
+    aw.document.getElementById('btn-another').click();
+    await wait(400);
+    check('unlimited: Play another deals a new word instead of resuming',
+          aw.state.guessedLetters.size === 0);
+    again.remove();
+
   } catch (err) {
     results.push('FAIL threw :: ' + err.message + ' @ ' + (err.stack || '').split('\n')[1]);
   }

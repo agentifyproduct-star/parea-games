@@ -559,8 +559,6 @@ modeBtns.forEach(btn => {
     const wantsDaily = btn.dataset.mode === 'daily';
     if (wantsDaily === state.daily) return;
 
-    const dropping = !state.daily && state.status === 'playing' && state.guessedLetters.size > 0;
-
     if (wantsDaily) {
       /* Coming back to today's word picks it up where it was left, finished or not. */
       if (!restore(STORE_DAILY, { finished: true })) startDaily();
@@ -568,8 +566,16 @@ modeBtns.forEach(btn => {
       return;
     }
 
+    /* And coming back to Unlimited picks up the round in progress, rather than
+       dealing over the top of it. Stepping away to today's word and back used to
+       cost you the word you were on and every letter you had spent on it. */
+    if (restoreGame()) {
+      toast(state.guessedLetters.size ? 'Back to your word' : 'Your streak is safe here');
+      return;
+    }
+
     startGame();
-    toast(dropping ? 'Unlimited word dropped' : 'Your streak is safe here');
+    toast('Your streak is safe here');
   });
 });
 
@@ -686,9 +692,17 @@ function openStats() {
 
 buildKeyboard();
 
-/* Today's word is the front door. An unlimited round left half-finished is picked
-   up only if the day's word is already done. */
-if (!restore(STORE_DAILY)) {
+/* Today's word is the front door — unless an unlimited round was left part
+   played, in which case that is what the page was in the middle of and that is
+   what it comes back to. A word dealt and never touched does not count: nobody
+   is waiting to finish a round they never started. */
+const pending = loadJSON(STORE_GAME, null);
+const midRound = !!pending && pending.status === 'playing' &&
+  Array.isArray(pending.guessedLetters) && pending.guessedLetters.length > 0;
+
+if (midRound && restoreGame()) {
+  /* nothing else to do: the round is back on screen */
+} else if (!restore(STORE_DAILY)) {
   const dailyDone = restore(STORE_DAILY, { finished: true });
   if (!dailyDone) startDaily();
   else if (!restoreGame()) render();

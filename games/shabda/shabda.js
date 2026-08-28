@@ -21,6 +21,9 @@ const KEY_LAYOUT = [
    player starts again from nothing. */
 const STORE_STATS = 'arcade.shabda.stats';
 const STORE_DAILY = 'arcade.shabda.daily';
+/* An unlimited round in progress. Kept apart from the day's board so neither can
+   overwrite the other, and so leaving the page mid-round is not a loss. */
+const STORE_GAME = 'arcade.shabda.game';
 /* Unlimited keeps its own record, in its own key. Nothing it does can reach
    the daily one above, which is the whole promise the mode is sold on. */
 const STORE_UNLIMITED = 'arcade.shabda.unlimited';
@@ -120,13 +123,17 @@ function recordResult(won, guessCount) {
   saveJSON(STORE_STATS, stats);
 }
 
-function saveDaily() {
-  if (!state.daily) return;
-  saveJSON(STORE_DAILY, {
+/* Both boards are written down, not just today's. An unlimited round used to
+   live only in memory, so stepping away to another game and back dealt a new
+   word and threw away the one being played. */
+function saveGame() {
+  saveJSON(state.daily ? STORE_DAILY : STORE_GAME, {
     puzzle: state.puzzle,
     len: state.len,
     answer: state.answer,
     guesses: state.guesses,
+    /* The row being typed, so half a word survives the trip too. */
+    current: state.current,
     status: state.status
   });
 }
@@ -311,11 +318,13 @@ function handleKey(key) {
   if (key === 'ENTER') return submitGuess();
   if (key === 'BACK') {
     state.current = state.current.slice(0, -1);
-    return renderCurrentRow();
+    renderCurrentRow();
+    return saveGame();
   }
   if (/^[a-z]$/.test(key) && state.current.length < state.len) {
     state.current += key;
     renderCurrentRow();
+    saveGame();
   }
 }
 
@@ -455,7 +464,7 @@ function finishTurn(rowIndex, guess) {
     recordUnlimited(state.status === 'won', state.guesses.length);
   }
 
-  saveDaily();
+  saveGame();
   updateCountdown();
   if (state.status !== 'playing') {
     if (state.daily) setTimeout(openStats, state.status === 'won' ? 2000 : 2400);
@@ -517,16 +526,16 @@ document.getElementById('btn-stats').addEventListener('click', openStats);
 document.getElementById('btn-new').addEventListener('click', () => {
   /* Asking for a new word is the whole point of the button; there is nothing to
      confirm. Today's game is saved and comes back from the Today button. */
-  startGame({ daily: false });
+  startGame({ daily: false, fresh: true });
 });
 
 document.getElementById('btn-play-again').addEventListener('click', () => {
   closeModal(document.getElementById('stats-modal'));
-  startGame({ daily: false });
+  startGame({ daily: false, fresh: true });
 });
 
 document.getElementById('btn-another').addEventListener('click', () => {
-  startGame({ daily: false });
+  startGame({ daily: false, fresh: true });
 });
 
 /* Which record the panel is showing. Opens on the day, always: the daily
@@ -672,10 +681,22 @@ modeBtns.forEach(btn => {
 
 /* ---------------- game setup ---------------- */
 
-function startGame({ daily }) {
-  /* Nobody picks a board any more. Today's comes off the calendar and every
-     unlimited word rolls its own, both from the same weight table. */
-  const wanted = daily ? WORDS.dailyLength() : WORDS.unlimitedLength();
+/* `fresh` is how you ask for a new word rather than the one already going: the
+   refresh button, Play another, and the stats panel's Play again all want a deal
+   rather than a resume. Everything else resumes. */
+function startGame({ daily, fresh = false }) {
+  const saved = fresh ? null : loadJSON(daily ? STORE_DAILY : STORE_GAME, null);
+  const sane = !!saved && typeof saved.answer === 'string' && WORDS.supports(saved.answer.length);
+
+  /* Today's board is whatever the calendar says, and a saved day that does not
+     match it is yesterday's. An unlimited round has no calendar to answer to, so
+     it comes back on the board it was dealt on, however long that is. */
+  const dailyLen = WORDS.dailyLength();
+  const resume = daily
+    ? sane && saved.puzzle === WORDS.puzzleNumber() && saved.answer.length === dailyLen
+    : sane && saved.status === 'playing';
+
+  const wanted = resume ? saved.answer.length : (daily ? dailyLen : WORDS.unlimitedLength());
   state.len = WORDS.supports(wanted) ? wanted : DEFAULT_LEN;
   state.daily = daily;
   state.guesses = [];
@@ -693,38 +714,50 @@ function startGame({ daily }) {
      the way on to the next word — without waiting for the next tick. */
   updateCountdown();
 
-  if (daily) {
-    const saved = loadJSON(STORE_DAILY, null);
-    if (saved && saved.puzzle === state.puzzle && saved.answer &&
-        saved.answer.length === state.len) {
-      // Same day, same length — pick up exactly where the player left off.
-      state.answer = saved.answer;
-      state.status = saved.status || 'playing';
-      state.guesses = Array.isArray(saved.guesses) ? saved.guesses.slice(0, ROWS) : [];
-      state.guesses.forEach((g, i) => revealRow(i, g, scoreGuess(g, state.answer), false));
-      TODAY.set('shabda', state.status);
+  if (resume) {
+    // Exactly where it was left: the rows played, and the row part-typed.
+    state.answer = saved.answer;
+    state.status = saved.status || 'playing';
+    state.guesses = Array.isArray(saved.guesses) ? saved.guesses.slice(0, ROWS) : [];
+    state.guesses.forEach((g, i) => revealRow(i, g, scoreGuess(g, state.answer), false));
 
-      /* Coming back to a day already played used to be met with the results
-         panel over the board, which is a popup nobody asked for: the result is
-         a thing you have already seen. The finished board is left up the way
-         the other two games leave theirs, with the countdown to the next word
-         under it and the Results button in the header for anyone who wants the
-         record again. The panel still opens by itself the moment a round ends,
-         which is the one time it has something to say. */
-      updateCountdown();
-      return;
-    }
+    const typed = typeof saved.current === 'string' ? saved.current : '';
+    state.current = state.status === 'playing' ? typed.slice(0, state.len) : '';
+    renderCurrentRow();
+
+    if (daily) TODAY.set('shabda', state.status);
+
+    /* Coming back to a day already played used to be met with the results
+       panel over the board, which is a popup nobody asked for: the result is
+       a thing you have already seen. The finished board is left up the way
+       the other two games leave theirs, with the countdown to the next word
+       under it and the Results button in the header for anyone who wants the
+       record again. The panel still opens by itself the moment a round ends,
+       which is the one time it has something to say. */
+    updateCountdown();
+    return;
+  }
+
+  if (daily) {
     state.answer = WORDS.dailyWord(state.len);
     TODAY.set('shabda', 'playing');
-    saveDaily();
   } else {
     state.answer = WORDS.randomWord(state.len);
     toast(`${state.len} letters. Your streak is safe here.`);
   }
+  saveGame();
 }
 
-/* Today's word is the front door, on whichever board today calls for. */
-startGame({ daily: true });
+/* Today's word is the front door — unless an unlimited round was left part
+   played, in which case that is what the page was in the middle of and that is
+   what it comes back to. Merely having opened Unlimited does not count: a word
+   dealt and never touched is not something anyone is waiting to finish. */
+const pending = loadJSON(STORE_GAME, null);
+startGame({
+  daily: !(pending && pending.status === 'playing' &&
+           ((Array.isArray(pending.guesses) && pending.guesses.length > 0) ||
+            (typeof pending.current === 'string' && pending.current.length > 0)))
+});
 
 // First-time visitors get the rules up front.
 if (!localStorage.getItem(STORE_HELP)) {

@@ -25,6 +25,10 @@ const STORE_USED = 'arcade.anagram.used';
 /* And what it made of them. Its own key, because the save above is never
    written during an unlimited round and should not start being. */
 const STORE_UNLIMITED = 'arcade.anagram.unlimited';
+/* The Unlimited round actually being played, as opposed to the record of them.
+   It used to be held in memory alone, so stepping away to another game and back
+   dealt a new word over the top of the one in front of you. */
+const STORE_ROUND = 'arcade.anagram.round';
 
 /* The day is one word. This is kept as a named slot rather than dissolved into
    the code because the board, the progress record and the distribution all key
@@ -244,6 +248,38 @@ function rememberUsed(word, reset) {
   } catch { /* private mode: Unlimited simply forgets again */ }
 }
 
+function saveRound() {
+  if (!storage) return;
+  try {
+    if (practice) storage.setItem(STORE_ROUND, JSON.stringify(practice));
+  } catch { /* private mode: an Unlimited round does not survive the trip */ }
+}
+
+/* A round is only worth coming back to while it is unfinished. A resolved one is
+   left where it is rather than deleted — the next round writes over it. */
+function loadRound() {
+  if (!storage) return null;
+  try {
+    const raw = JSON.parse(storage.getItem(STORE_ROUND) || 'null');
+    if (!raw || !raw.day || typeof raw.day.w !== 'string' || !raw.progress) return null;
+    const round = raw.progress[SLOT];
+    if (!round || round.resolved) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+/* Whether there is anything in a round worth preserving. A word dealt and never
+   touched is not something anyone is waiting to finish. */
+function roundStarted(round) {
+  const p = round && round.progress && round.progress[SLOT];
+  if (!p) return false;
+  const board = p.board;
+  return !!(p.attemptsUsed || p.hintUsed || p.shufflesUsed ||
+            (board && Array.isArray(board.placed) && board.placed.some(t => t !== null)));
+}
+
 const state = {
   puzzleDate: '',
   puzzleNumber: 0,
@@ -322,15 +358,28 @@ function beginSlot() {
   state.revealMissed = false;
   state.lockedSlots = [];
 
-  const scrambled = scrambleFor();
-  state.tiles = [...scrambled].map(letter => ({ letter }));
-  state.placed = new Array(wordFor().length).fill(null);
-
+  const answer = wordFor();
   const progress = progressFor();
+
+  /* Exactly where the tiles were left, if they were left anywhere. The saved
+     tray has to be the same letters as the answer or it belongs to some other
+     word, in which case it is thrown away rather than trusted. */
+  const board = progress.board;
+  const kept = !!board && Array.isArray(board.tray) &&
+    board.tray.length === answer.length &&
+    board.tray.slice().sort().join('') === [...answer].sort().join('') &&
+    Array.isArray(board.placed) && board.placed.length === answer.length;
+
+  const scrambled = kept ? board.tray.join('') : scrambleFor();
+  state.tiles = [...scrambled].map(letter => ({ letter }));
+  state.placed = kept ? board.placed.slice() : new Array(answer.length).fill(null);
+  if (kept && Array.isArray(board.locked)) state.lockedSlots = board.locked.slice();
+
   state.gameStatus = progress.resolved ? 'slotResolved' : 'playing';
 
-  /* A hint taken earlier in the day is part of the restored position. */
-  if (progress.hintUsed && !progress.resolved) applyHint(true);
+  /* A hint taken earlier is part of the restored position — but only when the
+     board itself was not restored, which already has the hinted tile in place. */
+  if (progress.hintUsed && !progress.resolved && !kept) applyHint(true);
 
   /* A word that is over shows its answer and stays put. */
   if (progress.resolved) revealOnBoard();
@@ -668,7 +717,24 @@ function markModeButtons() {
    the calendar never touches, so it can be played as often as you like without
    ever showing you a word that is due tomorrow. */
 
-function startPractice() {
+/* `deal` is how you ask for a new word rather than the one already going. Play
+   another wants a deal; arriving in Unlimited wants whatever was left half
+   finished. (Not `fresh` — the pool filter below already owns that name.) */
+function startPractice({ deal = false } = {}) {
+  if (!deal) {
+    const saved = loadRound();
+    if (saved) {
+      practice = saved;
+      state.activeSlot = SLOT;
+      el('results').hidden = true;
+      el('reveal').hidden = true;
+      state.revealed = false;
+      beginSlot();
+      toast(roundStarted(saved) ? 'Back to your word' : 'Your streak is safe here');
+      return true;
+    }
+  }
+
   const pool = manifest && manifest.practice;
   if (!Array.isArray(pool) || !pool.length) {
     toast('No practice words available');
@@ -687,6 +753,7 @@ function startPractice() {
     day: pick,
     progress: blankProgress('practice')
   };
+  saveRound();
 
   state.activeSlot = SLOT;
   el('results').hidden = true;
@@ -888,7 +955,28 @@ function checkRollover() {
 
 /* ---------------- rendering ---------------- */
 
+/* Where the tiles are sitting. The tray order cannot be replayed from the
+   manifest once a shuffle has moved it — a shuffle is random — so the letters
+   are written down alongside which slot each one is in.
+
+   Called from render, which is the one place every way of moving a tile already
+   goes through. */
+function rememberBoard() {
+  const progress = progressFor();
+  if (!progress || progress.resolved || state.gameStatus === 'dayComplete') return;
+  if (!state.tiles.length) return;
+
+  progress.board = {
+    tray: state.tiles.map(tile => tile.letter),
+    placed: state.placed.slice(),
+    locked: state.lockedSlots.slice()
+  };
+
+  if (practice) saveRound(); else persist();
+}
+
 function render() {
+  rememberBoard();
   markModeButtons();
   renderTray();
   renderSlots();
@@ -1096,7 +1184,7 @@ el('btn-shuffle').addEventListener('click', shuffleTiles);
 el('btn-hint').addEventListener('click', () => applyHint());
 el('btn-continue').addEventListener('click', advance);
 el('btn-share').addEventListener('click', copyShare);
-el('btn-practice').addEventListener('click', startPractice);
+el('btn-practice').addEventListener('click', () => startPractice({ deal: true }));
 el('btn-back-to-today').addEventListener('click', leavePractice);
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -1189,7 +1277,13 @@ function init() {
 
   const progress = progressFor();
 
-  if (progress.resolved) {
+  /* Today's word is the front door — unless an Unlimited round was left part
+     played, in which case that is what comes back. */
+  const pending = loadRound();
+
+  if (pending && roundStarted(pending)) {
+    startPractice();
+  } else if (progress.resolved) {
     beginSlot();                   // fills state.tiles so the results screen has a word
     showResults();
   } else {

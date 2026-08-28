@@ -472,6 +472,43 @@ document.getElementById('f').addEventListener('load', async () => {
           !!bd.getElementById('btn-stats') && bd.getElementById('btn-stats').offsetParent !== null);
     back.remove();
 
+    /* ---------- an Unlimited round survives leaving the page ----------
+       Two letters typed and nothing submitted: the round has been started but
+       not played, which is the case that used to be thrown away outright. */
+    w.startGame({ daily: false, fresh: true });
+    await wait(500);
+    const unAnswer = w.state.answer;
+    type(w, unAnswer.slice(0, 2));
+    await wait(120);
+    check('unlimited: two letters are on the board',
+          w.state.current === unAnswer.slice(0, 2), w.state.current);
+
+    const again = document.createElement('iframe');
+    again.width = 700;
+    again.height = 900;
+    again.src = 'index.html';
+    document.body.appendChild(again);
+    await new Promise(done => again.addEventListener('load', done, { once: true }));
+    await wait(900);
+
+    const aw = again.contentWindow;
+    check('unlimited: the page comes back to the round, not to today',
+          aw.state.daily === false, 'daily=' + aw.state.daily);
+    check('unlimited: on the same word',
+          aw.state.answer === unAnswer, aw.state.answer + ' vs ' + unAnswer);
+    check('unlimited: with the letters still typed',
+          aw.state.current === unAnswer.slice(0, 2), aw.state.current);
+    check('unlimited: and Unlimited is the tab showing',
+          aw.document.querySelector('.mode-btn[data-mode="unlimited"]')
+            .getAttribute('aria-pressed') === 'true');
+
+    /* Play another is the one that deals. */
+    aw.document.getElementById('btn-another').click();
+    await wait(500);
+    check('unlimited: Play another deals a new word instead of resuming',
+          aw.state.current === '' && aw.state.guesses.length === 0);
+    again.remove();
+
   } catch (err) {
     results.push('FAIL threw :: ' + err.message + ' @ ' + (err.stack || '').split('\n')[1]);
   }
