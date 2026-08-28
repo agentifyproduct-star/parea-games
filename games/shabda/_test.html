@@ -392,8 +392,17 @@ document.getElementById('f').addEventListener('load', async () => {
     await wait(120);
     const tab = m => d.querySelector(`.stat-mode-btn[data-stat="${m}"]`);
     check('the record offers Today and Unlimited', !!tab('daily') && !!tab('unlimited'));
-    check('and opens on Today, which is the one with something at stake',
-          tab('daily').getAttribute('aria-pressed') === 'true');
+    check('and opens on the board being played, which here is Unlimited',
+          tab('unlimited').getAttribute('aria-pressed') === 'true' &&
+          tab('daily').getAttribute('aria-pressed') === 'false',
+          tab('daily').getAttribute('aria-pressed') + '/' +
+          tab('unlimited').getAttribute('aria-pressed'));
+    check('so it is the Unlimited language that comes up first',
+          d.getElementById('st-max-lbl').textContent === 'Best run',
+          d.getElementById('st-max-lbl').textContent);
+
+    tab('daily').click();
+    await wait(80);
     check('Today still says streak', d.getElementById('st-streak-lbl').textContent === 'Current streak');
 
     tab('unlimited').click();
@@ -528,6 +537,15 @@ document.getElementById('f').addEventListener('load', async () => {
     await wait(300);
     check('today: the refresh is dead, because today has one word',
           aw.document.getElementById('btn-new').disabled === true);
+
+    /* And the record follows the board the other way too. This frame is on
+       today's word, so Results has to open on today. */
+    aw.document.getElementById('btn-stats').click();
+    await wait(200);
+    check('today: the record opens on Today',
+          aw.document.querySelector('.stat-mode-btn[data-stat="daily"]')
+            .getAttribute('aria-pressed') === 'true');
+    aw.document.getElementById('stats-modal').hidden = true;
     again.remove();
 
   } catch (err) {

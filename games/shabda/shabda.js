@@ -467,7 +467,7 @@ function finishTurn(rowIndex, guess) {
   saveGame();
   updateCountdown();
   if (state.status !== 'playing') {
-    if (state.daily) setTimeout(openStats, state.status === 'won' ? 2000 : 2400);
+    if (state.daily) setTimeout(showStats, state.status === 'won' ? 2000 : 2400);
     else setTimeout(() => toast('Your streak is safe here', 2400), 1200);
   }
 }
@@ -515,7 +515,7 @@ document.querySelectorAll('.modal').forEach(modal => {
 });
 
 document.getElementById('btn-help').addEventListener('click', () => openModal('help-modal'));
-document.getElementById('btn-stats').addEventListener('click', openStats);
+document.getElementById('btn-stats').addEventListener('click', showStats);
 
 /* The refresh is the only way to another word now, so it has to be careful with
    the one in front of you. It is dead on today's board — there is one word a day
@@ -550,9 +550,22 @@ document.getElementById('btn-play-again').addEventListener('click', () => {
   startGame({ daily: false, fresh: true });
 });
 
-/* Which record the panel is showing. Opens on the day, always: the daily
-   record is the one with something at stake. */
+/* Which record the panel is showing.
+
+   It opened on the day whatever you were playing, which meant somebody four
+   rounds into Unlimited pressed Results and was shown a board they were not on,
+   with their own rounds one tab away. The tab now follows the game: through
+   Today you get today, through Unlimited you get Unlimited.
+
+   Set on the way in rather than inside openStats, because the two tabs inside
+   the panel reopen it to redraw — deciding there would snap the panel back the
+   instant anyone tried to look at the other one. */
 let statsMode = 'daily';
+
+function showStats() {
+  statsMode = state.daily ? 'daily' : 'unlimited';
+  openStats();
+}
 
 /* Streak and run are the same arithmetic asked of different things, so the two
    records hold the same shape and only the words change. A streak counts days

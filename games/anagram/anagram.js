@@ -837,8 +837,16 @@ function outcomeText() {
   return `${p.attemptsUsed} attempt${p.attemptsUsed === 1 ? '' : 's'}${p.hintUsed ? ', hint' : ''}`;
 }
 
-/* Which record the panel is showing. Opens on the day, always: the daily
-   record is the one with something at stake. */
+/* Which record the panel is showing.
+
+   It opened on the day whatever you were playing, which meant somebody four
+   rounds into Unlimited pressed Results and was shown a board they were not on,
+   with their own rounds one tab away. The tab now follows the game: through
+   Today you get today, through Unlimited you get Unlimited.
+
+   Set on the way in rather than inside fillStats, because the two tabs inside
+   the panel call fillStats to redraw — deciding there would snap the panel back
+   the instant anyone tried to look at the other one. */
 let statsMode = 'daily';
 
 /* Streak and run are the same arithmetic asked of different things. A streak
@@ -1248,6 +1256,7 @@ document.querySelectorAll('.modal').forEach(modal => {
 
 el('btn-help').addEventListener('click', () => { el('help-modal').hidden = false; });
 el('btn-stats').addEventListener('click', () => {
+  statsMode = practice ? 'unlimited' : 'daily';
   fillStats();
   el('stats-modal').hidden = false;
 });

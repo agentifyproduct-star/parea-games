@@ -672,6 +672,27 @@ document.getElementById('f').addEventListener('load', async () => {
           A.progressFor().resolved === true &&
           JSON.stringify(A.save.stats) === recordBefore);
 
+    /* ---------- the record opens where you are ---------- */
+    const statTab = m => d.querySelector(`.stat-mode-btn[data-stat="${m}"]`);
+    const pressed = m => statTab(m).getAttribute('aria-pressed') === 'true';
+
+    A.startPractice({ deal: true });
+    await wait(250);
+    d.getElementById('btn-stats').click();
+    await wait(150);
+    check('the record opens on Unlimited when that is what you are playing',
+          pressed('unlimited') && !pressed('daily'),
+          statTab('daily').getAttribute('aria-pressed') + '/' +
+          statTab('unlimited').getAttribute('aria-pressed'));
+    d.getElementById('stats-modal').hidden = true;
+
+    modeBtn('daily').click();
+    await wait(250);
+    d.getElementById('btn-stats').click();
+    await wait(150);
+    check('and on Today when that is', pressed('daily') && !pressed('unlimited'));
+    d.getElementById('stats-modal').hidden = true;
+
     /* ---------- an Unlimited round survives leaving the page ----------
        The round used to be held in memory alone, so leaving the page threw away
        the word and every tile placed on it. */

@@ -188,6 +188,35 @@ document.getElementById('f').addEventListener('load', async () => {
           w.state.wrongGuesses === 0 && w.state.guessedLetters.size === 2 &&
           since().includes('already tried'));
 
+    // ---------- the record opens where you are ----------
+    /* Pressing Results four rounds into Unlimited used to show today's board,
+       with your own rounds one tab away. */
+    const statTab = m => d.querySelector(`.stat-mode-btn[data-stat="${m}"]`);
+    const pressed = m => statTab(m).getAttribute('aria-pressed') === 'true';
+
+    w.confirm = () => true;
+    w.startGame();
+    await wait(200);
+    d.getElementById('btn-stats').click();
+    await wait(150);
+    check('the record opens on Unlimited when that is what you are playing',
+          pressed('unlimited') && !pressed('daily'),
+          statTab('daily').getAttribute('aria-pressed') + '/' +
+          statTab('unlimited').getAttribute('aria-pressed'));
+    check('so the Unlimited language comes up with it',
+          d.getElementById('st-max-lbl').textContent === 'Best run',
+          d.getElementById('st-max-lbl').textContent);
+    d.getElementById('stats-modal').hidden = true;
+
+    d.querySelector('.mode-btn[data-mode="daily"]').click();
+    await wait(250);
+    d.getElementById('btn-stats').click();
+    await wait(150);
+    check('and on Today when that is', pressed('daily') && !pressed('unlimited'));
+    check('with the daily language', d.getElementById('st-max-lbl').textContent === 'Max streak',
+          d.getElementById('st-max-lbl').textContent);
+    d.getElementById('stats-modal').hidden = true;
+
     // ---------- the hint ----------
     /* A fresh unlimited round, so the count of wrong guesses starts at nothing.
        The daily board above has already been played on. */
