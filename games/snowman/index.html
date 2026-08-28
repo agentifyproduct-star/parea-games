@@ -5,8 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Snowman &mdash; Parea Games</title>
 <meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
+<!-- The header's two faces and its mark, asked for in the first few bytes of the
+     page rather than three hops in.
+
+     Without this the chain is: parse the HTML, fetch type.css, parse it, find
+     the @font-face, fetch the font. font-display: swap then paints "parea" in
+     Helvetica and swaps it for the serif a moment later, which is a visible
+     flinch on every single navigation — and this site is four pages people move
+     between constantly. Preloading starts all three at the HTML parse, so on any
+     warm cache they are there for the first frame and nothing swaps. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-serif-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-sans-var.woff2" />
+<link rel="preload" as="image" type="image/svg+xml" href="../../assets/brand/mark-cream.svg" />
 <link rel="stylesheet" href="../../assets/type.css?v=73cf5f1a" />
-<link rel="stylesheet" href="snowman.css?v=1ad2f138" />
+<link rel="stylesheet" href="snowman.css?v=a652393c" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -154,6 +166,14 @@
       <div id="guessed" class="guessed"></div>
     </div>
 
+    <!-- One hint a round, offered only once the word has actually cost
+         something. The button is always here, disabled until then, so the row
+         below it does not jump when it arrives. -->
+    <div class="hint-row">
+      <button id="btn-hint" class="hint-btn" type="button" disabled>Hint</button>
+      <p id="hint" class="hint"></p>
+    </div>
+
     <form id="word-guess" class="word-guess" autocomplete="off">
       <input id="word-guess-input" type="text" maxlength="24" spellcheck="false"
              placeholder="Guess the whole word&hellip;" aria-label="Guess the whole word" />
@@ -254,7 +274,7 @@
   <script src="../../assets/daily.js?v=cb789ce2"></script>
   <script src="../../assets/today.js?v=c5ebbbe0"></script>
   <script src="words.js?v=23b0c12b"></script>
-  <script src="snowman.js?v=b77ac7a4"></script>
+  <script src="snowman.js?v=a777be80"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

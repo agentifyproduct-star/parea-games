@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Anagram &mdash; Parea Games</title>
 <meta name="description" content="Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today." />
+<!-- The header's two faces and its mark, asked for in the first few bytes of the
+     page rather than three hops in.
+
+     Without this the chain is: parse the HTML, fetch type.css, parse it, find
+     the @font-face, fetch the font. font-display: swap then paints "parea" in
+     Helvetica and swaps it for the serif a moment later, which is a visible
+     flinch on every single navigation — and this site is four pages people move
+     between constantly. Preloading starts all three at the HTML parse, so on any
+     warm cache they are there for the first frame and nothing swaps. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-serif-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-sans-var.woff2" />
+<link rel="preload" as="image" type="image/svg+xml" href="../../assets/brand/mark-cream.svg" />
 <link rel="stylesheet" href="../../assets/type.css?v=73cf5f1a" />
 <link rel="stylesheet" href="anagram.css?v=88c9f765" />
 <link rel="icon" href="../../assets/brand/icon.svg" />

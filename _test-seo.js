@@ -266,6 +266,47 @@ if (SITE.roomsLive) {
   check('with rooms off, llms.txt does not mention them', !/room/i.test(read('llms.txt')));
 }
 
+/* ---------------- the header paints in one go ----------------
+
+   Every page links type.css and only then learns which fonts it wants, so
+   without a preload the wordmark paints in Helvetica and swaps to the serif a
+   beat later — on every navigation, on a site of four pages people move between
+   constantly. Holding all five pages to this is the only thing stopping a new
+   page from quietly bringing the flicker back. */
+
+const HEADER_ASSETS = ['instrument-serif-400.woff2', 'instrument-sans-var.woff2', 'mark-cream.svg'];
+
+[
+  'index.html',
+  'games/shabda/index.html',
+  'games/snowman/index.html',
+  'games/anagram/index.html',
+  'games/shabda/[redacted]/index.html'
+].forEach(file => {
+  const html = read(file);
+  const preloads = html.split('\n').filter(line => line.includes('rel="preload"'));
+
+  HEADER_ASSETS.forEach(asset => {
+    const line = preloads.find(l => l.includes(asset));
+    check(`${file} asks for ${asset} up front`, !!line);
+
+    /* A font preload without crossorigin is fetched twice: once anonymously for
+       the preload, once properly for the @font-face. */
+    if (line && asset.endsWith('.woff2')) {
+      check(`${file} preloads ${asset} as a font, with crossorigin`,
+            line.includes('as="font"') && line.includes('crossorigin'));
+    }
+  });
+
+  /* A preload pointing at nothing is worse than none: it spends a request and
+     still leaves the real fetch to happen later. */
+  preloads.forEach(line => {
+    const href = (line.match(/href="([^"]+)"/) || [])[1];
+    const target = path.join(path.dirname(path.join(ROOT, file)), href || '');
+    check(`${file} preload ${href} exists`, !!href && fs.existsSync(target));
+  });
+});
+
 /* ---------------- pages kept out of the index ---------------- */
 
 ['room/index.html', 'games/[redacted]/index.html'].forEach(file => {

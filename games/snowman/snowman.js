@@ -57,6 +57,8 @@ const state = {
   category: '',
   guessedLetters: new Set(),
   wrongGuesses: 0,
+  hintUsed: false,
+  hintText: '',
   status: 'playing'      // 'playing' | 'won' | 'lost'
 };
 
@@ -168,6 +170,8 @@ function saveGame() {
     category: state.category,
     guessedLetters: [...state.guessedLetters],
     wrongGuesses: state.wrongGuesses,
+    hintUsed: state.hintUsed,
+    hintText: state.hintText,
     status: state.status
   };
 
@@ -279,6 +283,62 @@ const WIN_WORDS = ['Flawless', 'Superb', 'Neat', 'Nicely done', 'Close one', 'By
 
 /* ---------------- rendering ---------------- */
 
+/* ---------------- the hint ----------------
+
+   Snowman's words carry a category and nothing else, so there is no written
+   clue to hand out the way the [redacted] board has one. What there is instead is the
+   word itself: the hint names a letter that is in it and has not been found,
+   and leaves the player to go and press it. That is a nudge rather than a free
+   move, which is the difference between a hint and a gift.
+
+   Held back until two guesses have actually cost something. Offered before that
+   it would just be a faster way to play, and the category on its own is enough
+   for most words. One a round, and it travels with the round, so leaving the
+   page and coming back does not hand out a second. */
+const HINT_AFTER = 2;
+
+function hintAvailable() {
+  return state.status === 'playing' && !state.hintUsed && state.wrongGuesses >= HINT_AFTER;
+}
+
+function hintFor() {
+  const letters = [...state.secretWord].filter(isLetter);
+  const first = letters[0];
+
+  if (first && !state.guessedLetters.has(first)) {
+    return 'It starts with ' + first.toUpperCase() + '.';
+  }
+
+  const missing = letters.find(ch => !state.guessedLetters.has(ch));
+  if (!missing) return 'Every letter is already up there.';
+  return 'There is a ' + missing.toUpperCase() + ' in it.';
+}
+
+function renderHint() {
+  const btn = document.getElementById('btn-hint');
+  const line = document.getElementById('hint');
+  if (!btn || !line) return;
+
+  btn.disabled = !hintAvailable();
+  btn.hidden = state.hintUsed;
+  btn.title = hintAvailable()
+    ? 'One clue about the word'
+    : 'A clue, after ' + HINT_AFTER + ' wrong letters';
+
+  line.textContent = state.hintText;
+}
+
+document.getElementById('btn-hint').addEventListener('click', () => {
+  if (!hintAvailable()) return;
+  state.hintUsed = true;
+  state.hintText = hintFor();
+  saveGame();
+  render();
+  /* The toast area is the page's live region, so saying it there is also how a
+     screen reader hears it. */
+  toast(state.hintText, 3200);
+});
+
 function render() {
   updateCountdown();
   renderWord();
@@ -286,6 +346,7 @@ function render() {
   renderKeyboard();
   renderGuessed();
   renderLives();
+  renderHint();
 
   categoryEl.textContent = state.category;
   wordGuessInput.disabled = state.status !== 'playing';
@@ -476,6 +537,8 @@ function startDaily() {
   state.category = today ? today.category : '';
   state.guessedLetters = new Set();
   state.wrongGuesses = 0;
+  state.hintUsed = false;
+  state.hintText = '';
   state.status = 'playing';
 
   stats = loadStats();
@@ -497,6 +560,8 @@ function startGame() {
   state.category = pick ? pick.category : '';
   state.guessedLetters = new Set();
   state.wrongGuesses = 0;
+  state.hintUsed = false;
+  state.hintText = '';
   state.status = 'playing';
 
   stats = loadStats();
@@ -524,6 +589,8 @@ function restore(key, { finished = false } = {}) {
   state.category = saved.category || '';
   state.guessedLetters = new Set(Array.isArray(saved.guessedLetters) ? saved.guessedLetters : []);
   state.wrongGuesses = Number(saved.wrongGuesses) || 0;
+  state.hintUsed = !!saved.hintUsed;
+  state.hintText = typeof saved.hintText === 'string' ? saved.hintText : '';
   state.status = saved.status === 'won' || saved.status === 'lost' ? saved.status : 'playing';
 
   if (state.status === 'playing' && (state.wrongGuesses >= LIVES || isSolved())) return false;

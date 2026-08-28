@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Shabda &mdash; Parea Games</title>
 <meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
+<!-- The header's two faces and its mark, asked for in the first few bytes of the
+     page rather than three hops in.
+
+     Without this the chain is: parse the HTML, fetch type.css, parse it, find
+     the @font-face, fetch the font. font-display: swap then paints "parea" in
+     Helvetica and swaps it for the serif a moment later, which is a visible
+     flinch on every single navigation — and this site is four pages people move
+     between constantly. Preloading starts all three at the HTML parse, so on any
+     warm cache they are there for the first frame and nothing swaps. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-serif-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../assets/fonts/instrument-sans-var.woff2" />
+<link rel="preload" as="image" type="image/svg+xml" href="../../assets/brand/mark-cream.svg" />
 <link rel="stylesheet" href="../../assets/type.css?v=73cf5f1a" />
 <link rel="stylesheet" href="shabda.css?v=b315592f" />
 <link rel="icon" href="../../assets/brand/icon.svg" />

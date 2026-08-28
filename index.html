@@ -5,8 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
+<!-- The header's two faces and its mark, asked for in the first few bytes of the
+     page rather than three hops in.
+
+     Without this the chain is: parse the HTML, fetch type.css, parse it, find
+     the @font-face, fetch the font. font-display: swap then paints "parea" in
+     Helvetica and swaps it for the serif a moment later, which is a visible
+     flinch on every single navigation — and this site is four pages people move
+     between constantly. Preloading starts all three at the HTML parse, so on any
+     warm cache they are there for the first frame and nothing swaps. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/instrument-serif-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/instrument-sans-var.woff2" />
+<link rel="preload" as="image" type="image/svg+xml" href="assets/brand/mark-cream.svg" />
 <link rel="stylesheet" href="assets/type.css?v=73cf5f1a" />
-<link rel="stylesheet" href="styles.css?v=ef6d6f79" />
+<link rel="stylesheet" href="styles.css?v=c6db6cf4" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -242,8 +254,10 @@
       <a href="#about">About</a>
       <a href="#questions">Questions</a>
     </nav>
+    <div class="header-actions">
     <button class="btn btn-outline" id="btn-stats" type="button" hidden>Results</button>
     <a class="btn btn-ink" id="play-cta" href="games/shabda/index.html">Play today</a>
+    </div>
 <!-- nav:end -->
   </header>
 
@@ -439,10 +453,6 @@
     </div>
   </div>
 
-  <footer class="site-footer">
-    <p class="footer-lead">Your people, every day.</p>
-    <p class="muted">Three games today, more when they are ready. Made for the fun of it.</p>
-  </footer>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

@@ -124,6 +124,16 @@ a { color: inherit; }
   margin-left: auto;
 }
 
+/* Results and Play today, held to the right edge. The nav carried the auto
+   margin before, which put the buttons against the wordmark on any screen
+   narrow enough to hide the nav — that is, on every phone. */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
 .site-nav a {
   color: var(--ink-soft);
   text-decoration: none;
@@ -602,22 +612,6 @@ code {
   line-height: 1.7;
 }
 
-/* ---------- footer ---------- */
-.site-footer {
-  width: var(--page);
-  margin: 0 auto;
-  border-top: 1px solid var(--line);
-  padding: 34px 0 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.footer-lead { margin: 0; font-weight: 600; }
-.site-footer p { margin: 0; font-size: 14px; }
-
 /* ---------- narrow screens ---------- */
 @media (max-width: 860px) {
   :root { --page: min(1180px, 100% - 8vw); }
@@ -804,10 +798,6 @@ code {
   /* Two columns of prose at 375px is two columns of one word. */
   html.compact-home .about-grid,
   html.compact-home .faq-grid { grid-template-columns: 1fr; }
-
-  /* The footer is a sign-off, not a section, and on a page this short it was
-     taking more room than the games. */
-  html.compact-home .site-footer { padding: 15px 16px 16px; }
 
   /* Out from over the picture and back into the flow, which is what makes the
      whole thing read as a tile rather than a photo with a caption on it. */
@@ -1060,41 +1050,6 @@ html.compact-home .section-head h2 { font-family: var(--serif); font-weight: 400
 html.compact-home .section-body { padding: 0 18px 14px; }
 html.compact-home .section-toggle::after { border-color: var(--ink-soft); }
 
-/* ---------- the sign-off ----------
-   The one slogan that survives, given a card of its own so the page ends on a
-   statement rather than trailing away. */
-.site-footer {
-  width: var(--page);
-  margin: 10px auto 0;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: linear-gradient(160deg, var(--raise), var(--forest-2));
-  padding: 15px 16px 16px;
-  text-align: left;
-}
-
-.site-footer .footer-lead {
-  margin: 0 0 8px;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 25px;
-  line-height: 1.06;
-  color: var(--paper);
-}
-
-/* A terracotta rule above the sign-off, which is the only place the accent is
-   used as a shape rather than as a letter. */
-.site-footer .footer-lead::before {
-  content: '';
-  display: block;
-  width: 34px;
-  height: 2px;
-  background: var(--terracotta);
-  border-radius: 2px;
-  margin-bottom: 14px;
-}
-
-.site-footer .muted { color: var(--ink-soft); font-size: 13px; line-height: 1.55; max-width: 32ch; }
 
 /* ---------- sections and cards on the dark ground ---------- */
 .section-head { border-top-color: var(--line); }
@@ -1263,9 +1218,6 @@ html.compact-home .hero-mark {
   html.compact-home .unlimited { margin-bottom: 16px; }
 }
 
-/* ---------- the footer line ---------- */
-footer.site-footer .muted { font-family: var(--font); }
-
 @media (prefers-reduced-motion: reduce) {
   html.compact-home .hero-mark { animation: none; }
 }
@@ -1297,10 +1249,6 @@ footer.site-footer .muted { font-family: var(--font); }
   html.compact-home .section-head { padding: 0 15px; }
   html.compact-home .section-head h2 { font-size: 18px; }
 
-  .site-footer { margin-top: 8px; padding: 13px 16px 12px; border-radius: 18px; }
-  .site-footer .footer-lead { font-size: 23px; margin-bottom: 7px; }
-  .site-footer .footer-lead::before { margin-bottom: 10px; }
-  .site-footer .muted { font-size: 13px; }
 }
 
 

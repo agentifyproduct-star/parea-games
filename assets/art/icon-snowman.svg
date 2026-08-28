@@ -1,15 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Snowman">
-  <!-- Body and head, hat squared off to keep the family resemblance to the
-       mark. The accent carries the snow so the three icons are told apart by
-       colour before anybody reads a word. -->
-  <g fill="#5a9e4f">
-    <circle cx="24" cy="34" r="11" />
-    <circle cx="24" cy="18" r="7.5" />
+  <!-- The same figure the game draws, cut down to something that still reads at
+       22px in the tab bar: three white spheres, a dark hat with a gold band, the
+       carrot and the scarf. The detail that would turn to mush at that size —
+       twig arms, the mouth, the outline on every sphere — is left out. -->
+  <g fill="#f7f6f0">
+    <circle cx="24" cy="36" r="10" />
+    <circle cx="24" cy="23.5" r="7.4" />
+    <circle cx="24" cy="13" r="5.4" />
   </g>
+
+  <!-- The scarf sits over the join, which is what tells the head from the body
+       at a glance when the spheres have no outline of their own. -->
+  <path d="M18.8 18.4 Q24 21 29.2 18.4" fill="none" stroke="#c9552b" stroke-width="2.6"
+        stroke-linecap="round" />
+
+  <polygon points="24,13.2 29.6,14.2 24,15.2" fill="#d98b3a" />
+
   <g fill="#1e2a26">
-    <rect x="13" y="9" width="22" height="3.4" rx="1.7" />
-    <rect x="17.5" y="2" width="13" height="8" rx="2.4" />
-    <circle cx="21.2" cy="17.4" r="1.5" />
-    <circle cx="26.8" cy="17.4" r="1.5" />
+    <circle cx="21.9" cy="11.9" r="1.15" />
+    <circle cx="26.1" cy="11.9" r="1.15" />
+    <circle cx="24" cy="22" r="1.15" />
+    <circle cx="24" cy="26" r="1.15" />
+    <rect x="18.4" y="2.2" width="11.2" height="5.6" rx="1" />
   </g>
+
+  <rect x="14.6" y="7.2" width="18.8" height="2.2" rx="1.1" fill="#d9b26a" />
 </svg>

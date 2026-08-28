@@ -188,6 +188,68 @@ document.getElementById('f').addEventListener('load', async () => {
           w.state.wrongGuesses === 0 && w.state.guessedLetters.size === 2 &&
           since().includes('already tried'));
 
+    // ---------- the hint ----------
+    /* A fresh unlimited round, so the count of wrong guesses starts at nothing.
+       The daily board above has already been played on. */
+    w.confirm = () => true;
+    w.startGame();
+    await wait(200);
+    const hintBtn = () => d.getElementById('btn-hint');
+    const hintLine = () => d.getElementById('hint');
+
+    check('no hint before the word has cost anything',
+          hintBtn().disabled === true && hintLine().textContent === '');
+
+    /* Two letters that are not in the word, whatever the word is. */
+    const dud = () => 'qzxjvkwy'.split('').find(c => !w.state.secretWord.includes(c) &&
+                                                     !w.state.guessedLetters.has(c));
+    press(w, dud());
+    await wait(60);
+    check('still no hint after one wrong letter', hintBtn().disabled === true,
+          w.state.wrongGuesses + ' wrong');
+    press(w, dud());
+    await wait(60);
+    check('the hint arrives on the second wrong letter',
+          hintBtn().disabled === false, w.state.wrongGuesses + ' wrong');
+
+    hintBtn().click();
+    await wait(60);
+    const said = hintLine().textContent;
+    check('taking it says something', said.length > 0, said);
+
+    /* Whatever letter it names has to be in the word and not already found,
+       or it is not a hint, it is a lie. */
+    const named = (said.match(/ ([A-Z])[.\s]/) || [])[1];
+    check('it names a letter that is really in the word',
+          !!named && w.state.secretWord.includes(named.toLowerCase()), said);
+    check('and one that has not been found yet',
+          !!named && !w.state.guessedLetters.has(named.toLowerCase()), said);
+    check('the board is left alone — a hint is a nudge, not a free letter',
+          w.state.guessedLetters.size === 2, [...w.state.guessedLetters].join(''));
+
+    check('one hint a round, and the button goes once it is spent',
+          w.state.hintUsed === true && hintBtn().hidden === true);
+
+    /* And it travels with the round: leaving and coming back must not hand out
+       a second one. */
+    const hinted = w.state.secretWord;
+    check('the hint is written down with the round',
+          w.restoreGame() === true && w.state.secretWord === hinted &&
+          w.state.hintUsed === true && d.getElementById('hint').textContent === said,
+          d.getElementById('hint').textContent);
+
+    w.startGame();
+    await wait(200);
+    check('a new word comes with a new hint to spend',
+          w.state.hintUsed === false && d.getElementById('hint').textContent === '' &&
+          hintBtn().disabled === true);
+
+    /* Back to today's word, which is where the sections below expect to find
+       the game. This one borrowed Unlimited to get a round with a clean count
+       of wrong guesses. */
+    d.querySelector('.mode-btn[data-mode="daily"]').click();
+    await wait(300);
+
     // ---------- restarting ----------
     /* The refresh is dead on today's word — there is one a day — so this goes
        through Unlimited, which is the only place it has anything to offer. It

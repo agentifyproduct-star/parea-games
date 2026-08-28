@@ -156,7 +156,11 @@ function navMarkup() {
      never reaches. */
   const stats = '    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Results</button>';
 
-  return `    <nav class="site-nav">\n${links}\n    </nav>\n${stats}\n${button}`;
+  /* The buttons ride together in a group of their own, pinned right. The nav
+     used to push them there with an auto margin, which works until the nav is
+     hidden -- which it is on every phone. */
+  return `    <nav class="site-nav">\n${links}\n    </nav>\n` +
+    `    <div class="header-actions">\n${stats}\n${button}\n    </div>`;
 }
 
 /* The bar across the bottom of a phone. Written once here and dropped into the
