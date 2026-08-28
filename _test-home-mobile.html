@@ -296,11 +296,28 @@ const dayBefore = n => {
           Math.round(w.document.querySelector('.unlimited').getBoundingClientRect().bottom) +
           ' of ' + Math.round(fold));
 
-    /* Folded, the reading costs almost nothing. Unfolded it is most of a
-       thousand pixels, and that difference is the whole point of the fold. */
+    /* The hero is now told to fill the screen, so About starts under the fold
+       rather than halfway up the first one. That is the point of the layout: a
+       returning player sees the day, the games and the way on, and the reading
+       is somewhere they have to go looking for. */
+    check('compact: the reading starts below the fold',
+          w.document.getElementById('about').getBoundingClientRect().top >= fold - 1,
+          Math.round(w.document.getElementById('about').getBoundingClientRect().top) +
+          ' of ' + Math.round(fold));
+
+    /* And the hero does not overshoot it either — the banner is the last thing
+       above the line, not the thing pushed under it. */
+    check('compact: the hero fills the screen without spilling past it',
+          w.document.querySelector('.hero').getBoundingClientRect().bottom <= fold + 2,
+          Math.round(w.document.querySelector('.hero').getBoundingClientRect().bottom) +
+          ' of ' + Math.round(fold));
+
+    /* Folded, the reading still costs almost nothing: a screen, plus two closed
+       bars and the sign-off. Unfolded it is most of a thousand pixels more, and
+       that difference is the whole point of the fold. */
     const shutHeight = w.document.documentElement.scrollHeight;
-    check('compact: folded, the page is barely longer than the screen',
-          shutHeight <= w.innerHeight + 40,
+    check('compact: folded, the whole page is barely more than a screen',
+          shutHeight <= w.innerHeight + 400,
           shutHeight + ' of ' + w.innerHeight);
 
     const folds = ['about', 'questions'].map(id => {

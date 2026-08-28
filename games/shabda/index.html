@@ -6,7 +6,7 @@
 <title>Shabda &mdash; Parea Games</title>
 <meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
 <link rel="stylesheet" href="../../assets/type.css?v=73cf5f1a" />
-<link rel="stylesheet" href="shabda.css?v=9f35f7b1" />
+<link rel="stylesheet" href="shabda.css?v=2b4787cb" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -65,7 +65,7 @@
   <header class="game-header">
     <a class="brand-link" href="../../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
       <span class="arrow" aria-hidden="true">&larr;</span>
-      <img class="brand-mark" src="../../assets/brand/mark-cream.svg" alt="" width="21" height="21" />
+      <img class="brand-mark" src="../../assets/brand/mark-cream.svg" alt="" width="31" height="31" />
       <span class="brand-name">parea<span> games</span></span>
     </a>
     <h1>Shabda</h1>
@@ -90,6 +90,14 @@
 
     <!-- Shown only once today's puzzle is over: unlimited has no deadline. -->
     <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
+
+    <!-- And the other half of that: Unlimited has no deadline, so what it needs
+         at the end of a round is the next word rather than a clock. The refresh
+         icon in the header has always done this, but an icon in a corner is not
+         where someone looks when they have just finished. -->
+    <div id="again-bar" class="again-bar" hidden>
+      <button id="btn-another" class="btn btn-primary" type="button">Play another</button>
+    </div>
   </main>
 
   <!-- How to play -->
@@ -188,7 +196,7 @@
   <script src="words-6.js?v=55848779"></script>
   <script src="words-7.js?v=856c20aa"></script>
   <script src="words.js?v=753bf473"></script>
-  <script src="shabda.js?v=0649a947"></script>
+  <script src="shabda.js?v=8fd43c49"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

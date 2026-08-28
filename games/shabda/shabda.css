@@ -88,26 +88,39 @@ body { display: flex; flex-direction: column; }
 }
 
 .brand-link .arrow { color: var(--text-dim); }
-.brand-link .brand-mark { width: 21px; height: 21px; }
+.brand-link .brand-mark { width: 31px; height: 31px; }
 
-/* Small beside the game's own name, which is the thing being played right now,
-   but on every page so the site has a face wherever you land. */
+/* The same size and setting as the front page's masthead, down to the stacked
+   "games". It used to be shrunk here on the grounds that the game's own name is
+   what matters while you are playing — but a wordmark that changes size between
+   pages reads as two different marks, and stacking the second word costs no
+   width at all. */
 .brand-name {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -.02em;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -.01em;
   color: var(--text);
   text-transform: none;
 }
 
-.brand-name span { font-weight: 500; color: var(--text-dim); letter-spacing: 0; }
+.brand-name span {
+  display: block;
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: .05em;
+  margin-top: 2px;
+}
 
-/* A phone has room for the game's name or ours, not both in full. */
+/* A phone has room for the game's name or ours, not both spread out. The
+   wordmark stays whole — it is stacked, so it costs nothing sideways — and the
+   arrow is what gives way, since the mark is the way home too. */
 @media (max-width: 430px) {
-  .brand-name span { display: none; }
-  /* The mark is the way home too, so the arrow is what gives way first. */
   .brand-link .arrow { display: none; }
-  .brand-link { gap: 6px; padding-left: 4px; }
+  .brand-link { gap: 8px; padding-left: 4px; }
   .game-header h1 { font-size: 19px; letter-spacing: 2px; }
 }
 
@@ -484,6 +497,23 @@ body { display: flex; flex-direction: column; }
 
 .next-up b { color: var(--text); font-variant-numeric: tabular-nums; }
 
+/* ---------- the way on to the next word ----------
+   Sits where the daily countdown sits, and for the same reason: it is the thing
+   there is left to do once the round is over. Only Unlimited ever shows it. */
+.again-bar {
+  flex: 0 0 auto;
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  width: min(500px, 100%);
+}
+
+/* .btn is flex: 1 everywhere else, which is right in a modal's row of two and
+   wrong here — it stretched to the keyboard's full width and read as a fourth
+   row of keys rather than a button. */
+.again-bar .btn { flex: 0 1 auto; width: min(280px, 100%); }
+
+
 /* ---------- the statistics toggle ----------
    R7: the same Today / Unlimited pair the games carry, on the record itself.
    Same shape as the game's own mode buttons, half the size, because this one
@@ -582,8 +612,6 @@ body { display: flex; flex-direction: column; }
 .modal-card h2,
 .sheet-head h2 { font-family: var(--serif); font-weight: 400; }
 
-.brand-name { font-family: var(--serif); font-weight: 400; }
-.brand-name span { font-family: var(--font); }
 
 .stat-num { font-family: var(--serif); font-weight: 400; }
 .stat-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; }

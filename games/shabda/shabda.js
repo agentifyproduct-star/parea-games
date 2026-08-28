@@ -489,6 +489,12 @@ function updateCountdown() {
 
   node.hidden = !show;
   if (show) document.getElementById('countdown').textContent = DAILY.untilRollover();
+
+  /* The mirror of the countdown: a finished daily gets a clock, a finished
+     Unlimited round gets the next word. Neither shows while there is still a
+     game to play. */
+  const again = document.getElementById('again-bar');
+  if (again) again.hidden = state.daily || state.status === 'playing';
 }
 
 setInterval(updateCountdown, 1000);
@@ -516,6 +522,10 @@ document.getElementById('btn-new').addEventListener('click', () => {
 
 document.getElementById('btn-play-again').addEventListener('click', () => {
   closeModal(document.getElementById('stats-modal'));
+  startGame({ daily: false });
+});
+
+document.getElementById('btn-another').addEventListener('click', () => {
   startGame({ daily: false });
 });
 
@@ -679,6 +689,9 @@ function startGame({ daily }) {
   buildBoard();
   buildKeyboard();
   markModeButtons();
+  /* Clears whatever the last round left at the foot of the page — the clock or
+     the way on to the next word — without waiting for the next tick. */
+  updateCountdown();
 
   if (daily) {
     const saved = loadJSON(STORE_DAILY, null);

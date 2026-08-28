@@ -6,7 +6,7 @@
 <title>Snowman &mdash; Parea Games</title>
 <meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
 <link rel="stylesheet" href="../../assets/type.css?v=73cf5f1a" />
-<link rel="stylesheet" href="snowman.css?v=caf748d2" />
+<link rel="stylesheet" href="snowman.css?v=fdbef3ba" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -65,7 +65,7 @@
   <header class="game-header">
     <a class="brand-link" href="../../index.html" title="Back to Parea Games" aria-label="Parea Games &mdash; back to all games">
       <span class="arrow" aria-hidden="true">&larr;</span>
-      <img class="brand-mark" src="../../assets/brand/mark-cream.svg" alt="" width="21" height="21" />
+      <img class="brand-mark" src="../../assets/brand/mark-cream.svg" alt="" width="31" height="31" />
       <span class="brand-name">parea<span> games</span></span>
     </a>
     <h1>Snowman</h1>
@@ -164,6 +164,14 @@
 
     <!-- Shown only once today's puzzle is over: unlimited has no deadline. -->
     <p id="next-up" class="next-up" hidden>Next puzzle in <b id="countdown">00:00:00</b></p>
+
+    <!-- And the other half of that: Unlimited has no deadline, so what it needs
+         at the end of a round is the next word rather than a clock. The refresh
+         icon in the header has always done this, but an icon in a corner is not
+         where someone looks when they have just finished. -->
+    <div id="again-bar" class="again-bar" hidden>
+      <button id="btn-another" class="btn btn-primary" type="button">Play another</button>
+    </div>
   </main>
 
   <!-- How to play -->
@@ -253,7 +261,7 @@
   <script src="../../assets/daily.js?v=cb789ce2"></script>
   <script src="../../assets/today.js?v=c5ebbbe0"></script>
   <script src="words.js?v=23b0c12b"></script>
-  <script src="snowman.js?v=0cc8251d"></script>
+  <script src="snowman.js?v=815780f5"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->
