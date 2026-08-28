@@ -294,7 +294,14 @@ const WIN_WORDS = ['Flawless', 'Superb', 'Neat', 'Nicely done', 'Close one', 'By
    Held back until two guesses have actually cost something. Offered before that
    it would just be a faster way to play, and the category on its own is enough
    for most words. One a round, and it travels with the round, so leaving the
-   page and coming back does not hand out a second. */
+   page and coming back does not hand out a second.
+
+   hintUsed is written down for that reason and no other. It is deliberately
+   kept out of the record, the results line and the share text — which is where
+   Anagram does put its own, so the two games genuinely differ here rather than
+   one of them having been missed. A hint that turns up in the score you send
+   people is a hint nobody takes, and a feature nobody takes is not a feature.
+   Changing that means changing it on purpose, not tidying up an oversight. */
 const HINT_AFTER = 2;
 
 function hintAvailable() {
