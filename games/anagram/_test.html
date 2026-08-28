@@ -584,6 +584,29 @@ document.getElementById('f').addEventListener('load', async () => {
     check('another practice round can be started', A.startPractice() === true);
     A.leavePractice();
 
+    /* Unlimited remembers what it dealt. It used to pick at random with no
+       memory at all, which on an 80 word pool hands back a word after about six
+       rounds — tolerable when this was a hidden practice mode, and not once it
+       became a tab of its own. */
+    w.localStorage.removeItem(A.STORE_USED);
+    const size = manifest.practice.length;
+    const dealt = [];
+    for (let i = 0; i < size; i++) {
+      A.startPractice();
+      dealt.push(A.wordFor());
+    }
+    check('Unlimited deals the whole pool before it repeats anything',
+          new Set(dealt).size === size, new Set(dealt).size + ' distinct of ' + size);
+
+    A.startPractice();
+    check('and then starts the pool again rather than dead-ending',
+          dealt.includes(A.wordFor()));
+    check('the memory resets rather than growing without end',
+          A.loadUsed().length === 1, A.loadUsed().length + ' remembered');
+
+    w.localStorage.removeItem(A.STORE_USED);
+    A.leavePractice();
+
     // ---------- the finished day shows the word ----------
     A.save.progress = A.blankProgress(dayKey);
     Object.assign(A.progressFor(), { solved: false, attemptsUsed: 5, resolved: true });

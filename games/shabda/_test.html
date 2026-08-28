@@ -70,28 +70,34 @@ document.getElementById('f').addEventListener('load', async () => {
     check('lexicon is a whole dictionary, not a word list',
           [4,5,6].every(n => OFF_POOL[n].every(x => w.WORDS.isValid(x))));
 
-    // ---------- six months of daily words, per length ----------
-    for (const n of [4,5,6]) {
+    // ---------- six months of daily words, per board ----------
+    /* The archive is the days a board was actually played, not a word invented
+       for every date. Boards walk their running order a step per turn now, so a
+       four-letter word on a seven-letter day would be a fiction. */
+    const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    const now = new Date();
+    let archived = 0;
+
+    for (const n of [4,5,6,7]) {
       const hist = w.WORDS.history(n);
-      check(`${n}-letter archive covers 182 days`, hist.length === 182);
+      archived += hist.length;
+      check(`${n}-letter archive holds only days that board was played`,
+            hist.every(h => w.WORDS.dailyLength(h.date) === n), hist.length + ' days');
       check(`${n}-letter archive words all correct length`,
             hist.every(h => h.word.length === n));
-      check(`${n}-letter archive has 182 distinct words`,
-            new Set(hist.map(h => h.word)).size === 182,
-            new Set(hist.map(h => h.word)).size);
-      // Rolling window: always the 182 days ending today, whenever "today" is.
-      const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-      const now = new Date();
-      const first = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 181);
-      check(`${n}-letter archive is the 182 days ending today`,
-            hist[181].iso === iso(now) && hist[0].iso === iso(first),
-            hist[0].iso + ' .. ' + hist[181].iso);
-      check(`${n}-letter archive reaches back ~6 months`,
-            (now - hist[0].date) / 86400000 >= 180);
+      check(`${n}-letter archive repeats nothing`,
+            new Set(hist.map(h => h.word)).size === hist.length,
+            new Set(hist.map(h => h.word)).size + ' of ' + hist.length);
+      check(`${n}-letter archive stays inside the window`,
+            hist.every(h => h.iso <= iso(now)) &&
+            (now - hist[0].date) / 86400000 <= 182);
     }
-    // the three lengths must advance independently, not in lockstep
-    const today = [4,5,6].map(n => w.WORDS.dailyWord(n));
-    check('each length has its own word today', new Set(today).size === 3, today.join(', '));
+    check('the four archives together account for every day of the window',
+          archived === 182, archived + ' days');
+
+    // the boards must advance independently, not in lockstep
+    const today = [4,5,6,7].map(n => w.WORDS.dailyWord(n));
+    check('each board has its own word today', new Set(today).size === 4, today.join(', '));
     check('daily word is stable for a date',
           w.WORDS.dailyWord(5, new Date(2026,4,3)) === w.WORDS.dailyWord(5, new Date(2026,4,3)));
 
@@ -206,6 +212,44 @@ document.getElementById('f').addEventListener('load', async () => {
     check('five is the dip, six is the peak',
           overDays[5] < overDays[4] && overDays[6] > overDays[7] && overDays[7] > overDays[4],
           JSON.stringify(overDays));
+
+    /* Each board walks its own running order, a step per turn it actually gets,
+       rather than a step per day that passes. Walking by the day meant a board
+       burned a place on every day it was not being played, and a 757 word pool
+       was handing back a repeat after about a hundred of them. */
+    const usedOf = {};
+    const dailyOver = [];
+    for (let i = 0; i < 6000; i++) {
+      const when = new Date(Date.parse('2026-08-27T12:00:00Z') + i * 86400000);
+      const len = w.WORDS.dailyLength(when);
+      (usedOf[len] = usedOf[len] || []).push(w.WORDS.dailyWord(len, when));
+      dailyOver.push(w.WORDS.dailyWord(len, when));
+    }
+    const distinctBeforeRepeat = list => {
+      const seen = new Set();
+      for (let i = 0; i < list.length; i++) {
+        if (seen.has(list[i])) return i;
+        seen.add(list[i]);
+      }
+      return list.length;
+    };
+    [4, 6, 7].forEach(len => {
+      const pool = w.WORDS.answers(len).length;
+      check(`the ${len}-letter board uses its whole pool before repeating`,
+            distinctBeforeRepeat(usedOf[len]) >= pool,
+            distinctBeforeRepeat(usedOf[len]) + ' of ' + pool);
+    });
+
+    /* Five is drawn a tenth of the time, so 6000 days is not enough turns to
+       walk all 757 of them. What matters is that it is walking rather than
+       skipping: over its own turns, nothing comes back. */
+    check('and the five-letter board repeats nothing in the turns it does get',
+          distinctBeforeRepeat(usedOf[5]) === usedOf[5].length,
+          usedOf[5].length + ' turns, all distinct');
+
+    check('so the daily lasts years rather than months',
+          distinctBeforeRepeat(dailyOver) > 1800,
+          'first repeat on day ' + (distinctBeforeRepeat(dailyOver) + 1));
 
     btn('daily').click();
     await wait(200);

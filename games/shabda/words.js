@@ -53,6 +53,32 @@ function shuffled(list, seed) {
   return deck;
 }
 
+/* Which board puzzle number `p` is played on. Seeded off the number alone, so
+   every player and every visit agrees. */
+function lengthForPuzzle(p) {
+  return pickLength(mulberry32(0xB0A2D + p * 0x9E3779B1));
+}
+
+/* How many times a board had come up before puzzle `p`, which is that puzzle's
+   place in the board's running order.
+
+   Counted rather than derived, because a weighted draw has no closed form, and
+   cached as it goes so the hundredth lookup costs nothing. One small step per
+   elapsed day, and the epoch is 2026. */
+const TURNS = {};
+let turnsCounted = 0;
+
+function turnsTaken(p, len) {
+  const want = Math.max(0, p - 1);
+  if (!TURNS[len]) return 0;
+  while (turnsCounted < want) {
+    const drawn = lengthForPuzzle(turnsCounted + 1);
+    LENGTHS.forEach(l => TURNS[l].push(TURNS[l][turnsCounted] + (l === drawn ? 1 : 0)));
+    turnsCounted++;
+  }
+  return TURNS[len][want];
+}
+
 /* Per length: the answer pool, a Set of everything accepted as a guess, and the
    shuffled play order. A shuffle rather than a date-hash means a word cannot
    recur until the whole pool is used up, so no length repeats inside six months.
@@ -86,6 +112,7 @@ LENGTHS.forEach((len, i) => {
     valid,
     schedule: shuffled(answers, 0x5EED1E + i * 0x9E3779B1)
   };
+  TURNS[len] = [0];
 });
 
 const WORDS = {
@@ -122,7 +149,7 @@ const WORDS = {
      off the puzzle number so it is the same draw for everybody, everywhere, and
      the same one again tomorrow if you come back to yesterday. */
   dailyLength(date = new Date()) {
-    return pickLength(mulberry32(0xB0A2D + this.puzzleNumber(date) * 0x9E3779B1));
+    return lengthForPuzzle(this.puzzleNumber(date));
   },
 
   /* Unlimited draws fresh every word. The same table, none of the calendar:
@@ -137,17 +164,31 @@ const WORDS = {
     return LENGTH_WEIGHTS.map(pair => ({ len: pair[0], weight: pair[1] }));
   },
 
-  /* Everyone gets the same word for a given length on a given calendar day. */
+  /* Everyone gets the same word for a given length on a given calendar day.
+
+     Indexed by how many times this board has actually come up, not by how many
+     days have passed. Walking by the day number meant every board burned a
+     place in its own running order on days it was not being played, so a pool
+     of 757 five-letter words was handing back a repeat after about a hundred of
+     them. Counting turns instead uses all of it. */
   dailyWord(len, date = new Date()) {
     const bank = BANK[len];
     if (!bank || !bank.schedule.length) return '';
-    const n = this.puzzleNumber(date) - 1;
+    const place = turnsTaken(this.puzzleNumber(date), len);
     const size = bank.schedule.length;
-    return bank.schedule[((n % size) + size) % size]; // stays in range for negative n
+    return bank.schedule[((place % size) + size) % size];
   },
 
-  /* The archive: [{ date, iso, puzzle, word }] for the `days` days ending today,
-     oldest first. Defaults to roughly six months. */
+  /* The archive for one board: [{ date, iso, puzzle, word }] for the days in
+     the last `days` that this board was actually played, oldest first.
+     Defaults to looking back roughly six months.
+
+     Only the days it came up, which is a change. Every board used to have a
+     notional word on every date, because each ran through its order a step a
+     day whether or not it was the board being played. Now a board steps only on
+     its own turns, so asking what the four-letter word was on a day that played
+     seven letters has no answer worth giving, and the honest archive is the
+     list of days it was really there. */
   history(len, days = 182, endDate = new Date()) {
     const endKey = DAILY.key(endDate);
     const out = [];
@@ -155,6 +196,7 @@ const WORDS = {
     for (let i = days - 1; i >= 0; i--) {
       const iso = DAILY.shift(endKey, -i);
       const date = DAILY.keyToDate(iso);
+      if (this.dailyLength(date) !== len) continue;
       out.push({
         date,
         iso,

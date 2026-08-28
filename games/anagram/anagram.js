@@ -18,6 +18,10 @@ const SCHEMA_VERSION = 2;        // 1 was the two-word day; loadSave carries tho
    bumped. */
 const STORE_KEY = 'arcade.anagram.v1';
 
+/* What Unlimited has already dealt. Its own key, because the save above is
+   never written during an unlimited round and should not start being. */
+const STORE_USED = 'arcade.anagram.used';
+
 /* The day is one word. This is kept as a named slot rather than dissolved into
    the code because the board, the progress record and the distribution all key
    off it, and a bare string threaded through thirty call sites is harder to
@@ -171,8 +175,33 @@ function remainingDays(date) {
 
 /* A practice round, when one is running: its own words and its own progress,
    held in memory only. Nothing about it is written down, which is what keeps it
-   away from the day's game and the record. */
+   away from the day's game and the record — except which words have been seen,
+   below, which is the one thing worth carrying between rounds. */
 let practice = null;
+
+/* Unlimited used to pick at random with no memory. On an 80 word pool that
+   means a word comes back after about six rounds, which was tolerable when this
+   was a hidden practice mode and is not now that it is a tab of its own.
+
+   So it remembers, the way Snowman does: no word returns until every other one
+   has been dealt. The list is cleared when the pool is used up rather than
+   growing forever, which is also what stops it dead-ending. */
+function loadUsed() {
+  if (!storage) return [];
+  try {
+    const raw = JSON.parse(storage.getItem(STORE_USED) || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberUsed(word, reset) {
+  if (!storage) return;
+  try {
+    storage.setItem(STORE_USED, JSON.stringify(reset ? [word] : loadUsed().concat(word)));
+  } catch { /* private mode: Unlimited simply forgets again */ }
+}
 
 const state = {
   puzzleDate: '',
@@ -605,8 +634,16 @@ function startPractice() {
     return false;
   }
 
+  /* Anything not dealt yet, and the whole pool again once there is nothing
+     left — a session must never run out of words to offer. */
+  const used = new Set(loadUsed());
+  const fresh = pool.filter(entry => !used.has(entry.w));
+  const from = fresh.length ? fresh : pool;
+  const pick = from[Math.floor(Math.random() * from.length)];
+  rememberUsed(pick.w, !fresh.length);
+
   practice = {
-    day: pool[Math.floor(Math.random() * pool.length)],
+    day: pick,
     progress: blankProgress('practice')
   };
 
@@ -1036,7 +1073,8 @@ window.ANAGRAM = {
   startPractice, leavePractice, inPractice: () => !!practice, markModeButtons,
   wordFor, scrambleFor, definitionFor, progressFor, puzzleFor, remainingDays,
   todayKey, dayGap, nextRolloverMs, checkRollover, loadSave,
-  notePlayed, noteSolved, blankProgress, blankStats, persist, migrateFromPairs
+  notePlayed, noteSolved, blankProgress, blankStats, persist, migrateFromPairs,
+  STORE_USED, loadUsed
 };
 
 /* ---------------- boot ---------------- */
