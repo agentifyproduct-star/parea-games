@@ -471,6 +471,17 @@ main {
 
 .answer-outcome { margin-left: auto; font-size: 12.5px; color: var(--text-dim); }
 
+/* The meaning, under the finished word. Same setting as the one in the reveal,
+   so moving from one to the other does not look like a different sentence. */
+.answer-def {
+  margin: 8px 2px 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.answer-def:empty { display: none; }
+
 .stat-row { display: flex; gap: 6px; width: 100%; }
 .stat { flex: 1; text-align: center; }
 .stat-num { font-size: 22px; font-weight: 700; }

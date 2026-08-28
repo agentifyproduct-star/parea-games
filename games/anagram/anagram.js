@@ -626,8 +626,6 @@ function noteSolved() {
 
 /* ---------------- reveal and advance ---------------- */
 
-let revealTimer = null;
-
 function showReveal(solved) {
   state.revealed = true;
   const answer = wordFor();
@@ -644,14 +642,14 @@ function showReveal(solved) {
 
   render();
 
-  /* A win needs a beat; a loss needs long enough to read the definition. Either
-     way Continue is there for anyone who does not want to wait. */
-  clearTimeout(revealTimer);
-  revealTimer = setTimeout(advance, solved ? 1600 : 5200);
+  /* This used to clear itself after a second and a half, which is not long
+     enough to read a definition and nowhere near long enough to think about
+     one. It waits for Continue now, and the meaning is carried into the
+     finished panel underneath, so it is still there tomorrow morning if the
+     word turned out to be worth remembering. */
 }
 
 function advance() {
-  clearTimeout(revealTimer);
   el('reveal').hidden = true;
   state.revealed = false;
   showResults();
@@ -699,7 +697,6 @@ function startPractice() {
 
 function leavePractice() {
   practice = null;
-  clearTimeout(revealTimer);
   el('reveal').hidden = true;
   state.revealed = false;
   showResults();
@@ -737,6 +734,11 @@ function showResults() {
 
   el('res-word').textContent = wordFor().toUpperCase();
   el('res-attempt').textContent = outcomeText();
+
+  /* The word's meaning stays with the finished word rather than with the
+     moment of finding it: in Unlimited until the next one is dealt, and on the
+     day's puzzle until the day itself turns over. */
+  el('res-def').textContent = definitionFor();
 
   updateCountdown();
   announce((inPractice ? 'Unlimited word finished. ' : 'Puzzle complete. ') +

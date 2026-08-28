@@ -18,6 +18,17 @@
   --warn: #d3873c;
   --absent: #46524b;
   --on-colour: #f4f0e4;
+  /* A letter is scored the same way in both games, so it is scored in the same
+     two colours: Shabda's teal for one that is in the word, its slate for one
+     that is not. Snowman's own green stays on the chrome, which is where the
+     game's identity belongs. */
+  --letter-in: #2e9b93;
+  --letter-out: #46524b;
+  /* The snowman is a white figure on a dark ground, so its own outline has to be
+     dark. Lit from behind it read as one white blob. */
+  --snow-line: rgba(20, 28, 23, .55);
+  --hat: #2b3830;
+  --hat-band: #d9b26a;
   --font: 'Instrument Sans', "Helvetica Neue", Helvetica, system-ui, -apple-system, Arial, sans-serif;
   --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
   --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -175,9 +186,15 @@ body { display: flex; flex-direction: column; }
   overflow: visible;
 }
 
-.snowman .snow { fill: #ffffff; stroke: var(--rule); stroke-width: 2.5; }
-.snowman .detail { fill: var(--text); }
-.snowman .carrot { fill: var(--warn); }
+/* The three spheres overlap, so without a dark outline they are one shape. */
+.snowman .snow { fill: #f7f6f0; stroke: var(--snow-line); stroke-width: 2.5; }
+
+/* Eyes, mouth and buttons. These were the page's cream, which on a white
+   snowman is invisible — the figure read as a blank white blob. They are the
+   dark of the ground now, which is what a coal button is. */
+.snowman .detail { fill: #16201a; }
+
+.snowman .carrot { fill: var(--warn); stroke: rgba(20, 28, 23, .4); stroke-width: 1; }
 
 .snowman .twig {
   stroke: #9b8f7d;
@@ -193,8 +210,11 @@ body { display: flex; flex-direction: column; }
   fill: none;
 }
 
-.snowman .hat { fill: var(--text); }
-.snowman .hat .brim { stroke: var(--text); stroke-width: 5; stroke-linecap: round; }
+/* A dark hat, which is what a snowman wears, with a band bright enough to hold
+   the shape against the dark sky behind it. Before this the hat was the same
+   cream as the head, so the two ran together at the brim. */
+.snowman .hat rect { fill: var(--hat); stroke: rgba(244, 240, 228, .55); stroke-width: 1.5; }
+.snowman .hat .brim { stroke: var(--hat-band); stroke-width: 6; stroke-linecap: round; }
 .snowman .ground { stroke: var(--rule); stroke-width: 4; stroke-linecap: round; fill: none; }
 
 /* Everything starts on the snowman and leaves it. A piece that has melted sinks
@@ -282,7 +302,7 @@ body { display: flex; flex-direction: column; }
   user-select: none;
 }
 
-.slot.revealed { border-bottom-color: var(--hit); animation: pop .16s ease; }
+.slot.revealed { border-bottom-color: var(--letter-in); animation: pop .16s ease; }
 
 /* On a loss the letters that were never found are shown in the miss colour, so
    it is obvious what beat you. */
@@ -328,8 +348,8 @@ body { display: flex; flex-direction: column; }
   color: var(--text);
 }
 
-.tried.hit  { background: var(--hit);  color: var(--on-colour); }
-.tried.miss { background: var(--miss); color: var(--on-colour); }
+.tried.hit  { background: var(--letter-in);  color: var(--on-colour); }
+.tried.miss { background: var(--letter-out); color: var(--on-colour); }
 
 /* ---------- whole-word guess ---------- */
 .word-guess {
@@ -389,8 +409,8 @@ body { display: flex; flex-direction: column; }
 .key:hover:not(:disabled)  { filter: brightness(1.12); }
 .key:active:not(:disabled) { transform: scale(.94); }
 
-.key.hit  { background: var(--hit);  color: var(--on-colour); }
-.key.miss { background: var(--miss); color: var(--on-colour); }
+.key.hit  { background: var(--letter-in);  color: var(--on-colour); }
+.key.miss { background: var(--letter-out); color: var(--on-colour); }
 .key:disabled { cursor: default; }
 .key:disabled:not(.hit):not(.miss) { background: var(--spent); color: #93908a; }
 

@@ -166,7 +166,13 @@ body { display: flex; flex-direction: column; }
   gap: 5px;
   --cols: 5;
   width: min(calc(var(--cols) * 68px), 94vw);
-  height: min(408px, 58vh);
+  /* A height that gives way. It was sized against the viewport and fixed, so on
+     a shorter screen the column overflowed and the keyboard — the one part you
+     cannot play without — was what went over the edge. This is a ceiling now,
+     not a demand: when the room is not there the board takes less of it. */
+  height: min(384px, 54vh);
+  flex: 0 1 auto;
+  min-height: 0;
   margin: auto 0;
 }
 
@@ -227,7 +233,16 @@ body { display: flex; flex-direction: column; }
 }
 
 /* ---------- keyboard ---------- */
-.keyboard { width: min(500px, 100%); display: flex; flex-direction: column; gap: 7px; flex: 0 0 auto; }
+.keyboard {
+  width: min(500px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 0 0 auto;
+  /* The board's auto margins hand out the slack, and on a short screen there is
+     none to hand out. This is the gap that survives that. */
+  margin-top: 14px;
+}
 .kb-row { display: flex; gap: 5px; justify-content: center; }
 .kb-spacer { flex: .5; }
 
@@ -443,10 +458,18 @@ body { display: flex; flex-direction: column; }
 .btn:hover { filter: brightness(1.08); }
 .btn:disabled { opacity: .45; cursor: default; filter: none; }
 
-@media (max-height: 700px) {
-  .key { height: 44px; }
+/* Drawn at 780 rather than 700: the tab bar takes 68px off the bottom of every
+   phone, so a screen that used to be comfortable is now the tight case. */
+@media (max-height: 780px) {
+  .key { height: 46px; }
   .game-header h1 { font-size: 20px; }
-  .board { height: min(360px, 52vh); }
+  .board { height: min(310px, 46vh); }
+  .keyboard { margin-top: 14px; }
+}
+
+@media (max-height: 660px) {
+  .key { height: 40px; }
+  .board { height: min(280px, 44vh); }
 }
 
 /* The daily sign-off: when the next word arrives. */
