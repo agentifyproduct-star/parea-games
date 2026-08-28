@@ -690,7 +690,15 @@ function startGame({ daily }) {
       state.guesses = Array.isArray(saved.guesses) ? saved.guesses.slice(0, ROWS) : [];
       state.guesses.forEach((g, i) => revealRow(i, g, scoreGuess(g, state.answer), false));
       TODAY.set('shabda', state.status);
-      if (state.status !== 'playing') setTimeout(openStats, 300);
+
+      /* Coming back to a day already played used to be met with the results
+         panel over the board, which is a popup nobody asked for: the result is
+         a thing you have already seen. The finished board is left up the way
+         the other two games leave theirs, with the countdown to the next word
+         under it and the Results button in the header for anyone who wants the
+         record again. The panel still opens by itself the moment a round ends,
+         which is the one time it has something to say. */
+      updateCountdown();
       return;
     }
     state.answer = WORDS.dailyWord(state.len);

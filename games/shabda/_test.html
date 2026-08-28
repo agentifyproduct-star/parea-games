@@ -441,6 +441,37 @@ document.getElementById('f').addEventListener('load', async () => {
             .map(id => d.getElementById(id).textContent).join('/'));
     d.getElementById('stats-modal').hidden = true;
 
+    /* ---------- coming back to a day already played ----------
+
+       The day was won near the top of this run, so localStorage holds a
+       finished daily. A second frame boots the real page against it, which is
+       exactly what happens when someone opens Shabda again later on.
+
+       It gets its own frame rather than reloading this one: the whole suite
+       hangs off the first frame's load event, and reloading would run all of it
+       a second time. */
+    const back = document.createElement('iframe');
+    back.width = 700;
+    back.height = 900;
+    back.src = 'index.html';
+    document.body.appendChild(back);
+    await new Promise(done => back.addEventListener('load', done, { once: true }));
+    await wait(900);   // longer than the 300ms the panel used to wait
+
+    const bd = back.contentDocument;
+    check('returning to a finished day does not throw the results up',
+          bd.getElementById('stats-modal').hidden === true);
+    check('the finished board is still there',
+          bd.querySelectorAll('.tile.correct').length >= todayLen,
+          bd.querySelectorAll('.tile.correct').length + ' green');
+    check('and the countdown says when the next word lands',
+          bd.getElementById('next-up').hidden === false &&
+          /^\d{2}:\d{2}:\d{2}$/.test(bd.getElementById('countdown').textContent),
+          bd.getElementById('countdown').textContent);
+    check('the record is still one button away',
+          !!bd.getElementById('btn-stats') && bd.getElementById('btn-stats').offsetParent !== null);
+    back.remove();
+
   } catch (err) {
     results.push('FAIL threw :: ' + err.message + ' @ ' + (err.stack || '').split('\n')[1]);
   }
