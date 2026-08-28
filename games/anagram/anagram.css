@@ -680,10 +680,12 @@ main {
 
 .stat-mode-btn:hover { color: var(--text); }
 
+/* Named rather than reached for through a fallback chain: each game says which
+   of its own accents this is. */
 .stat-mode-btn[aria-pressed="true"] {
-  background: var(--accent, var(--correct, #2f9e8f));
-  border-color: var(--accent, var(--correct, #2f9e8f));
-  color: var(--on-colour, #fff);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-colour);
 }
 
 .stats-scope[hidden] { display: none; }

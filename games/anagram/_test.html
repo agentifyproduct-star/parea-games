@@ -691,6 +691,23 @@ document.getElementById('f').addEventListener('load', async () => {
     d.getElementById('btn-stats').click();
     await wait(150);
     check('and on Today when that is', pressed('daily') && !pressed('unlimited'));
+
+    /* The chart marks the bar the round just played landed in. It used to work
+       out that bar as "attempts used if solved, otherwise failed", which called
+       a day nobody had touched a loss and lit the X. */
+    modeBtn('practice').click();
+    await wait(250);
+    A.startPractice({ deal: true });
+    await wait(250);
+    d.getElementById('btn-stats').click();
+    await wait(200);
+    check('nothing is marked as the round just played before one is played',
+          d.querySelectorAll('.dist-bar.current').length === 0,
+          d.querySelectorAll('.dist-bar.current').length + ' marked');
+    d.getElementById('stats-modal').hidden = true;
+
+    modeBtn('daily').click();
+    await wait(250);
     d.getElementById('stats-modal').hidden = true;
 
     /* ---------- an Unlimited round survives leaving the page ----------

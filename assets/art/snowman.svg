@@ -53,7 +53,7 @@
   <!-- what has already melted off, in the slush -->
   <ellipse cx="292" cy="432" rx="62" ry="12" fill="#bcd8e4" opacity=".85" />
   <g transform="rotate(-12 300 424)">
-    <path d="M266 424 H334" stroke="#2f3a2b" stroke-width="7" stroke-linecap="round" />
+    <path d="M266 424 H334" stroke="#d9b26a" stroke-width="7" stroke-linecap="round" />
     <rect x="282" y="402" width="36" height="24" rx="3" fill="#2f3a2b" />
   </g>
   <path d="M244 436 Q262 424 280 436" stroke="#b4552f" stroke-width="9"
@@ -73,7 +73,7 @@
       <g stroke="#c4cbbc">
         <path d="M446 300h60M526 300h60M606 300h60M686 300h60" />
       </g>
-      <g stroke="#5a9e4f">
+      <g stroke="#2e9b93">
         <path d="M446 300h60M606 300h60" />
       </g>
     </g>
@@ -84,10 +84,10 @@
 
     <!-- lives left -->
     <g>
-      <circle cx="486" cy="366" r="10" fill="#5a9e4f" />
-      <circle cx="520" cy="366" r="10" fill="#5a9e4f" />
-      <circle cx="554" cy="366" r="10" fill="#5a9e4f" />
-      <circle cx="588" cy="366" r="10" fill="#5a9e4f" />
+      <circle cx="486" cy="366" r="10" fill="#5fa96b" />
+      <circle cx="520" cy="366" r="10" fill="#5fa96b" />
+      <circle cx="554" cy="366" r="10" fill="#5fa96b" />
+      <circle cx="588" cy="366" r="10" fill="#5fa96b" />
       <circle cx="622" cy="366" r="10" fill="#cfd6c9" />
       <circle cx="656" cy="366" r="10" fill="#cfd6c9" />
       <text x="722" y="374" font-size="21" font-weight="600" fill="#7d8a76" text-anchor="end">4 left</text>

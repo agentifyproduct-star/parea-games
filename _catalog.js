@@ -55,7 +55,7 @@ const GAMES = [
     icon: 'assets/art/icon-shabda.svg',
     alt: 'A grid of letter tiles with one row solved in teal',
     accent: '#2f9e8f',
-    facts: ['New word daily', '6 guesses', '4 to 7 letters'],
+    facts: ['6 guesses', '4 to 7 letters', 'Unlimited words'],
     status: 'live',
     path: 'games/shabda/',
     url: 'games/shabda/index.html'
@@ -71,7 +71,7 @@ const GAMES = [
     icon: 'assets/art/icon-snowman.svg',
     alt: 'A snowman that has lost its hat and scarf, beside a part-guessed word',
     accent: '#5a9e4f',
-    facts: ['New word daily', '12 categories', 'Unlimited words'],
+    facts: ['6 wrong and it melts', '12 categories', 'Unlimited words'],
     status: 'live',
     path: 'games/snowman/',
     url: 'games/snowman/index.html'
@@ -87,7 +87,7 @@ const GAMES = [
     icon: 'assets/art/icon-anagram.svg',
     alt: 'Scattered letter tiles settling into a solved word',
     accent: '#6c74d8',
-    facts: ['One word daily', '5 to 8 letters', '5 tries'],
+    facts: ['5 tries', '5 to 8 letters', 'Unlimited words'],
     status: 'live',
     path: 'games/anagram/',
     url: 'games/anagram/index.html'

@@ -685,11 +685,6 @@ document.getElementById('btn-new').addEventListener('click', () => {
   toast('Your streak is safe here');
 });
 
-document.getElementById('btn-play-again').addEventListener('click', () => {
-  closeModal(document.getElementById('stats-modal'));
-  startGame(state.level);
-});
-
 /* Which record the panel is showing.
 
    It opened on the day whatever you were playing, which meant somebody four
@@ -740,7 +735,6 @@ function openStats() {
   const daily = statsMode === 'daily';
   const shown = daily ? stats : unlimited;
 
-  document.getElementById('st-level').textContent = 'daily';
   document.getElementById('st-played').textContent = shown.played;
   document.getElementById('st-win').textContent =
     shown.played ? Math.round((shown.wins / shown.played) * 100) : 0;

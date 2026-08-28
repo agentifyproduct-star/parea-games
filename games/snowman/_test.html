@@ -213,6 +213,21 @@ document.getElementById('f').addEventListener('load', async () => {
     d.getElementById('btn-stats').click();
     await wait(150);
     check('and on Today when that is', pressed('daily') && !pressed('unlimited'));
+
+    /* The pressed tab used to reach for its colour through
+       var(--accent, var(--correct, ...)) — a chain copied from a game that owns
+       one of those. Snowman owns neither, so it came out in the literal on the
+       end, which is Shabda's teal, on a page that is green everywhere else.
+       Compared against the game's own token rather than a hex, so the check
+       survives the next time the green is tuned. */
+    const tabColour = w.getComputedStyle(statTab('daily')).backgroundColor;
+    const hit = w.getComputedStyle(d.documentElement).getPropertyValue('--hit').trim();
+    const asRGB = hex => {
+      const n = parseInt(hex.slice(1), 16);
+      return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+    };
+    check('the pressed tab wears this game\'s own accent, not another game\'s',
+          tabColour === asRGB(hit), tabColour + ' vs ' + hit + ' = ' + asRGB(hit));
     check('with the daily language', d.getElementById('st-max-lbl').textContent === 'Max streak',
           d.getElementById('st-max-lbl').textContent);
     d.getElementById('stats-modal').hidden = true;

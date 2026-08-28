@@ -889,7 +889,14 @@ function renderDistribution() {
   const bucket = statsMode === 'daily' ? save.stats.distribution : unlimited.distribution;
   const keys = ['1', '2', '3', '4', '5', 'failed'];
   const max = Math.max(1, ...keys.map(k => bucket[k] || 0));
-  const todayAttempts = progressFor().solved ? String(progressFor().attemptsUsed) : 'failed';
+  /* Which bar the round just played landed in, or null when there is no round
+     to point at. It used to read "attempts used if solved, otherwise failed",
+     which quietly called an unplayed day a loss and lit the X bar on a board
+     nobody had touched. A day is only a miss once it is actually over. */
+  const done = progressFor();
+  const todayAttempts = !done.resolved ? null
+    : done.solved ? String(done.attemptsUsed)
+    : 'failed';
 
   keys.forEach(key => {
     const row = document.createElement('div');

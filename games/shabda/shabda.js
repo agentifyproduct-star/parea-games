@@ -545,11 +545,6 @@ document.getElementById('btn-new').addEventListener('click', () => {
   startGame({ daily: false, fresh: true });
 });
 
-document.getElementById('btn-play-again').addEventListener('click', () => {
-  closeModal(document.getElementById('stats-modal'));
-  startGame({ daily: false, fresh: true });
-});
-
 /* Which record the panel is showing.
 
    It opened on the day whatever you were playing, which meant somebody four
