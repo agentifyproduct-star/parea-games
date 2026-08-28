@@ -709,10 +709,18 @@ document.getElementById('f').addEventListener('load', async () => {
     check('unlimited: with the tiles still placed',
           aA.currentInput() === typed, aA.currentInput());
 
-    again.contentDocument.getElementById('btn-practice').click();
+    check('unlimited: the refresh is live once you are off today',
+          again.contentDocument.getElementById('btn-new').disabled === false);
+    again.contentWindow.confirm = () => true;
+    again.contentDocument.getElementById('btn-new').click();
     await wait(500);
-    check('unlimited: Play another deals a new word instead of resuming',
+    check('unlimited: the refresh deals a new word instead of resuming',
           aA.currentInput() === '');
+
+    again.contentDocument.querySelector('.mode-btn[data-mode="daily"]').click();
+    await wait(300);
+    check('today: the refresh is dead, because today has one word',
+          again.contentDocument.getElementById('btn-new').disabled === true);
     again.remove();
 
   } catch (err) {

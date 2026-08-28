@@ -189,7 +189,20 @@ document.getElementById('f').addEventListener('load', async () => {
           since().includes('already tried'));
 
     // ---------- restarting ----------
+    /* The refresh is dead on today's word — there is one a day — so this goes
+       through Unlimited, which is the only place it has anything to offer. It
+       asks before throwing away a round with letters on it; confirm is stubbed
+       to yes here, and the asking itself is checked further down. */
+    check("the refresh has nothing to offer on today's word",
+          d.getElementById('btn-new').disabled === true);
+
+    d.querySelector('.mode-btn[data-mode="unlimited"]').click();
+    await wait(200);
+    check('and something to offer in Unlimited',
+          d.getElementById('btn-new').disabled === false);
+
     const before = w.state.secretWord;
+    w.confirm = () => true;
     d.getElementById('btn-new').click();
     await wait(60);
     check('a new game clears the board',
@@ -425,10 +438,18 @@ document.getElementById('f').addEventListener('load', async () => {
     check('unlimited: with the letters still called',
           aw.state.guessedLetters.has(pick));
 
-    aw.document.getElementById('btn-another').click();
+    check('unlimited: the refresh is live once you are off today',
+          aw.document.getElementById('btn-new').disabled === false);
+    aw.confirm = () => true;
+    aw.document.getElementById('btn-new').click();
     await wait(400);
-    check('unlimited: Play another deals a new word instead of resuming',
+    check('unlimited: the refresh deals a new word instead of resuming',
           aw.state.guessedLetters.size === 0);
+
+    aw.document.querySelector('.mode-btn[data-mode="daily"]').click();
+    await wait(300);
+    check('today: the refresh is dead, because today has one word',
+          aw.document.getElementById('btn-new').disabled === true);
     again.remove();
 
   } catch (err) {

@@ -709,6 +709,25 @@ function markModeButtons() {
     const isToday = btn.dataset.mode === 'daily';
     btn.setAttribute('aria-pressed', String(isToday ? !practice : !!practice));
   });
+  markNewButton();
+}
+
+/* The refresh in the header, which is how all three games ask for another word
+   now. Dead on today's puzzle, since there is one a day, and in Unlimited it
+   asks before throwing away a word with tiles already on it. Nothing is
+   recorded: a word walked away from is not a word played, which is what makes
+   this a different thing from Give up. */
+function roundTouched() {
+  const p = progressFor();
+  return !!p && !p.resolved &&
+    (p.attemptsUsed > 0 || p.hintUsed || state.placed.some(tile => tile !== null));
+}
+
+function markNewButton() {
+  const btn = el('btn-new');
+  if (!btn) return;
+  btn.disabled = !practice;
+  btn.title = practice ? 'Another word' : 'One word a day — switch to Unlimited for more';
 }
 
 /* ---------------- practice ----------------
@@ -1184,7 +1203,6 @@ el('btn-shuffle').addEventListener('click', shuffleTiles);
 el('btn-hint').addEventListener('click', () => applyHint());
 el('btn-continue').addEventListener('click', advance);
 el('btn-share').addEventListener('click', copyShare);
-el('btn-practice').addEventListener('click', () => startPractice({ deal: true }));
 el('btn-back-to-today').addEventListener('click', leavePractice);
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -1208,6 +1226,12 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
   });
 });
 el('btn-reload').addEventListener('click', () => location.reload());
+
+el('btn-new').addEventListener('click', () => {
+  if (!practice) return;
+  if (roundTouched() && !confirm('Give up on this word and take another?')) return;
+  startPractice({ deal: true });
+});
 
 el('btn-skip').addEventListener('click', () => {
   if (state.gameStatus !== 'playing') return;

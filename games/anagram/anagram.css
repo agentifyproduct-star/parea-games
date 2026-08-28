@@ -85,6 +85,10 @@ body { display: flex; flex-direction: column; }
 }
 
 .brand-link:hover, .icon-btn:hover { background: var(--surface); color: var(--text); }
+
+/* Today has one word, so the refresh has nothing to offer while you are on it. */
+.icon-btn:disabled { opacity: .3; cursor: default; }
+.icon-btn:disabled:hover { background: none; color: var(--text-dim); }
 .header-actions { display: flex; gap: 2px; }
 
 /* ---------- the brand, and the way back ---------- */

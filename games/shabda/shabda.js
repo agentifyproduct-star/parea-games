@@ -498,12 +498,6 @@ function updateCountdown() {
 
   node.hidden = !show;
   if (show) document.getElementById('countdown').textContent = DAILY.untilRollover();
-
-  /* The mirror of the countdown: a finished daily gets a clock, a finished
-     Unlimited round gets the next word. Neither shows while there is still a
-     game to play. */
-  const again = document.getElementById('again-bar');
-  if (again) again.hidden = state.daily || state.status === 'playing';
 }
 
 setInterval(updateCountdown, 1000);
@@ -523,18 +517,36 @@ document.querySelectorAll('.modal').forEach(modal => {
 document.getElementById('btn-help').addEventListener('click', () => openModal('help-modal'));
 document.getElementById('btn-stats').addEventListener('click', openStats);
 
+/* The refresh is the only way to another word now, so it has to be careful with
+   the one in front of you. It is dead on today's board — there is one word a day
+   and no amount of pressing makes a second — and in Unlimited it asks first if
+   there is anything to lose. Nothing is recorded either way: a word you walked
+   away from is not a word you played. */
+function newWordAllowed() {
+  return !state.daily;
+}
+
+function markNewButton() {
+  const btn = document.getElementById('btn-new');
+  if (!btn) return;
+  btn.disabled = !newWordAllowed();
+  btn.title = newWordAllowed()
+    ? 'Another word'
+    : 'One word a day — switch to Unlimited for more';
+}
+
 document.getElementById('btn-new').addEventListener('click', () => {
-  /* Asking for a new word is the whole point of the button; there is nothing to
-     confirm. Today's game is saved and comes back from the Today button. */
+  if (!newWordAllowed()) return;
+
+  const started = state.status === 'playing' &&
+    (state.guesses.length > 0 || state.current.length > 0);
+  if (started && !confirm('Give up on this word and take another?')) return;
+
   startGame({ daily: false, fresh: true });
 });
 
 document.getElementById('btn-play-again').addEventListener('click', () => {
   closeModal(document.getElementById('stats-modal'));
-  startGame({ daily: false, fresh: true });
-});
-
-document.getElementById('btn-another').addEventListener('click', () => {
   startGame({ daily: false, fresh: true });
 });
 
@@ -710,6 +722,7 @@ function startGame({ daily, fresh = false }) {
   buildBoard();
   buildKeyboard();
   markModeButtons();
+  markNewButton();
   /* Clears whatever the last round left at the foot of the page — the clock or
      the way on to the next word — without waiting for the next tick. */
   updateCountdown();

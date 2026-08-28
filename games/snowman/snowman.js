@@ -398,12 +398,6 @@ function updateCountdown() {
 
   node.hidden = !show;
   if (show) document.getElementById('countdown').textContent = DAILY.untilRollover();
-
-  /* The mirror of the countdown: a finished daily gets a clock, a finished
-     Unlimited round gets the next word. Neither shows while there is still a
-     game to play. */
-  const again = document.getElementById('again-bar');
-  if (again) again.hidden = state.daily || state.status === 'playing';
 }
 
 setInterval(updateCountdown, 1000);
@@ -548,6 +542,7 @@ function restoreGame() {
 }
 
 function markModeButtons() {
+  markNewButton();
   modeBtns.forEach(btn => {
     const isDaily = btn.dataset.mode === 'daily';
     btn.setAttribute('aria-pressed', String(isDaily ? state.daily : !state.daily));
@@ -593,7 +588,25 @@ document.querySelectorAll('.modal').forEach(modal => {
 document.getElementById('btn-help').addEventListener('click', () => openModal('help-modal'));
 document.getElementById('btn-stats').addEventListener('click', openStats);
 
+/* The refresh is the only way to another word now. Dead on today's word, since
+   there is one a day, and in Unlimited it asks before throwing away a round with
+   letters already spent on it. Nothing is recorded: a word walked away from is
+   not a word played. */
+function markNewButton() {
+  const btn = document.getElementById('btn-new');
+  if (!btn) return;
+  btn.disabled = state.daily;
+  btn.title = state.daily
+    ? 'One word a day — switch to Unlimited for more'
+    : 'Another word';
+}
+
 document.getElementById('btn-new').addEventListener('click', () => {
+  if (state.daily) return;
+
+  const started = state.status === 'playing' && state.guessedLetters.size > 0;
+  if (started && !confirm('Give up on this word and take another?')) return;
+
   startGame();
   toast('Your streak is safe here');
 });
@@ -601,10 +614,6 @@ document.getElementById('btn-new').addEventListener('click', () => {
 document.getElementById('btn-play-again').addEventListener('click', () => {
   closeModal(document.getElementById('stats-modal'));
   startGame(state.level);
-});
-
-document.getElementById('btn-another').addEventListener('click', () => {
-  startGame();
 });
 
 /* Which record the panel is showing. Opens on the day, always: the daily

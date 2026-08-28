@@ -86,6 +86,10 @@ body { display: flex; flex-direction: column; }
 }
 
 .brand-link:hover, .icon-btn:hover { background: var(--surface); color: var(--text); }
+
+/* Today has one word, so the refresh has nothing to offer while you are on it. */
+.icon-btn:disabled { opacity: .3; cursor: default; }
+.icon-btn:disabled:hover { background: none; color: var(--text-dim); }
 .header-actions { display: flex; gap: 2px; }
 
 /* ---------- the brand, and the way back ---------- */
@@ -197,6 +201,12 @@ body { display: flex; flex-direction: column; }
   height: min(210px, 30vh);
   width: auto;
   overflow: visible;
+  /* The stage was allowed to shrink but nothing inside it was, so on a short
+     screen the box closed up and the category chip was painted straight over the
+     row below it. The figure is the one thing here that gives way — a smaller
+     snowman is still a snowman, and a category on top of a word is neither. */
+  flex: 0 1 auto;
+  min-height: 72px;
 }
 
 /* The three spheres overlap, so without a dark outline they are one shape. */
@@ -264,6 +274,7 @@ body { display: flex; flex-direction: column; }
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
+  flex: 0 0 auto;
 }
 
 .chip {
@@ -641,23 +652,6 @@ body { display: flex; flex-direction: column; }
 }
 
 .next-up b { color: var(--text); font-variant-numeric: tabular-nums; }
-
-/* ---------- the way on to the next word ----------
-   Sits where the daily countdown sits, and for the same reason: it is the thing
-   there is left to do once the round is over. Only Unlimited ever shows it. */
-.again-bar {
-  flex: 0 0 auto;
-  margin-top: 14px;
-  display: flex;
-  justify-content: center;
-  width: min(500px, 100%);
-}
-
-/* .btn is flex: 1 everywhere else, which is right in a modal's row of two and
-   wrong here — it stretched to the keyboard's full width and read as a fourth
-   row of keys rather than a button. */
-.again-bar .btn { flex: 0 1 auto; width: min(280px, 100%); }
-
 
 /* ---------- the statistics toggle ----------
    R7: the same Today / Unlimited pair the games carry, on the record itself.
