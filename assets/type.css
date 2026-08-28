@@ -1,0 +1,57 @@
+/* The three faces Parea is set in, declared once for every page that wants them.
+
+   Self-hosted, so no page on this site makes a third-party request and nothing
+   has to come back from another domain before a word can be painted. All three
+   are OFL; the licence texts sit beside the files in assets/fonts, and TODO.md
+   records why nothing here needs buying.
+
+   The url()s are relative to this file rather than to the page, which is what
+   lets the front page and a game two directories down link the same stylesheet
+   without either of them getting the paths wrong. That also keeps the games
+   working when they are opened straight off the filesystem, where a
+   root-relative path would resolve to the drive.
+
+   font-display: swap throughout. A word game that will not show its letters
+   until a font arrives is worse than one that shows them in the fallback for a
+   moment. */
+
+/* Instrument Sans carries 400 to 600 in a single variable file. */
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('fonts/instrument-sans-var.woff2') format('woff2-variations');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('fonts/instrument-serif-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('fonts/instrument-serif-400i.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('fonts/dm-mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('fonts/dm-mono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}

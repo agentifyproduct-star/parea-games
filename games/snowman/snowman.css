@@ -1,22 +1,27 @@
 :root {
-  /* Paper, ink and one accent — the same ground the front page stands on. */
-  --bg: #f2f1ec;
-  --surface: #ffffff;
-  --border: #e2e0d8;
-  --text: #16161a;
-  --text-dim: #6a6862;
-  --key-bg: #e5e2d9;
-  --rule: #c9c5bb;           /* the snow's outline, and the line under an unfound letter */
-  --spent: #d5d2c9;
+  /* Forest and cream, the same ground the front page stands on. The games used
+     to be the light half of the pair; they are the dark half now, and a board
+     stared at for six guesses is easier on a dark ground than a bright one. */
+  --bg: #1a241e;
+  --surface: #212d25;
+  --border: rgba(244, 240, 228, .12);
+  --text: #f4f0e4;
+  --text-dim: #93a497;
+  --key-bg: #26332b;
+  --rule: rgba(244, 240, 228, .28);   /* the line under a letter still to be found */
+  --spent: #2b3830;
   /* Snowman's own accent — a warmer green than Shabda's teal, with the same
-     amber for near-misses so the games still read as one place. Deepened for
-     a light ground, where white type has to hold up on top of them. */
-  --hit: #4b8a41;
-  --miss: #b4552f;
-  --warn: #c07c2c;
-  --absent: #7d7a71;
-  --on-colour: #ffffff;
-  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+     amber for near-misses so the games still read as one place. Brightened for
+     the forest ground the way Shabda's were. */
+  --hit: #5fa96b;
+  --miss: #d0633a;
+  --warn: #d3873c;
+  --absent: #46524b;
+  --on-colour: #f4f0e4;
+  --font: 'Instrument Sans', "Helvetica Neue", Helvetica, system-ui, -apple-system, Arial, sans-serif;
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
 }
 
 * { box-sizing: border-box; }
@@ -533,7 +538,7 @@ body { display: flex; flex-direction: column; }
 .dist-key { width: 10px; color: var(--text-dim); }
 
 .dist-bar {
-  background: #e5e2d9;
+  background: var(--key-bg);
   color: var(--text);
   font-weight: 700;
   padding: 2px 8px;
@@ -687,3 +692,23 @@ body { display: flex; flex-direction: column; }
   body { padding-bottom: 68px; }
   .keyboard { margin-bottom: 2px; }
 }
+
+
+/* ---------- the serif, where the front page uses it ----------
+   The game's name, the headings inside a panel, and the numbers on the record.
+   Everything a player reads while actually playing stays in the sans, which is
+   what it is for. */
+.game-header h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.modal-card h2,
+.sheet-head h2 { font-family: var(--serif); font-weight: 400; }
+
+.brand-name { font-family: var(--serif); font-weight: 400; }
+.brand-name span { font-family: var(--font); }
+
+.stat-num { font-family: var(--serif); font-weight: 400; }
+.stat-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; }

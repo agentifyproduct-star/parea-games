@@ -58,9 +58,16 @@ frame.addEventListener('load', async function start() {
        them looked at the page. These do. */
     const styleOf = (sel, prop) => win().getComputedStyle(doc().querySelector(sel))[prop];
 
+    /* By name, not by index: the page links assets/type.css ahead of its own
+       stylesheet, so styleSheets[0] is five @font-face rules and nothing else. */
+    const mainSheet = [...doc().styleSheets].find(sheet => (sheet.href || '').includes('styles.css'));
+
     check('the front page has a stylesheet at all',
-          doc().styleSheets.length > 0 && doc().styleSheets[0].cssRules.length > 40,
-          doc().styleSheets.length ? doc().styleSheets[0].cssRules.length + ' rules' : 'none');
+          !!mainSheet && mainSheet.cssRules.length > 40,
+          mainSheet ? mainSheet.cssRules.length + ' rules' : 'styles.css not linked');
+    check('the faces are declared, in their own stylesheet',
+          [...doc().styleSheets].some(sheet => (sheet.href || '').includes('type.css')),
+          [...doc().styleSheets].map(sheet => (sheet.href || '').split('/').pop()).join(', '));
     check('the strip is a row of three, not a stack',
           styleOf('.strip', 'gridTemplateColumns').split(' ').length === 3,
           styleOf('.strip', 'gridTemplateColumns'));

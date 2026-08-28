@@ -1,20 +1,25 @@
 :root {
-  /* Paper, ink and one accent — the same ground the front page stands on. */
-  --bg: #f2f1ec;
-  --surface: #ffffff;
-  --border: #e2e0d8;
-  --text: #16161a;
-  --text-dim: #6a6862;
-  --tile-bg: #e5e2d9;
-  --spent: #d5d2c9;
+  /* Forest and cream, the same ground the front page stands on. The games used
+     to be the light half of the pair; they are the dark half now, and a board
+     stared at for six guesses is easier on a dark ground than a bright one. */
+  --bg: #1a241e;
+  --surface: #212d25;
+  --border: rgba(244, 240, 228, .12);
+  --text: #f4f0e4;
+  --text-dim: #93a497;
+  --tile-bg: #26332b;
+  --spent: #232f28;
   /* Anagram's own accent: indigo, distinct from Shabda's teal and Snowman's
-     green, and deepened here so white type holds up on a light ground. */
-  --accent: #5c63c4;
-  --good: #47875c;
-  --bad: #b4552f;
-  --warn: #c07c2c;
-  --on-colour: #ffffff;
-  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+     green, and lifted for the forest ground the way the other two were. */
+  --accent: #6c74d8;
+  --good: #5fa96b;
+  --bad: #d0633a;
+  --warn: #d3873c;
+  --on-colour: #f4f0e4;
+  --font: 'Instrument Sans', "Helvetica Neue", Helvetica, system-ui, -apple-system, Arial, sans-serif;
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
 }
 
 * { box-sizing: border-box; }
@@ -167,7 +172,7 @@ body { display: flex; flex-direction: column; }
 }
 
 /* Today's pair is the game; practice is the extra. */
-.mode-btn.today { border-color: #cfccc2; color: var(--text); }
+.mode-btn.today { border-color: rgba(244, 240, 228, .3); color: var(--text); }
 .mode-btn.today[aria-pressed="true"] { border-color: var(--accent); color: var(--on-colour); }
 
 /* ---------- layout ---------- */
@@ -703,3 +708,23 @@ main {
   body { padding-bottom: 68px; }
   .keyboard { margin-bottom: 2px; }
 }
+
+
+/* ---------- the serif, where the front page uses it ----------
+   The game's name, the headings inside a panel, and the numbers on the record.
+   Everything a player reads while actually playing stays in the sans, which is
+   what it is for. */
+.game-header h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.modal-card h2,
+.sheet-head h2 { font-family: var(--serif); font-weight: 400; }
+
+.brand-name { font-family: var(--serif); font-weight: 400; }
+.brand-name span { font-family: var(--font); }
+
+.stat-num { font-family: var(--serif); font-weight: 400; }
+.stat-lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; }

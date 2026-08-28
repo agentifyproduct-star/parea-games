@@ -5,50 +5,9 @@
    now and the change in temperature is what marks the door between browsing
    and playing.
 
-   The three faces are self-hosted, in assets/fonts. No third-party request
-   ships on this page, and no round trip has to finish before the wordmark can
-   paint. See TODO.md for the licences, which are all OFL. */
-
-/* Instrument Sans carries 400 to 600 in one variable file. */
-@font-face {
-  font-family: 'Instrument Sans';
-  src: url('assets/fonts/instrument-sans-var.woff2') format('woff2-variations');
-  font-weight: 400 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Instrument Serif';
-  src: url('assets/fonts/instrument-serif-400.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Instrument Serif';
-  src: url('assets/fonts/instrument-serif-400i.woff2') format('woff2');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'DM Mono';
-  src: url('assets/fonts/dm-mono-400.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'DM Mono';
-  src: url('assets/fonts/dm-mono-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+   The three faces are declared in assets/type.css, which every page on the
+   site links, so the front page and the games are set in the same thing. See
+   TODO.md for the licences, which are all OFL. */
 
 :root {
   --forest: #1a241e;         /* the ground everything sits on */
