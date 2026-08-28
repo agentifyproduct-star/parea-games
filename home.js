@@ -50,6 +50,30 @@
      tick marks and the button above already read — no second source, and
      nothing new in storage. */
 
+  /* Which puzzle number today is, and the date in words. The epoch is the one
+     Shabda and Snowman already count from, so the number on the front page is
+     the number inside the games rather than a third opinion. */
+  const EPOCH = '2026-02-16';
+  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const stamp = document.getElementById('strip-stamp');
+  if (stamp && window.DAILY) {
+    const today = DAILY.keyToDate(DAILY.key());
+    stamp.textContent = 'No. ' + (DAILY.daysBetween(EPOCH, DAILY.key()) + 1) +
+      ' \u00B7 ' + DAYS[today.getDay()] + ' ' + today.getDate() + ' ' + MONTHS[today.getMonth()];
+  }
+
+  /* The clock the games already keep, on the page you come back to. */
+  const countdown = document.getElementById('strip-countdown');
+  if (countdown && window.DAILY) {
+    const tick = () => { countdown.textContent = DAILY.untilRollover(); };
+    tick();
+    setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  }
+
   const progress = document.getElementById('hero-progress');
   if (progress) {
     const { done, total } = TODAY.counts();

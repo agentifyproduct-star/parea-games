@@ -1,25 +1,75 @@
 /* The Parea Games front page.
 
-   Light, wide-margined and type-led: an off-white ground, near-black ink, one
-   enormous headline, and the artwork doing the talking. The games themselves
-   keep their dark playing surfaces — a bright board is tiring to stare at for
-   six guesses — so the change in temperature is deliberate. It marks the door
-   between browsing and playing. */
+   A forest ground, cream type, and one enormous serif headline. The games
+   themselves are paper-white, so the front page is the dark half of the pair
+   now and the change in temperature is what marks the door between browsing
+   and playing.
+
+   The three faces are self-hosted, in assets/fonts. No third-party request
+   ships on this page, and no round trip has to finish before the wordmark can
+   paint. See TODO.md for the licences, which are all OFL. */
+
+/* Instrument Sans carries 400 to 600 in one variable file. */
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('assets/fonts/instrument-sans-var.woff2') format('woff2-variations');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('assets/fonts/instrument-serif-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('assets/fonts/instrument-serif-400i.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('assets/fonts/dm-mono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('assets/fonts/dm-mono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
-  --paper: #f2f1ec;          /* the ground everything sits on */
-  --card: #ffffff;
-  --ink: #16161a;
-  --ink-soft: #6a6862;
-  --line: #e2e0d8;
-  --gold: #c9a227;           /* rooms */
+  --forest: #1a241e;         /* the ground everything sits on */
+  --forest-2: #212d25;
+  --raise: #26332b;          /* a card lifted off the ground */
+  --paper: #f4f0e4;          /* cream, and the colour type is set in */
+  --card: #f4f0e4;           /* a game tile, which is the one thing kept light */
+  --ink: #f4f0e4;
+  --ink-soft: #93a497;       /* sand: everything said quietly */
+  --line: rgba(244, 240, 228, .11);
+  --line-strong: rgba(244, 240, 228, .2);
+  --gold: #d9b26a;
   --teal: #2f9e8f;           /* Shabda */
   --green: #5a9e4f;          /* Snowman */
   --indigo: #6c74d8;         /* Anagram */
-  --terracotta: #c2562c;     /* the warm tile in the mark, and the splash accent */
-  --aegean: #10394b;         /* splash ground only: deep enough that the handoff
-                                to the paper-white page reads as a curtain up */
-  --font: "Helvetica Neue", Helvetica, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --moss: #7fa88a;
+  --terracotta: #c9552b;     /* the warm tile in the mark, and the one accent */
+  --aegean: #10394b;         /* splash ground only */
+  --font: 'Instrument Sans', "Helvetica Neue", Helvetica, system-ui, -apple-system, Arial, sans-serif;
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --page: min(1180px, 100% - 10vw);
 }
 
@@ -32,16 +82,33 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
   color: var(--ink);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(105% 42% at 50% 0%, #2a3830 0%, transparent 62%),
+    var(--forest);
+  background-attachment: fixed;
 }
+
+/* A film of noise over the whole page, so a flat dark ground does not band on
+   a cheap panel. Fixed and inert: it must never be in the way of a tap. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .45;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E");
+}
+
+body > * { position: relative; z-index: 1; }
 
 img { max-width: 100%; display: block; }
 a { color: inherit; }
 
-::selection { background: var(--ink); color: var(--paper); }
+::selection { background: var(--terracotta); color: var(--paper); }
 
 /* ---------- header ---------- */
 .site-header {
@@ -51,14 +118,12 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   gap: 28px;
-  padding: 18px calc((100% - var(--page)) / 2);
-  background: rgba(242, 241, 236, .82);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid transparent;
-  transition: border-color .2s ease;
+  padding: 14px calc((100% - var(--page)) / 2);
+  background: rgba(26, 36, 30, .82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
 }
-
-.site-header:hover { border-bottom-color: var(--line); }
 
 .brand {
   display: inline-flex;
@@ -74,9 +139,25 @@ a { color: inherit; }
 .brand-mark { width: 31px; height: 31px; }
 
 /* "parea" carries the weight, "games" trails it — the same relationship as the
-   mark's four dark tiles and the one warm one. */
-.brand-name { font-weight: 800; font-size: 19px; letter-spacing: -.025em; }
-.brand-name span { font-weight: 500; color: var(--ink-soft); letter-spacing: 0; }
+   mark's four cool tiles and the one warm one. Set in the serif, stacked, so the
+   wordmark reads as a masthead rather than a logo lockup. */
+.brand-name {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+.brand-name span {
+  display: block;
+  font-family: var(--font);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: .05em;
+  margin-top: 2px;
+}
 
 .site-nav {
   display: flex;
@@ -110,16 +191,28 @@ a { color: inherit; }
   transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.btn-ink { background: var(--ink); color: var(--paper); }
-.btn-ink:hover { transform: translateY(-1px); background: #000; }
+.btn-ink { background: var(--paper); color: var(--forest); font-weight: 600; }
+.btn-ink:hover { transform: translateY(-1px); background: #fff; }
 
 .btn-outline {
-  background: transparent;
-  border-color: var(--line);
+  background: none;
+  border-color: var(--line-strong);
   color: var(--ink);
 }
 
-.btn-outline:hover { border-color: var(--ink); transform: translateY(-1px); }
+.btn-outline:hover { border-color: var(--paper); transform: translateY(-1px); }
+
+/* Once the day is done the call to action stops being one. Gold rather than
+   the accent, because it is a receipt and not an invitation. */
+.btn-ink.is-done {
+  background: rgba(217, 178, 106, .14);
+  border-color: rgba(217, 178, 106, .45);
+  color: var(--gold);
+}
+
+.btn-ink.is-done:hover { background: rgba(217, 178, 106, .2); }
+
+.btn:active { transform: scale(.94); }
 
 /* ---------- hero ---------- */
 .hero {
@@ -174,64 +267,25 @@ a { color: inherit; }
    Each line is its own block and never wraps, so the break falls where it was
    written rather than wherever the width happens to run out. The size is tuned
    to the longer of the two lines. */
+/* The serif is the whole voice of the page. Uppercase, tight, and the second
+   line in gold, which is the only place gold is used at size. */
 .display {
   margin: 0;
-  font-size: clamp(38px, 11vw, 150px);
-  line-height: .86;
-  font-weight: 800;
-  letter-spacing: -.035em;
+  font-family: var(--serif);
+  font-size: clamp(40px, 11.6vw, 108px);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -.005em;
   text-transform: uppercase;
 }
 
+.display span:nth-child(2) { color: var(--gold); }
+
 .display span { display: block; white-space: nowrap; }
 
-/* A band of light crossing the headline every few seconds, with a thread of the
-   brand's terracotta at its centre — the same warm tile that sits in the mark.
-
-   Painted by clipping a moving gradient to the letters themselves, so it is the
-   type that lights up rather than a shape sliding over the page. Guarded by
-   @supports because the trick needs transparent text, and text that is
-   transparent in a browser that cannot clip it is text nobody can read.
-
-   The second line starts a beat later, which reads as one light travelling down
-   the block rather than two lines flashing together. */
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .display span {
-    /* The ink is a background colour, not a text colour, so that any part of
-       the element the gradient does not reach is still painted black rather
-       than left transparent. Getting that wrong makes letters vanish. */
-    background-color: var(--ink);
-    background-image: linear-gradient(96deg,
-      transparent 0 48.4%,
-      #6f6759 49.3%,
-      #c2562c 50%,
-      #6f6759 50.7%,
-      transparent 51.6% 100%);
-    background-size: 300% 100%;
-    background-repeat: no-repeat;
-
-    /* The band lives at the middle of an image three times the width of the
-       line, so at 100% it waits off the left-hand edge and at 0% it has left
-       past the right. Everything between those two is a covered element and a
-       legible headline; anything outside them is a hole. */
-    background-position: 100% 0;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: sheen 9s linear 2s infinite;
-  }
-
-  .display span:nth-child(2) { animation-delay: 2.3s; }
-}
-
-/* One pass, then rest. The band only clears the edges of the line for the
-   middle half of its travel, so the 2.6 seconds here read as about 1.3 seconds
-   of visible light, and the headline is plain black for the six after that.
-   Both ends park the band off an edge, so the loop has nothing to jump. */
-@keyframes sheen {
-  0%, 5% { background-position: 100% 0; }
-  34%, 100% { background-position: 0% 0; }
-}
+/* The sheen that used to cross the headline is gone with the black type it was
+   clipped to. On a forest ground a moving highlight over gold serif reads as a
+   rendering fault rather than as light. */
 
 .hero-note {
   max-width: 46ch;
@@ -268,10 +322,13 @@ a { color: inherit; }
    homepage, which is the only place it is ever shown. */
 .strip-icon { display: none; }
 
+/* A white pill on the artwork, so the type in it has to be forest: the page
+   ink is cream now and would vanish into its own background. */
 .strip-label {
   position: absolute;
   left: 14px;
   bottom: 14px;
+  color: var(--forest);
   background: rgba(255, 255, 255, .92);
   border-radius: 999px;
   padding: 7px 14px;
@@ -667,7 +724,7 @@ code {
   html.compact-home #games,
   html.compact-home .rooms { display: none; }
 
-  html.compact-home .hero { padding: 22px 0 0; }
+  html.compact-home .hero { padding: 12px 0 0; }
 
   /* Still the page's one h1, just no longer the whole of the first screen. */
   html.compact-home .display { font-size: clamp(28px, 8.5vw, 42px); }
@@ -691,7 +748,7 @@ code {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 16px;
   }
 
   html.compact-home .strip-item {
@@ -776,7 +833,7 @@ code {
   /* The subtitle is a second voice on a bar that is already a control. */
   html.compact-home .section-head .muted { display: none; }
 
-  html.compact-home .section-body { padding: 4px 0 26px; }
+  html.compact-home .section-body { padding: 4px 0 18px; }
 
   /* Two columns of prose at 375px is two columns of one word. */
   html.compact-home .about-grid,
@@ -944,4 +1001,266 @@ html.splash-on .splash {
   background: var(--ink);
   border-color: var(--ink);
   color: var(--paper);
+}
+
+
+/* ---------- the forest front page ----------
+   Everything below dresses the existing structure in the new ground. The markup
+   did not move: a dark page is a palette and a typeface, not a different set of
+   sections. */
+
+/* The eyebrow's separator tiles were mixed for paper. */
+.eyebrow .tile { background: rgba(244, 240, 228, .22); }
+.eyebrow .tile:nth-of-type(2) { background: var(--terracotta); }
+
+.eyebrow-tag {
+  background: rgba(244, 240, 228, .06);
+  border-color: var(--line-strong);
+  color: var(--paper);
+}
+
+.eyebrow-tag.alt { background: var(--paper); color: var(--forest); border-color: var(--paper); }
+
+.hero-note { color: var(--ink-soft); }
+
+/* ---------- the game tiles ----------
+   The one thing on the page kept light. Three cream cards on a forest ground do
+   the work the artwork used to do on paper: they are the only bright shapes
+   here, so the eye lands on them before anything else. */
+html.compact-home .strip-item {
+  background: var(--card);
+  border: 0;
+  border-radius: 20px;
+  padding: 14px 8px 12px;
+  box-shadow: 0 12px 26px -16px rgba(0, 0, 0, .7);
+  transition: transform .2s cubic-bezier(.3, 1.3, .5, 1);
+}
+
+html.compact-home .strip-item:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -16px rgba(0, 0, 0, .75); }
+html.compact-home .strip-item:active { transform: scale(.95); }
+
+/* Cream card, forest type. Without this the label is cream on cream and simply
+   is not there. */
+html.compact-home .strip-label {
+  color: var(--forest);
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+html.compact-home .strip-icon { width: 40px; height: 40px; margin: 0 auto 10px; }
+
+/* A game already finished today wears a seal rather than a change of colour:
+   the card stays bright, because it is still the way back in. */
+html.compact-home .strip-item.is-done::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--moss);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F4F0E4' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E");
+  background-size: 10px 10px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+html.compact-home .strip-item { position: relative; }
+
+/* ---------- the folded rows ----------
+   Bordered and rounded, so a shut section reads as a thing you can open rather
+   than as a rule with a word above it. */
+html.compact-home .about,
+html.compact-home .questions {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(244, 240, 228, .03);
+  margin-top: 8px;
+}
+
+html.compact-home .section-head { border-top: 0; padding: 2px 18px; }
+html.compact-home .section-head h2 { font-family: var(--serif); font-weight: 400; font-size: 21px; }
+html.compact-home .section-body { padding: 0 18px 14px; }
+html.compact-home .section-toggle::after { border-color: var(--ink-soft); }
+
+/* ---------- the sign-off ----------
+   The one slogan that survives, given a card of its own so the page ends on a
+   statement rather than trailing away. */
+.site-footer {
+  width: var(--page);
+  margin: 16px auto 0;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(160deg, var(--raise), var(--forest-2));
+  padding: 18px 18px 20px;
+  text-align: left;
+}
+
+.site-footer .footer-lead {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.06;
+  color: var(--paper);
+}
+
+/* A terracotta rule above the sign-off, which is the only place the accent is
+   used as a shape rather than as a letter. */
+.site-footer .footer-lead::before {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 2px;
+  background: var(--terracotta);
+  border-radius: 2px;
+  margin-bottom: 14px;
+}
+
+.site-footer .muted { color: var(--ink-soft); font-size: 14.5px; line-height: 1.6; max-width: 32ch; }
+
+/* ---------- sections and cards on the dark ground ---------- */
+.section-head { border-top-color: var(--line); }
+.section-head h2 { font-family: var(--serif); font-weight: 400; }
+.muted { color: var(--ink-soft); }
+
+.feature-copy h3 { font-family: var(--serif); font-weight: 400; }
+.feature-copy p { color: var(--ink-soft); }
+.feature-meta li { border-color: var(--line-strong); color: var(--ink-soft); }
+.feature-index { color: var(--ink-soft); font-family: var(--mono); letter-spacing: .15em; }
+
+.about-grid p, .about-lead p { color: var(--ink-soft); }
+.about-lead p { color: var(--paper); }
+.faq-grid h3 { font-family: var(--serif); font-weight: 400; color: var(--paper); }
+.faq-grid p { color: var(--ink-soft); }
+
+/* ---------- the results sheet ---------- */
+.sheet-card { background: var(--forest-2); border: 1px solid var(--line); }
+.sheet-head h2 { font-family: var(--serif); font-weight: 400; }
+.sheet-row { background: rgba(244, 240, 228, .04); border-color: var(--line); }
+.sheet-note, .sheet-fine, .sheet-today { color: var(--ink-soft); }
+.sheet-figure span { font-family: var(--mono); letter-spacing: .1em; }
+.sheet-close { color: var(--ink-soft); }
+
+.stat-mode-btn { border-color: var(--line-strong); color: var(--ink-soft); }
+.stat-mode-btn:hover { color: var(--paper); border-color: var(--paper); }
+.stat-mode-btn[aria-pressed="true"] { background: var(--paper); border-color: var(--paper); color: var(--forest); }
+
+
+/* ---------- the hero mark ----------
+   Big enough to be the thing you land on, and turning slowly, because a cluster
+   of tiles that never moves reads as a logo rather than as pieces. */
+html.compact-home .hero-mark {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 14px;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .45));
+  animation: sway 8s ease-in-out infinite;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+/* ---------- the day's line ----------
+   Number, state and clock on one rule. This is the part worth looking at once
+   the games are played, which is most of the time somebody opens this page. */
+.daily-strip { display: none; }
+
+@media (max-width: 860px) {
+  html.compact-home .daily-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    text-align: left;
+    margin: 16px 0 0;
+    padding: 12px 15px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: linear-gradient(155deg, rgba(244, 240, 228, .06), rgba(244, 240, 228, .02));
+  }
+
+  .strip-no {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  html.compact-home .daily-strip .hero-progress {
+    display: block;
+    margin: 5px 0 0;
+    min-height: 0;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--paper);
+  }
+
+  .strip-clock { flex: none; text-align: right; }
+
+  .strip-lbl {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .strip-time {
+    margin: 4px 0 0;
+    font-family: var(--serif);
+    font-size: 25px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--paper);
+  }
+}
+
+/* ---------- the footer line ---------- */
+footer.site-footer .muted { font-family: var(--font); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.compact-home .hero-mark { animation: none; }
+}
+
+
+/* ---------- short screens ----------
+   The forest layout carries more than the flat one did: a mark worth looking
+   at, the day's own line, and a sign-off with room around it. On a 780px phone
+   that still comes to one screen. On a 667 or a 640 it does not, so everything
+   gives back a little rather than one thing being dropped — a page missing its
+   clock on an older phone is a worse answer than a page slightly tighter. */
+@media (max-width: 860px) and (max-height: 720px) {
+  html.compact-home .hero { padding: 8px 0 0; }
+  html.compact-home .hero-mark { width: 48px; height: 48px; margin: 0 auto 10px; }
+  html.compact-home .display { font-size: clamp(26px, 7.6vw, 34px); }
+
+  html.compact-home .daily-strip { margin-top: 12px; padding: 10px 13px; border-radius: 16px; }
+  html.compact-home .daily-strip .hero-progress { font-size: 13.5px; margin-top: 3px; }
+  .strip-time { font-size: 21px; }
+
+  html.compact-home .strip { margin-top: 12px; gap: 8px; }
+  html.compact-home .strip-item { padding: 10px 6px 9px; border-radius: 16px; }
+  html.compact-home .strip-icon { width: 34px; height: 34px; margin: 0 auto 8px; }
+  html.compact-home .strip-label { font-size: 15px; }
+
+  html.compact-home .about,
+  html.compact-home .questions { margin-top: 6px; border-radius: 15px; }
+  html.compact-home .section-head { padding: 0 15px; }
+  html.compact-home .section-head h2 { font-size: 18px; }
+
+  .site-footer { margin-top: 8px; padding: 13px 16px 12px; border-radius: 18px; }
+  .site-footer .footer-lead { font-size: 23px; margin-bottom: 7px; }
+  .site-footer .footer-lead::before { margin-bottom: 10px; }
+  .site-footer .muted { font-size: 13px; }
 }

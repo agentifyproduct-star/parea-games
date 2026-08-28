@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Parea">
+  <!-- The mark for a dark ground: the same five tiles, cream instead of ink, so
+       four of them do not disappear into the forest. Kept as a second file
+       rather than recoloured in CSS, because an <img> cannot be styled and an
+       inline SVG would be repeated on every page that shows it. -->
+  <g fill="#f4f0e4">
+    <rect x="4"  y="30" width="27" height="27" rx="7" transform="rotate(-13 17.5 43.5)" />
+    <rect x="30" y="8"  width="27" height="27" rx="7" transform="rotate(7 43.5 21.5)" />
+    <rect x="17" y="60" width="27" height="27" rx="7" transform="rotate(9 30.5 73.5)" />
+    <rect x="45" y="54" width="27" height="27" rx="7" transform="rotate(-6 58.5 67.5)" />
+  </g>
+  <rect x="60" y="20" width="27" height="27" rx="7" fill="#c2562c" transform="rotate(-9 73.5 33.5)" />
+</svg>

@@ -15,6 +15,33 @@
    point the day's answer has to come from the server, the way rooms already
    do it.*
 
+## Fonts, and whether any need buying
+
+**Nothing needs buying.** Checked against Google Fonts metadata on 27 Aug 2026,
+all three families the front page uses are under the SIL Open Font License:
+
+| family | designer | licence |
+|---|---|---|
+| Instrument Serif | Rodrigo Fuenzalida | OFL |
+| Instrument Sans | Rodrigo Fuenzalida | OFL |
+| DM Mono | Colophon Foundry | OFL |
+
+OFL allows commercial use, embedding, self-hosting and modification. The one
+obligation it does place on us is that the licence travels with the fonts, so
+the three `OFL-*.txt` files sit beside the woff2s in `assets/fonts/` and must
+not be deleted as clutter. It also forbids selling the fonts on their own,
+which is not something we would ever be doing.
+
+The files are self-hosted rather than pulled from Google, so there is no
+third-party request on the front page and no round trip before the wordmark can
+paint. 112 KB for five faces: Instrument Sans is one variable file covering 400
+to 600, Instrument Serif is roman and italic, DM Mono is 400 and 500.
+
+**If a paid face is ever wanted**, the thing to check before committing is the
+web licence model: most foundries price web use by monthly pageviews and forbid
+self-hosting outside their CDN, which would put a third-party request back on
+the front page and undo the reason these were self-hosted in the first place.
+
 ## Nice — when there is time
 
 2. **Trim the Shabda lexicon.** `words-6.js` is 103 KB raw (45 KB compressed),
