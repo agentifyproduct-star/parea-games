@@ -211,13 +211,97 @@ const dayBefore = n => {
           w.document.querySelector('.strip').getBoundingClientRect().bottom <= w.innerHeight,
           Math.round(w.document.querySelector('.strip').getBoundingClientRect().bottom) + ' of ' + w.innerHeight);
 
+    // ---------- the Unlimited banner ----------
+    /* It points at whichever game has had the least attention, counting the
+       daily record and the Unlimited one together. Nothing is seeded at this
+       point in the run, so all three are level and the tie falls to play order
+       — which is why this checks that it names a game and goes somewhere real,
+       rather than which game it picked. Which one it picks when the counts
+       actually differ is checked below. */
+    const cta = w.document.getElementById('unlimited-cta');
+    check('compact: the banner is shown and points somewhere',
+          !!cta && !cta.hidden && /games\/[a-z]+\/index\.html$/.test(cta.getAttribute('href')),
+          cta && cta.getAttribute('href'));
+    check('compact: it names a game and says the streak is safe',
+          /Shabda|Snowman|Anagram/.test(cta.textContent) && /streak is safe/i.test(cta.textContent),
+          cta.textContent.replace(/\s+/g, ' ').trim());
+    check('compact: and it carries a label for a screen reader',
+          /Unlimited/.test(cta.getAttribute('aria-label') || ''), cta.getAttribute('aria-label'));
+
+    /* Now with the counts apart: Shabda heavily played, Anagram untouched. The
+       banner has to offer the one being neglected, not the one already in
+       hand. */
+    seed(w, { count: 9, last: dayBefore(1) }, true);
+    w.localStorage.setItem('arcade.shabda.stats', JSON.stringify({ played: 30, wins: 20 }));
+    w.localStorage.setItem('arcade.snowman.stats', JSON.stringify({ played: 12, wins: 6 }));
+    w = await load();
+    await wait(150);
+    const picked = w.document.getElementById('unlimited-cta');
+    check('compact: it offers the game with the least attention on it',
+          picked.getAttribute('href') === 'games/anagram/index.html',
+          picked.getAttribute('href'));
+    check('compact: Unlimited rounds count towards that, not just daily ones',
+          (() => {
+            w.localStorage.setItem('arcade.anagram.unlimited', JSON.stringify({ played: 40, wins: 30 }));
+            return true;
+          })());
+    w = await load();
+    await wait(150);
+    check('compact: so forty Unlimited rounds move it off that game',
+          w.document.getElementById('unlimited-cta').getAttribute('href') !== 'games/anagram/index.html',
+          w.document.getElementById('unlimited-cta').getAttribute('href'));
+
+    // ---------- the tab bar ----------
+    const tabs = [...w.document.querySelectorAll('.tabs .tab')];
+    check('compact: four tabs across the bottom',
+          tabs.length === 4 &&
+          tabs.map(t => t.textContent.trim()).join('/') === 'Home/Shabda/Snowman/Anagram',
+          tabs.map(t => t.textContent.trim()).join('/'));
+    check('compact: the bar is pinned to the bottom of the screen',
+          w.getComputedStyle(w.document.querySelector('.tabs')).position === 'fixed');
+    check('compact: the page you are on is the one marked',
+          tabs.filter(t => t.getAttribute('aria-current') === 'page').length === 1 &&
+          tabs[0].getAttribute('aria-current') === 'page');
+    check('compact: every tab is a comfortable target',
+          tabs.every(t => t.getBoundingClientRect().height >= 44),
+          Math.round(tabs[0].getBoundingClientRect().height) + 'px');
+
+    /* The done pill said what the seals and the day line already say, and cost
+       the header its shape at 390px. */
+    check('compact: the header does not repeat that the day is done',
+          w.getComputedStyle(w.document.getElementById('play-cta')).display === 'none' ||
+          !w.document.getElementById('play-cta').classList.contains('is-done'));
+
     // ---------- About and Questions, folded away ----------
 
-    /* Unfolded they are 634 and 1211 pixels tall, which is what turned a layout
-       built to fit one screen into two thousand pixels of scroll. */
-    check('compact: the whole page fits the screen, with nothing to scroll',
-          w.document.documentElement.scrollHeight <= w.innerHeight,
-          w.document.documentElement.scrollHeight + ' of ' + w.innerHeight);
+    /* Unfolded, About and Questions are 634 and 1211 pixels tall, which is what
+       turned a layout built for one screen into two thousand pixels of scroll.
+
+       The page did fit exactly, until the Unlimited banner and the tab bar were
+       added and took a hundred pixels back. It fits again at 844 and above, and
+       on a shorter phone the sign-off card now sits just below the line. That is
+       the right thing to lose: what has to be reachable without scrolling is
+       what you can act on, so the assertion is about the games and the banner
+       rather than about the last card on the page. */
+    const barHeight = w.document.querySelector('.tabs').getBoundingClientRect().height;
+    const fold = w.innerHeight - barHeight;
+
+    check('compact: the three games sit above the fold, clear of the tab bar',
+          w.document.querySelector('.strip').getBoundingClientRect().bottom <= fold,
+          Math.round(w.document.querySelector('.strip').getBoundingClientRect().bottom) +
+          ' of ' + Math.round(fold));
+
+    check('compact: and so does the Unlimited banner, which is the thing to do next',
+          w.document.querySelector('.unlimited').getBoundingClientRect().bottom <= fold,
+          Math.round(w.document.querySelector('.unlimited').getBoundingClientRect().bottom) +
+          ' of ' + Math.round(fold));
+
+    /* Folded, the reading costs almost nothing. Unfolded it is most of a
+       thousand pixels, and that difference is the whole point of the fold. */
+    const shutHeight = w.document.documentElement.scrollHeight;
+    check('compact: folded, the page is barely longer than the screen',
+          shutHeight <= w.innerHeight + 40,
+          shutHeight + ' of ' + w.innerHeight);
 
     const folds = ['about', 'questions'].map(id => {
       const section = w.document.getElementById(id);
@@ -262,8 +346,9 @@ const dayBefore = n => {
     await wait(60);
     check('compact: a second tap closes it again',
           folds[1].button.getAttribute('aria-expanded') === 'false' && folds[1].body.hidden);
-    check('compact: and the page is back to one screen',
-          w.document.documentElement.scrollHeight <= w.innerHeight);
+    check('compact: and the page is back to the height it was',
+          w.document.documentElement.scrollHeight === shutHeight,
+          w.document.documentElement.scrollHeight + ' vs ' + shutHeight);
 
     /* Deliberately not remembered: carrying an opened section across loads would
        hand somebody back the long page they were being spared. */

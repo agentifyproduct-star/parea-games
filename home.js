@@ -83,6 +83,37 @@
       : `Nothing played yet today — ${upcoming.title} is first up`;
   }
 
+  /* ---------- somewhere to go once today is spent ----------
+
+     The banner points at whichever game has had the least of the player's
+     attention, counting the daily record and the Unlimited one together: a game
+     played twenty times in Unlimited is not being neglected however few days it
+     has been opened.
+
+     Ties break on play order, which puts Shabda first. That is arbitrary, and
+     it is the honest kind of arbitrary — with nothing to separate three games
+     there is nothing to be clever about. */
+
+  const banner = document.getElementById('unlimited-cta');
+  if (banner) {
+    const attention = TODAY.GAMES.map(game => ({
+      game,
+      rounds: TODAY.statsFor(game.id).played + TODAY.unlimitedFor(game.id).played
+    }));
+
+    const least = attention.reduce((low, entry) => (entry.rounds < low.rounds ? entry : low));
+
+    banner.href = least.game.path + 'index.html';
+    document.getElementById('unlimited-icon').src =
+      'assets/art/icon-' + least.game.id + '.svg';
+    document.getElementById('unlimited-line').textContent = least.rounds
+      ? `More ${least.game.title}, as many as you like`
+      : `Try ${least.game.title}, as many as you like`;
+    banner.setAttribute('aria-label',
+      `Play ${least.game.title} in Unlimited. Your streak is safe here.`);
+    banner.hidden = false;
+  }
+
   /* ---------- the record, across all three ---------- */
 
   const sheet = document.getElementById('stats-modal');

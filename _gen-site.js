@@ -154,9 +154,33 @@ function navMarkup() {
   /* The statistics button is written here but starts hidden: it opens a dialog
      that only home.js can fill, so it must not exist for anyone that script
      never reaches. */
-  const stats = '    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Your results</button>';
+  const stats = '    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Results</button>';
 
   return `    <nav class="site-nav">\n${links}\n    </nav>\n${stats}\n${button}`;
+}
+
+/* The bar across the bottom of a phone. Written once here and dropped into the
+   front page and all three games, because four hand-kept copies of the same
+   four links is three copies too many.
+
+   `here` is the page it is being written for, which gets marked current and
+   loses its own link: a tab that reloads the page you are on is a tab that does
+   nothing. `depth` is how far that page sits from the root, since these are
+   relative paths and a game is two levels down. */
+function tabsMarkup(here, depth) {
+  const up = '../'.repeat(depth);
+  const tabs = [{ id: 'home', title: 'Home', icon: 'assets/brand/mark-cream.svg', url: 'index.html' }]
+    .concat(live.map(game => ({ id: game.id, title: game.title, icon: game.icon, url: game.url })));
+
+  const rows = tabs.map(tab => {
+    const current = tab.id === here;
+    const attrs = current ? ' aria-current="page"' : '';
+    return `      <a class="tab${current ? ' is-here' : ''}" href="${up}${tab.url}"${attrs}>` +
+      `<img src="${up}${tab.icon}" alt="" />` +
+      `<span>${esc(tab.title)}</span></a>`;
+  }).join('\n');
+
+  return `    <nav class="tabs" aria-label="Games">\n${rows}\n    </nav>`;
 }
 
 function heroNoteMarkup() {
@@ -270,6 +294,7 @@ function buildHome() {
     '  <script src="assets/today.js"></script>',
     '  <script src="home.js"></script>'
   ].join('\n'));
+  html = block(html, 'tabs', tabsMarkup('home', 0), '</body>');
   html = block(html, 'analytics', analyticsMarkup(), '</body>');
 
   put(file, stampAssets(html, file));
@@ -319,6 +344,7 @@ function buildGame(game) {
     jsonLd(gameStructuredData(game))
   ].join('\n'), '</head>');
 
+  html = block(html, 'tabs', tabsMarkup(game.id, 2), '</body>');
   html = block(html, 'analytics', analyticsMarkup(), '</body>');
 
   put(file, stampAssets(html, file));

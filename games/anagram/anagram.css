@@ -654,3 +654,52 @@ main {
 }
 
 .stats-scope[hidden] { display: none; }
+
+
+/* ---------- the bar across the bottom ----------
+   The same four tabs the front page carries, so a phone can move between the
+   games without going back through the front page first. */
+.tabs { display: none; }
+
+@media (max-width: 860px) {
+  .tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    padding: 7px 6px calc(env(safe-area-inset-bottom) + 7px);
+    background: rgba(26, 36, 30, .94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(244, 240, 228, .12);
+  }
+
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 2px 4px;
+    min-height: 48px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #93a497;
+    font-size: 10.5px;
+    font-weight: 500;
+    transition: color .15s ease, background .15s ease;
+  }
+
+  .tab img { width: 22px; height: 22px; opacity: .55; transition: opacity .15s ease; }
+  .tab.is-here { color: #f4f0e4; background: rgba(244, 240, 228, .07); }
+  .tab.is-here img { opacity: 1; }
+  .tab:active { background: rgba(244, 240, 228, .12); }
+
+  /* The games fill the screen, so the bar has to be given its room rather than
+     laid over the keyboard's last row. */
+  body { padding-bottom: 68px; }
+  .keyboard { margin-bottom: 2px; }
+}

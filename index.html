@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
-<link rel="stylesheet" href="styles.css?v=8291222e" />
+<link rel="stylesheet" href="styles.css?v=bc2078a9" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -241,7 +241,7 @@
       <a href="#about">About</a>
       <a href="#questions">Questions</a>
     </nav>
-    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Your results</button>
+    <button class="btn btn-outline" id="btn-stats" type="button" hidden>Results</button>
     <a class="btn btn-ink" id="play-cta" href="games/shabda/index.html">Play today</a>
 <!-- nav:end -->
   </header>
@@ -295,6 +295,20 @@
         <a class="strip-item" data-game="anagram" href="games/anagram/index.html" aria-label="Play Anagram"><img class="strip-art" src="assets/art/anagram.svg" alt="Scattered letter tiles settling into a solved word" /><img class="strip-icon" src="assets/art/icon-anagram.svg" alt="" /><span class="strip-label">Anagram</span></a>
 <!-- strip:end -->
       </div>
+
+      <!-- Somewhere to go once today is spent. Which game it offers is decided
+           by home.js from how much of each has actually been played, so it
+           points at the one being neglected rather than the one we would like
+           pushed. Hidden until it has a game to name. -->
+      <a class="unlimited" id="unlimited-cta" href="games/shabda/index.html" hidden>
+        <img class="unlimited-icon" id="unlimited-icon" src="assets/art/icon-shabda.svg" alt="" />
+        <span class="unlimited-copy">
+          <span class="unlimited-kicker">Unlimited</span>
+          <span class="unlimited-line" id="unlimited-line"></span>
+          <span class="unlimited-note">Your streak is safe here</span>
+        </span>
+        <span class="unlimited-go" aria-hidden="true">&rarr;</span>
+      </a>
     </section>
 
     <section id="games" class="games">
@@ -409,7 +423,7 @@
   <div id="stats-modal" class="sheet" hidden>
     <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
       <div class="sheet-head">
-        <h2 id="sheet-title">Your results</h2>
+        <h2 id="sheet-title">Results</h2>
         <button class="sheet-close" data-close aria-label="Close">&times;</button>
       </div>
       <div class="stat-modes" role="group" aria-label="Which record to show">
@@ -435,7 +449,15 @@
   <script src="splash.js?v=b4d639c1"></script>
   <script src="assets/daily.js?v=cb789ce2"></script>
   <script src="assets/today.js?v=c5ebbbe0"></script>
-  <script src="home.js?v=fa3f4063"></script>
+  <script src="home.js?v=fc20ec80"></script>
 <!-- home:end -->
+<!-- tabs:start -->
+    <nav class="tabs" aria-label="Games">
+      <a class="tab is-here" href="index.html" aria-current="page"><img src="assets/brand/mark-cream.svg" alt="" /><span>Home</span></a>
+      <a class="tab" href="games/shabda/index.html"><img src="assets/art/icon-shabda.svg" alt="" /><span>Shabda</span></a>
+      <a class="tab" href="games/snowman/index.html"><img src="assets/art/icon-snowman.svg" alt="" /><span>Snowman</span></a>
+      <a class="tab" href="games/anagram/index.html"><img src="assets/art/icon-anagram.svg" alt="" /><span>Anagram</span></a>
+    </nav>
+<!-- tabs:end -->
 </body>
 </html>
