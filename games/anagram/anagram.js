@@ -22,6 +22,10 @@ const STORE_KEY = 'arcade.anagram.v1';
    never written during an unlimited round and should not start being. */
 const STORE_USED = 'arcade.anagram.used';
 
+/* And what it made of them. Its own key, because the save above is never
+   written during an unlimited round and should not start being. */
+const STORE_UNLIMITED = 'arcade.anagram.unlimited';
+
 /* The day is one word. This is kept as a named slot rather than dissolved into
    the code because the board, the progress record and the distribution all key
    off it, and a bare string threaded through thirty call sites is harder to
@@ -133,6 +137,43 @@ function migrateFromPairs(parsed) {
   save.stats.distribution = Object.assign(blankDistribution(), (old.distribution || {}).word1);
   save.progress = null;
   return save;
+}
+
+/* A run is consecutive wins and nothing else. Unlimited has no day boundary, so
+   a streak there would count free time rather than days returned to. */
+function blankRun() {
+  return { played: 0, wins: 0, run: 0, best: 0, distribution: blankDistribution() };
+}
+
+function loadRun() {
+  if (!storage) return blankRun();
+  try {
+    const raw = JSON.parse(storage.getItem(STORE_UNLIMITED) || 'null');
+    const r = Object.assign(blankRun(), raw);
+    r.distribution = Object.assign(blankDistribution(), (raw || {}).distribution);
+    return r;
+  } catch {
+    return blankRun();
+  }
+}
+
+let unlimited = loadRun();
+
+function recordUnlimited(won, attemptsUsed) {
+  unlimited.played += 1;
+  if (won) {
+    unlimited.wins += 1;
+    unlimited.run += 1;
+    unlimited.best = Math.max(unlimited.best, unlimited.run);
+    unlimited.distribution[attemptsUsed] = (unlimited.distribution[attemptsUsed] || 0) + 1;
+  } else {
+    unlimited.run = 0;
+    unlimited.distribution.failed += 1;
+  }
+  if (!storage) return;
+  try {
+    storage.setItem(STORE_UNLIMITED, JSON.stringify(unlimited));
+  } catch { /* private mode: Unlimited simply forgets */ }
 }
 
 function persist() {
@@ -547,7 +588,9 @@ function resolveSlot(solved) {
 
   if (solved) noteSolved();
 
-  if (!practice) {
+  if (practice) {
+    recordUnlimited(solved, progress.attemptsUsed);
+  } else {
     save.stats.lastCompletedDate = state.puzzleDate;
     if (solved) save.stats.daysSolved += 1;
   }
@@ -706,11 +749,48 @@ function outcomeText() {
   return `${p.attemptsUsed} attempt${p.attemptsUsed === 1 ? '' : 's'}${p.hintUsed ? ', hint' : ''}`;
 }
 
+/* Which record the panel is showing. Opens on the day, always: the daily
+   record is the one with something at stake. */
+let statsMode = 'daily';
+
+/* Streak and run are the same arithmetic asked of different things. A streak
+   counts days returned to; a run counts wins in a row, which is all Unlimited
+   can honestly measure without a day boundary to hang on. */
+function markStatsModes() {
+  document.querySelectorAll('.stat-mode-btn').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.stat === statsMode ? 'true' : 'false'));
+
+  const daily = statsMode === 'daily';
+  el('stats-streak-lbl').textContent = daily ? 'Streak' : 'Current run';
+  el('stats-max-lbl').textContent = daily ? 'Max streak' : 'Best run';
+  el('stats-fine-daily').hidden = !daily;
+  el('stats-fine-unlimited').hidden = daily;
+}
+
+function fillStats() {
+  markStatsModes();
+  const daily = statsMode === 'daily';
+
+  el('stats-played').textContent = daily ? save.stats.daysPlayed : unlimited.played;
+  el('stats-solved').textContent = daily ? save.stats.daysSolved : unlimited.wins;
+  el('stats-streak').textContent = daily ? save.stats.currentStreak : unlimited.run;
+  el('stats-max').textContent = daily ? save.stats.maxStreak : unlimited.best;
+  renderDistribution();
+}
+
+document.querySelectorAll('.stat-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.stat === statsMode) return;
+    statsMode = btn.dataset.stat;
+    fillStats();
+  });
+});
+
 function renderDistribution() {
   const wrap = el('dist');
   wrap.innerHTML = '';
 
-  const bucket = save.stats.distribution;
+  const bucket = statsMode === 'daily' ? save.stats.distribution : unlimited.distribution;
   const keys = ['1', '2', '3', '4', '5', 'failed'];
   const max = Math.max(1, ...keys.map(k => bucket[k] || 0));
   const todayAttempts = progressFor().solved ? String(progressFor().attemptsUsed) : 'failed';
@@ -724,7 +804,10 @@ function renderDistribution() {
     label.textContent = key === 'failed' ? 'X' : key;
 
     const bar = document.createElement('div');
-    bar.className = 'dist-bar' + (key === todayAttempts ? ' current' : '');
+    /* Only mark the bar the round just played landed in, and only on the tab it
+       was actually recorded against. */
+    const mine = (statsMode === 'daily') !== !!practice;
+    bar.className = 'dist-bar' + (mine && key === todayAttempts ? ' current' : '');
     bar.style.width = `${Math.max(8, ((bucket[key] || 0) / max) * 100)}%`;
     bar.textContent = String(bucket[key] || 0);
 
@@ -1051,11 +1134,7 @@ document.querySelectorAll('.modal').forEach(modal => {
 
 el('btn-help').addEventListener('click', () => { el('help-modal').hidden = false; });
 el('btn-stats').addEventListener('click', () => {
-  el('stats-played').textContent = save.stats.daysPlayed;
-  el('stats-solved').textContent = save.stats.daysSolved;
-  el('stats-streak').textContent = save.stats.currentStreak;
-  el('stats-max').textContent = save.stats.maxStreak;
-  renderDistribution();
+  fillStats();
   el('stats-modal').hidden = false;
 });
 
@@ -1074,7 +1153,8 @@ window.ANAGRAM = {
   wordFor, scrambleFor, definitionFor, progressFor, puzzleFor, remainingDays,
   todayKey, dayGap, nextRolloverMs, checkRollover, loadSave,
   notePlayed, noteSolved, blankProgress, blankStats, persist, migrateFromPairs,
-  STORE_USED, loadUsed
+  STORE_USED, loadUsed, STORE_UNLIMITED, fillStats,
+  statsMode: () => statsMode, setStatsMode: m => { statsMode = m; fillStats(); }
 };
 
 /* ---------------- boot ---------------- */

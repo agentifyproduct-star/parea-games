@@ -603,3 +603,38 @@ body { display: flex; flex-direction: column; }
 }
 
 .next-up b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ---------- the statistics toggle ----------
+   R7: the same Today / Unlimited pair the games carry, on the record itself.
+   Same shape as the game's own mode buttons, half the size, because this one
+   sits inside a panel rather than over a board. */
+.stat-modes {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+
+.stat-mode-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  padding: 6px 15px;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.stat-mode-btn:hover { color: var(--text); }
+
+.stat-mode-btn[aria-pressed="true"] {
+  background: var(--accent, var(--correct, #2f9e8f));
+  border-color: var(--accent, var(--correct, #2f9e8f));
+  color: var(--on-colour, #fff);
+}
+
+.stats-scope[hidden] { display: none; }

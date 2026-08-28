@@ -118,6 +118,19 @@ document.getElementById('f').addEventListener('load', async () => {
   w.confirm = () => true;
 
   const btn = mode => d.querySelector(`.mode-btn[data-mode="${mode}"]`);
+
+  /* A real word of a given length that is not the answer, so a losing round can
+     be played out without the guess being refused. */
+  function wrongOfLength(w, len, i) {
+    const pool = w.WORDS.answers(len);
+    const answer = w.state.answer;
+    for (let k = 0; k < pool.length; k++) {
+      const word = pool[(i * 37 + k) % pool.length];
+      if (word !== answer) return word;
+    }
+    return answer;
+  }
+
     check('opens on today, not on a fixed board',
           w.state.daily === true && tiles(d, 0).length === w.WORDS.dailyLength(),
           tiles(d, 0).length + ' letters');
@@ -334,6 +347,98 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the record is the same one on every board',
           d.getElementById('st-played').textContent === '1',
           'played=' + d.getElementById('st-played').textContent);
+    d.getElementById('stats-modal').hidden = true;
+
+
+    // ---------- R7: the record has two tabs ----------
+    /* Everything Unlimited does is written somewhere the daily record cannot be
+       reached from, which is the promise the mode is sold on. */
+    /* Measured as a change rather than an absolute: rounds earlier in this
+       suite have already been played in Unlimited, and clearing the key would
+       not clear what the page is holding in memory anyway. */
+    const before = JSON.parse(w.localStorage.getItem('arcade.shabda.unlimited') || 'null')
+                   || { played: 0, wins: 0 };
+    const dailyBefore = w.localStorage.getItem('arcade.shabda.stats');
+
+    btn('unlimited').click();
+    await wait(150);
+    for (const shouldWin of [true, true, false]) {
+      d.getElementById('btn-new').click();
+      await wait(60);
+      const answer = w.state.answer;
+      if (shouldWin) {
+        type(w, answer);
+        press(w, 'Enter');
+      } else {
+        for (let i = 0; i < 6; i++) {
+          type(w, wrongOfLength(w, answer.length, i));
+          press(w, 'Enter');
+          await wait(answer.length * 300 + 400);
+        }
+      }
+      await wait(answer.length * 300 + 900);
+    }
+
+    const run = JSON.parse(w.localStorage.getItem('arcade.shabda.unlimited') || 'null');
+    check('Unlimited keeps a record of its own',
+          !!run && run.played === before.played + 3 && run.wins === before.wins + 2,
+          JSON.stringify(run) + ' from ' + JSON.stringify(before));
+    check('a run counts wins in a row, and a loss ends it',
+          run.run === 0 && run.best >= 2, 'run ' + run.run + ', best ' + run.best);
+    check('and the daily record is untouched by any of it',
+          w.localStorage.getItem('arcade.shabda.stats') === dailyBefore);
+
+    d.getElementById('btn-stats').click();
+    await wait(120);
+    const tab = m => d.querySelector(`.stat-mode-btn[data-stat="${m}"]`);
+    check('the record offers Today and Unlimited', !!tab('daily') && !!tab('unlimited'));
+    check('and opens on Today, which is the one with something at stake',
+          tab('daily').getAttribute('aria-pressed') === 'true');
+    check('Today still says streak', d.getElementById('st-streak-lbl').textContent === 'Current streak');
+
+    tab('unlimited').click();
+    await wait(80);
+    check('the Unlimited tab shows the Unlimited numbers, not the daily ones',
+          d.getElementById('st-played').textContent === String(run.played) &&
+          d.getElementById('st-win').textContent === String(Math.round(run.wins / run.played * 100)) &&
+          d.getElementById('st-streak').textContent === String(run.run) &&
+          d.getElementById('st-max').textContent === String(run.best),
+          [d.getElementById('st-played').textContent, d.getElementById('st-win').textContent,
+           d.getElementById('st-streak').textContent, d.getElementById('st-max').textContent].join('/'));
+    check('run and best replace streak and max',
+          d.getElementById('st-streak-lbl').textContent === 'Current run' &&
+          d.getElementById('st-max-lbl').textContent === 'Best run');
+
+    /* R7 is explicit: the Unlimited tab never shows streak language. Checked on
+       what is actually on screen, since the daily line is still in the markup. */
+    const onScreen = () => [
+      d.getElementById('st-streak-lbl').textContent,
+      d.getElementById('st-max-lbl').textContent,
+      d.getElementById('st-scope-daily').hidden ? '' : d.getElementById('st-scope-daily').textContent,
+      d.getElementById('st-scope-unlimited').hidden ? '' : d.getElementById('st-scope-unlimited').textContent
+    ].join(' ');
+    check('and never uses the word streak', !/streak/i.test(onScreen()), onScreen().trim());
+
+    check('the distribution pools every board, with no length filter',
+          d.querySelectorAll('.dist-row').length === 6,
+          d.querySelectorAll('.dist-row').length + ' rows');
+
+    tab('daily').click();
+    await wait(80);
+    check('switching back brings the daily record with it',
+          d.getElementById('st-streak-lbl').textContent === 'Current streak' &&
+          !d.getElementById('st-scope-daily').hidden);
+
+    /* Every figure is a number on both tabs, never an empty cell: a blank reads
+       as broken where a zero reads as not yet. The untouched case is checked on
+       the homepage, where a game nobody has opened is the ordinary state. */
+    tab('unlimited').click();
+    await wait(80);
+    check('every figure is a number, never a blank cell',
+          ['st-played', 'st-win', 'st-streak', 'st-max']
+            .every(id => /^\d+$/.test(d.getElementById(id).textContent)),
+          ['st-played', 'st-win', 'st-streak', 'st-max']
+            .map(id => d.getElementById(id).textContent).join('/'));
     d.getElementById('stats-modal').hidden = true;
 
   } catch (err) {

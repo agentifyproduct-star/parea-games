@@ -21,6 +21,9 @@ const KEY_LAYOUT = [
    player starts again from nothing. */
 const STORE_STATS = 'arcade.shabda.stats';
 const STORE_DAILY = 'arcade.shabda.daily';
+/* Unlimited keeps its own record, in its own key. Nothing it does can reach
+   the daily one above, which is the whole promise the mode is sold on. */
+const STORE_UNLIMITED = 'arcade.shabda.unlimited';
 const STORE_DICT = 'arcade.shabda.dict';
 const STORE_HELP = 'arcade.shabda.seenHelp';
 
@@ -75,6 +78,33 @@ function loadStats() {
 }
 
 let stats = loadStats();
+
+/* A run is consecutive wins and nothing else. Unlimited has no day boundary, so
+   a streak there would count free time rather than days returned to. */
+function blankRun() {
+  return { played: 0, wins: 0, run: 0, best: 0, dist: [0, 0, 0, 0, 0, 0] };
+}
+
+function loadRun() {
+  const r = Object.assign(blankRun(), loadJSON(STORE_UNLIMITED, {}));
+  if (!Array.isArray(r.dist) || r.dist.length !== ROWS) r.dist = [0, 0, 0, 0, 0, 0];
+  return r;
+}
+
+let unlimited = loadRun();
+
+function recordUnlimited(won, guessCount) {
+  unlimited.played += 1;
+  if (won) {
+    unlimited.wins += 1;
+    unlimited.run += 1;
+    unlimited.best = Math.max(unlimited.best, unlimited.run);
+    unlimited.dist[guessCount - 1] += 1;
+  } else {
+    unlimited.run = 0;
+  }
+  saveJSON(STORE_UNLIMITED, unlimited);
+}
 
 /* The daily record. Never called for an unlimited round. */
 function recordResult(won, guessCount) {
@@ -421,6 +451,8 @@ function finishTurn(rowIndex, guess) {
   if (state.status !== 'playing' && state.daily) {
     recordResult(state.status === 'won', state.guesses.length);
     TODAY.set('shabda', state.status);
+  } else if (state.status !== 'playing') {
+    recordUnlimited(state.status === 'won', state.guesses.length);
   }
 
   saveDaily();
@@ -487,24 +519,56 @@ document.getElementById('btn-play-again').addEventListener('click', () => {
   startGame({ daily: false });
 });
 
+/* Which record the panel is showing. Opens on the day, always: the daily
+   record is the one with something at stake. */
+let statsMode = 'daily';
+
+/* Streak and run are the same arithmetic asked of different things, so the two
+   records hold the same shape and only the words change. A streak counts days
+   returned to; a run counts wins in a row, which is all Unlimited can honestly
+   measure without a day boundary to hang on. */
+function markStatsModes() {
+  document.querySelectorAll('.stat-mode-btn').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.stat === statsMode ? 'true' : 'false'));
+
+  const daily = statsMode === 'daily';
+  document.getElementById('st-scope-daily').hidden = !daily;
+  document.getElementById('st-scope-unlimited').hidden = daily;
+  document.getElementById('st-streak-lbl').textContent = daily ? 'Current streak' : 'Current run';
+  document.getElementById('st-max-lbl').textContent = daily ? 'Max streak' : 'Best run';
+}
+
+document.querySelectorAll('.stat-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.stat === statsMode) return;
+    statsMode = btn.dataset.stat;
+    openStats();
+  });
+});
+
 function openStats() {
   TODAY.offerNext('shabda', {
     container: document.getElementById('next-game'),
     link: document.getElementById('next-game-link'),
     note: document.getElementById('next-game-note')
   });
-  document.getElementById('st-len').textContent = String(state.len);
-  document.getElementById('st-played').textContent = stats.played;
-  document.getElementById('st-win').textContent =
-    stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
-  document.getElementById('st-streak').textContent = stats.streak;
-  document.getElementById('st-max').textContent = stats.maxStreak;
 
-  const max = Math.max(1, ...stats.dist);
+  markStatsModes();
+  const daily = statsMode === 'daily';
+  const shown = daily ? stats : unlimited;
+
+  document.getElementById('st-len').textContent = String(state.len);
+  document.getElementById('st-played').textContent = shown.played;
+  document.getElementById('st-win').textContent =
+    shown.played ? Math.round((shown.wins / shown.played) * 100) : 0;
+  document.getElementById('st-streak').textContent = daily ? shown.streak : shown.run;
+  document.getElementById('st-max').textContent = daily ? shown.maxStreak : shown.best;
+
+  const max = Math.max(1, ...shown.dist);
   const dist = document.getElementById('dist');
   dist.innerHTML = '';
 
-  stats.dist.forEach((count, i) => {
+  shown.dist.forEach((count, i) => {
     const row = document.createElement('div');
     row.className = 'dist-row';
 
@@ -516,13 +580,18 @@ function openStats() {
     bar.className = 'dist-bar';
     bar.style.width = `${Math.max(7, (count / max) * 100)}%`;
     bar.textContent = String(count);
-    if (state.status === 'won' && state.guesses.length === i + 1) bar.classList.add('current');
+    /* Only mark the bar the round just played landed in, and only on the tab
+       that round was actually recorded against. */
+    if (state.status === 'won' && state.guesses.length === i + 1 && daily === state.daily) {
+      bar.classList.add('current');
+    }
 
     row.append(key, bar);
     dist.appendChild(row);
   });
 
   document.getElementById('btn-share').disabled = state.status === 'playing';
+  window.statsMode = statsMode;      // the harness drives the real panel
   openModal('stats-modal');
 }
 

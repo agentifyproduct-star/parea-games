@@ -84,21 +84,41 @@
     return box;
   }
 
+  /* Which record the sheet is showing. Opens on the day, always. */
+  let statsMode = 'daily';
+
+  document.querySelectorAll('.stat-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.stat === statsMode) return;
+      statsMode = btn.dataset.stat;
+      fill();
+    });
+  });
+
+  /* One row a game, and no total. Plays could be added up; a win percentage and
+     a run cannot, because the three games do not ask the same thing of you and
+     an average across them would describe nobody. */
   function fill() {
-    const record = TODAY.record();
+    const daily = statsMode === 'daily';
+    const record = daily ? TODAY.record() : TODAY.unlimitedRecord();
     const { done, total } = TODAY.counts();
     const played = record.reduce((sum, game) => sum + game.played, 0);
 
-    document.getElementById('sheet-note').textContent = played
-      ? `${done} of ${total} done today.`
-      : 'Nothing played yet — every game keeps its own streak.';
+    document.querySelectorAll('.stat-mode-btn').forEach(b =>
+      b.setAttribute('aria-pressed', b.dataset.stat === statsMode ? 'true' : 'false'));
+
+    document.getElementById('sheet-note').textContent = daily
+      ? (played ? `${done} of ${total} done today.`
+                : 'Nothing played yet — every game keeps its own streak.')
+      : (played ? 'Every Unlimited word you have played. Your daily records are untouched.'
+                : 'No Unlimited words yet. Nothing played there is counted against you.');
 
     const rows = document.getElementById('sheet-rows');
     rows.innerHTML = '';
 
     record.forEach(game => {
       const row = document.createElement('a');
-      row.className = 'sheet-row' + (game.finished ? ' is-done' : '');
+      row.className = 'sheet-row' + (daily && game.finished ? ' is-done' : '');
       row.href = game.path + 'index.html';
 
       const name = document.createElement('span');
@@ -107,14 +127,22 @@
 
       const today = document.createElement('span');
       today.className = 'sheet-today';
-      today.textContent = TODAY_LABELS[game.status] || TODAY_LABELS.unplayed;
+      today.textContent = daily
+        ? (TODAY_LABELS[game.status] || TODAY_LABELS.unplayed)
+        : (game.played ? `${game.played} played` : 'None yet');
 
+      /* Abbreviated because four columns and a game name have to fit 380px.
+         Every cell carries something on both tabs: a game nobody has played
+         reads as zeroes rather than blanks, since an empty cell looks broken.
+         The percentage keeps its dash, because nought per cent claims you
+         played and won none, and a dash says you have not played. */
       const figures = document.createElement('div');
       figures.className = 'sheet-figures';
       figures.append(
-        figure(game.played, 'Played'),
-        figure(game.played ? Math.round((game.solved / game.played) * 100) + '%' : '—', 'Solved'),
-        figure(game.streak, 'Streak'),
+        figure(game.played, daily ? 'Played' : 'Play'),
+        figure(game.played ? Math.round((game.solved / game.played) * 100) + '%' : '—',
+               daily ? 'Solved' : 'Win'),
+        figure(daily ? game.streak : game.run, daily ? 'Streak' : 'Run'),
         figure(game.best, 'Best')
       );
 

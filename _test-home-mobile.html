@@ -355,6 +355,78 @@ const dayBefore = n => {
     w = await load();
     check('a new session earns a new splash',
           w.document.documentElement.classList.contains('splash-on'));
+
+    // ---------- R7: the results sheet has two tabs ----------
+    seed(w, { count: 9, last: dayBefore(1) }, true);
+    /* Two games with an Unlimited record, one with none at all: the third is
+       the case R7 names, where a zero state has to look like nothing played
+       rather than something broken. */
+    w.localStorage.setItem('arcade.shabda.unlimited',
+      JSON.stringify({ played: 12, wins: 9, run: 3, best: 5 }));
+    w.localStorage.setItem('arcade.snowman.unlimited',
+      JSON.stringify({ played: 4, wins: 1, run: 0, best: 1 }));
+    w = await load();
+    await wait(150);
+
+    const sheet = w.document.getElementById('stats-modal');
+    const statsBtn = w.document.getElementById('btn-stats');
+    check('the results button is there to open', !!statsBtn && !statsBtn.hidden);
+    statsBtn.click();
+    await wait(120);
+
+    const tab = m => w.document.querySelector(`#stats-modal .stat-mode-btn[data-stat="${m}"]`);
+    check('the sheet offers Today and Unlimited', !!tab('daily') && !!tab('unlimited'));
+    check('and opens on Today', tab('daily').getAttribute('aria-pressed') === 'true');
+
+    const rows = () => [...w.document.querySelectorAll('#sheet-rows .sheet-row')];
+    check('Today lists one row per game and no total',
+          rows().length === 3, rows().length + ' rows');
+
+    tab('unlimited').click();
+    await wait(120);
+    check('Unlimited lists one row per game and no total',
+          rows().length === 3, rows().length + ' rows');
+    check('the three rows are the three games',
+          rows().map(r => r.querySelector('.sheet-game').textContent).join('/') ===
+          'Shabda/Snowman/Anagram',
+          rows().map(r => r.querySelector('.sheet-game').textContent).join('/'));
+
+    const figures = row => [...row.querySelectorAll('.sheet-figure')]
+      .map(f => ({ value: f.querySelector('b').textContent, label: f.querySelector('span').textContent }));
+
+    const shabdaRow = figures(rows()[0]);
+    check('the columns abbreviate to Play, Win, Run, Best',
+          shabdaRow.map(f => f.label).join(', ') === 'Play, Win, Run, Best',
+          shabdaRow.map(f => f.label).join(', '));
+    check('and carry the Unlimited numbers',
+          shabdaRow.map(f => f.value).join('/') === '12/75%/3/5',
+          shabdaRow.map(f => f.value).join('/'));
+
+    /* The criterion by name: a game with no Unlimited plays shows a zero state
+       rather than blank cells. The percentage keeps its dash, because nought
+       per cent would claim a record nobody has. */
+    const anagramRow = figures(rows()[2]);
+    check('a game with no Unlimited plays shows a zero state, not blank cells',
+          anagramRow.every(f => f.value.trim().length > 0) &&
+          anagramRow.map(f => f.value).join('/') === '0/—/0/0',
+          anagramRow.map(f => f.value).join('/'));
+
+    /* R7: no streak language anywhere on the Unlimited tab. Read off what is on
+       screen rather than the markup, since the daily wording is still in it. */
+    const onScreen = [
+      w.document.getElementById('sheet-note').textContent,
+      ...[...w.document.querySelectorAll('#sheet-rows .sheet-figure span')].map(n => n.textContent),
+      ...[...w.document.querySelectorAll('#sheet-rows .sheet-today')].map(n => n.textContent)
+    ].join(' ');
+    check('the Unlimited tab never says streak', !/streak/i.test(onScreen), onScreen.slice(0, 90));
+
+    tab('daily').click();
+    await wait(120);
+    check('Today brings the streak column back',
+          figures(rows()[0]).map(f => f.label).join(', ') === 'Played, Solved, Streak, Best',
+          figures(rows()[0]).map(f => f.label).join(', '));
+    sheet.hidden = true;
+
   } catch (e) {
     results.push('FAIL threw :: ' + (e && e.message));
   }

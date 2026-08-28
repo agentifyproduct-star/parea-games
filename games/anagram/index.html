@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Anagram &mdash; Parea Games</title>
 <meta name="description" content="Anagram is a free daily word game. Unscramble the day’s jumbled word, five to eight letters, in five tries — everyone in the world gets the same word, so you can compare notes with whoever else played today." />
-<link rel="stylesheet" href="anagram.css?v=b526f207" />
+<link rel="stylesheet" href="anagram.css?v=405ec387" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -210,25 +210,32 @@
         <h2 id="stats-title">Statistics</h2>
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
+      <div class="stat-modes" role="group" aria-label="Which record to show">
+        <button class="stat-mode-btn" data-stat="daily" type="button" aria-pressed="true">Today</button>
+        <button class="stat-mode-btn" data-stat="unlimited" type="button" aria-pressed="false">Unlimited</button>
+      </div>
+
       <div class="stat-row">
         <div class="stat"><div class="stat-num" id="stats-played">0</div><div class="stat-lbl">Played</div></div>
         <div class="stat"><div class="stat-num" id="stats-solved">0</div><div class="stat-lbl">Solved</div></div>
-        <div class="stat"><div class="stat-num" id="stats-streak">0</div><div class="stat-lbl">Streak</div></div>
-        <div class="stat"><div class="stat-num" id="stats-max">0</div><div class="stat-lbl">Max streak</div></div>
+        <div class="stat"><div class="stat-num" id="stats-streak">0</div><div class="stat-lbl" id="stats-streak-lbl">Streak</div></div>
+        <div class="stat"><div class="stat-num" id="stats-max">0</div><div class="stat-lbl" id="stats-max-lbl">Max streak</div></div>
       </div>
       <h3>Attempts</h3>
       <div id="dist" class="dist"></div>
 
-      <p class="fine">Solving the day's word keeps a streak alive. Only a day you skip
-         entirely will end it.</p>
+      <p class="fine" id="stats-fine-daily">Solving the day's word keeps a streak alive. Only a day
+         you skip entirely will end it.</p>
+      <p class="fine" id="stats-fine-unlimited" hidden>Every Unlimited word you have played. Your
+         daily record is untouched by all of it.</p>
     </div>
   </div>
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
-  <script src="../../assets/today.js?v=aaa86048"></script>
+  <script src="../../assets/today.js?v=c5ebbbe0"></script>
   <script src="scramble.js?v=fd811190"></script>
   <script src="puzzles.js?v=c4e41f22"></script>
-  <script src="anagram.js?v=5c328068"></script>
+  <script src="anagram.js?v=53773fdc"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Snowman &mdash; Parea Games</title>
 <meta name="description" content="Snowman is a free daily word game — hangman by another name. Call out letters to find the hidden word before the snowman melts away, with only its category to go on. A new word every day, and unlimited words whenever you want more." />
-<link rel="stylesheet" href="snowman.css?v=f81dc47d" />
+<link rel="stylesheet" href="snowman.css?v=2a2e318e" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -219,13 +219,20 @@
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
       <p id="st-outcome" class="outcome" hidden></p>
-      <p class="stats-scope">Your <b><span id="st-level">medium</span></b> record</p>
+      <div class="stat-modes" role="group" aria-label="Which record to show">
+        <button class="stat-mode-btn" data-stat="daily" type="button" aria-pressed="true">Today</button>
+        <button class="stat-mode-btn" data-stat="unlimited" type="button" aria-pressed="false">Unlimited</button>
+      </div>
+
+      <p class="stats-scope" id="st-scope-daily">Your <b><span id="st-level">daily</span></b> record</p>
+      <p class="stats-scope" id="st-scope-unlimited" hidden>Every <b>Unlimited</b> word you have
+         played. Your daily record is untouched by all of it.</p>
 
       <div class="stat-row">
         <div class="stat"><div class="stat-num" id="st-played">0</div><div class="stat-lbl">Played</div></div>
         <div class="stat"><div class="stat-num" id="st-win">0</div><div class="stat-lbl">Win %</div></div>
-        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl">Current streak</div></div>
-        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl">Max streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl" id="st-streak-lbl">Current streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl" id="st-max-lbl">Max streak</div></div>
       </div>
 
       <h3>Wrong guesses per win</h3>
@@ -243,9 +250,9 @@
   </div>
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
-  <script src="../../assets/today.js?v=aaa86048"></script>
+  <script src="../../assets/today.js?v=c5ebbbe0"></script>
   <script src="words.js?v=23b0c12b"></script>
-  <script src="snowman.js?v=d3ceca67"></script>
+  <script src="snowman.js?v=0cc8251d"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->

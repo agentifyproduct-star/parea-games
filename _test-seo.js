@@ -118,15 +118,38 @@ check('and it only ever reaches for storage inside a guard',
    knowledge lives. Two copies of the same fact is a bug waiting for the day a
    game changes its key, so they are held against each other here. */
 const todayJs = read('assets/today.js');
-const gameKeys = [...todayJs.matchAll(/'(arcade\.[a-z0-9.]+)'/g)].map(m => m[1])
-  .filter(key => !key.startsWith('arcade.today'));
 
-check('today.js still names a storage key for every live game',
+/* Read the two tables by name rather than sweeping the file for anything that
+   looks like a key. today.js now holds a second set for the Unlimited record,
+   and a sweep would blur the two together — which is exactly the confusion the
+   head script must not fall into, since only the daily keys are its business. */
+function keysOf(table) {
+  const block = todayJs.slice(todayJs.indexOf('const ' + table));
+  return [...block.slice(0, block.indexOf('};')).matchAll(/'(arcade\.[a-z0-9.]+)'/g)].map(m => m[1]);
+}
+
+const gameKeys = keysOf('STATS_KEYS');
+const unlimitedKeys = keysOf('UNLIMITED_KEYS');
+
+check('today.js still names a daily storage key for every live game',
   gameKeys.length === live.length, gameKeys.join(', '));
 
-check('the head script reads the same keys today.js does',
+check('and an Unlimited one beside it',
+  unlimitedKeys.length === live.length, unlimitedKeys.join(', '));
+
+check('the two sets do not overlap',
+  gameKeys.every(key => !unlimitedKeys.includes(key)));
+
+check('the head script reads the same daily keys today.js does',
   gameKeys.every(key => has(head, `'${key}'`)),
   gameKeys.filter(key => !has(head, `'${key}'`)).join(', ') || 'all present');
+
+/* The compact homepage is meant to open for somebody who has played, and
+   playing means the daily record. Reading the Unlimited keys there as well
+   would let three rounds of Unlimited in a single sitting count as knowing the
+   site, which is the opposite of what the threshold is for. */
+check('and does not reach for the Unlimited ones',
+  unlimitedKeys.every(key => !has(head, `'${key}'`)));
 
 check('nothing on the front page is fetched from another domain',
   !/src="https?:/.test(home));

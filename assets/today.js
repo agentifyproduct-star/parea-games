@@ -106,6 +106,16 @@
     anagram: 'arcade.anagram.v1'
   };
 
+  /* The Unlimited record, which every game keeps in the same shape because it
+     was all written at once and none of it is frozen yet. Its own key rather
+     than a corner of the daily save: the keys above are the address of somebody's
+     streak, and the safest thing to do with them is nothing. */
+  const UNLIMITED_KEYS = {
+    shabda: 'arcade.shabda.unlimited',
+    snowman: 'arcade.snowman.unlimited',
+    anagram: 'arcade.anagram.unlimited'
+  };
+
   function readJSON(key) {
     if (!storage) return null;
     try {
@@ -143,9 +153,30 @@
     };
   }
 
+  /* A run is consecutive wins, with no reference to a date. Unlimited has no
+     day boundary, so a streak would be measuring free time rather than
+     persistence — the one thing the daily record is for. */
+  function unlimitedFor(id) {
+    const raw = readJSON(UNLIMITED_KEYS[id]);
+    const blank = { played: 0, solved: 0, run: 0, best: 0 };
+    if (!raw) return blank;
+    return {
+      played: Number(raw.played) || 0,
+      solved: Number(raw.wins) || 0,
+      run: Number(raw.run) || 0,
+      best: Number(raw.best) || 0
+    };
+  }
+
   /* Every game, its record, and where it stands today. */
   function record() {
     return summary().map(game => Object.assign({}, game, statsFor(game.id)));
+  }
+
+  /* Every game and its Unlimited record. No day state: Unlimited has no today
+     to be in the middle of. */
+  function unlimitedRecord() {
+    return GAMES.map(game => Object.assign({}, game, unlimitedFor(game.id)));
   }
 
   const totals = () => record().reduce((sum, game) => ({
@@ -180,5 +211,6 @@
   }
 
   window.TODAY = { KEY, GAMES, read, set, finished, summary, next, counts, dayKey, offerNext,
-                 STATS_KEYS, statsFor, record, totals };
+                 STATS_KEYS, statsFor, record, totals,
+                 UNLIMITED_KEYS, unlimitedFor, unlimitedRecord };
 })();

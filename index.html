@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Parea Games &mdash; Three word games, every day</title>
 <meta name="description" content="Parea Games is a free daily word game site with three games — Shabda, Snowman and Anagram. Everyone in the world gets the same puzzles each day, there is nothing to install and no account to make." />
-<link rel="stylesheet" href="styles.css?v=710fae85" />
+<link rel="stylesheet" href="styles.css?v=93fdc291" />
 <link rel="icon" href="assets/brand/icon.svg" />
 <link rel="alternate icon" href="assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
@@ -402,6 +402,11 @@
         <h2 id="sheet-title">Your results</h2>
         <button class="sheet-close" data-close aria-label="Close">&times;</button>
       </div>
+      <div class="stat-modes" role="group" aria-label="Which record to show">
+        <button class="stat-mode-btn" data-stat="daily" type="button" aria-pressed="true">Today</button>
+        <button class="stat-mode-btn" data-stat="unlimited" type="button" aria-pressed="false">Unlimited</button>
+      </div>
+
       <p class="sheet-note" id="sheet-note"></p>
       <div class="sheet-rows" id="sheet-rows"></div>
       <p class="sheet-fine">Kept in this browser only &mdash; your phone and your laptop
@@ -419,8 +424,8 @@
 <!-- home:start -->
   <script src="splash.js?v=b4d639c1"></script>
   <script src="assets/daily.js?v=cb789ce2"></script>
-  <script src="assets/today.js?v=aaa86048"></script>
-  <script src="home.js?v=7c606e13"></script>
+  <script src="assets/today.js?v=c5ebbbe0"></script>
+  <script src="home.js?v=121553f6"></script>
 <!-- home:end -->
 </body>
 </html>

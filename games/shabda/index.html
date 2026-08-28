@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Shabda &mdash; Parea Games</title>
 <meta name="description" content="Shabda is a free daily word game. Guess the hidden word in six tries on a board of four to seven letters — every correct letter lights up, and everyone in the world gets the same word each day." />
-<link rel="stylesheet" href="shabda.css?v=66a135ca" />
+<link rel="stylesheet" href="shabda.css?v=ceb9685f" />
 <link rel="icon" href="../../assets/brand/icon.svg" />
 <link rel="alternate icon" href="../../assets/brand/icon-192.png" />
 <link rel="apple-touch-icon" href="../../assets/brand/icon-180.png" />
@@ -148,14 +148,21 @@
         <h2 id="stats-title">Statistics</h2>
         <button class="modal-close" data-close aria-label="Close">&times;</button>
       </div>
-      <p class="stats-scope">Your <b>daily</b> record &mdash; today is
+      <div class="stat-modes" role="group" aria-label="Which record to show">
+        <button class="stat-mode-btn" data-stat="daily" type="button" aria-pressed="true">Today</button>
+        <button class="stat-mode-btn" data-stat="unlimited" type="button" aria-pressed="false">Unlimited</button>
+      </div>
+
+      <p class="stats-scope" id="st-scope-daily">Your <b>daily</b> record &mdash; today is
          <b><span id="st-len">5</span> letters</b></p>
+      <p class="stats-scope" id="st-scope-unlimited" hidden>Every <b>Unlimited</b> word you have
+         played, on every board. Your daily record is untouched by all of it.</p>
 
       <div class="stat-row">
         <div class="stat"><div class="stat-num" id="st-played">0</div><div class="stat-lbl">Played</div></div>
         <div class="stat"><div class="stat-num" id="st-win">0</div><div class="stat-lbl">Win %</div></div>
-        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl">Current streak</div></div>
-        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl">Max streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-streak">0</div><div class="stat-lbl" id="st-streak-lbl">Current streak</div></div>
+        <div class="stat"><div class="stat-num" id="st-max">0</div><div class="stat-lbl" id="st-max-lbl">Max streak</div></div>
       </div>
 
       <h3>Guess distribution</h3>
@@ -174,13 +181,13 @@
   </div>
 
   <script src="../../assets/daily.js?v=cb789ce2"></script>
-  <script src="../../assets/today.js?v=aaa86048"></script>
+  <script src="../../assets/today.js?v=c5ebbbe0"></script>
   <script src="words-4.js?v=9f169271"></script>
   <script src="words-5.js?v=87f7ff31"></script>
   <script src="words-6.js?v=55848779"></script>
   <script src="words-7.js?v=856c20aa"></script>
   <script src="words.js?v=753bf473"></script>
-  <script src="shabda.js?v=886859cc"></script>
+  <script src="shabda.js?v=232f3ebb"></script>
 <!-- analytics:start -->
   <script defer src="/_vercel/insights/script.js"></script>
 <!-- analytics:end -->
