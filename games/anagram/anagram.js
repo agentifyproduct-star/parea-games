@@ -785,7 +785,26 @@ function leavePractice() {
   practice = null;
   el('reveal').hidden = true;
   state.revealed = false;
-  showResults();
+
+  /* Back to the day's board in whatever state it is actually in.
+
+     This used to call showResults() outright, which forces the finished view
+     and tells the rest of the site the day is done. That was true back when
+     Unlimited could only be reached after finishing the day — the only way out
+     of it really was a finished day. Since Unlimited became a tab of its own
+     you can step into it at any point, and stepping back out was announcing a
+     puzzle as solved that nobody had touched: "Done for today" over an empty
+     board, the homepage ticking Anagram off, and the other two games dropping
+     it from what is left to play, until midnight. */
+  if (progressFor().resolved) {
+    showResults();
+    return;
+  }
+
+  el('results').hidden = true;
+  state.activeSlot = SLOT;
+  TODAY.set('anagram', 'playing');
+  beginSlot();
 }
 
 /* ---------------- results ---------------- */
@@ -1322,6 +1341,10 @@ function init() {
   const pending = loadRound();
 
   if (pending && roundStarted(pending)) {
+    /* Say where the day really stands before opening the round in front of it.
+       Without this a day marked done in error stayed done, because the branch
+       that corrects it is the one this skips. */
+    TODAY.set('anagram', progress.resolved ? 'done' : 'playing');
     startPractice();
   } else if (progress.resolved) {
     beginSlot();                   // fills state.tiles so the results screen has a word

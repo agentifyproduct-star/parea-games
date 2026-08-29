@@ -672,6 +672,43 @@ document.getElementById('f').addEventListener('load', async () => {
           A.progressFor().resolved === true &&
           JSON.stringify(A.save.stats) === recordBefore);
 
+    /* A day that really is done shows that it is done, and says so to the rest
+       of the site. This is the half that was right. */
+    check('a finished day shows its result on the way back',
+          !d.getElementById('results').hidden &&
+          A.state.gameStatus === 'dayComplete');
+    check('and the rest of the site is told it is done',
+          w.TODAY.read().anagram === 'done', w.TODAY.read().anagram);
+
+    /* ---------- and the half that was not ----------
+
+       Leaving Unlimited used to call up the finished view outright, so stepping
+       into Unlimited on a day you had not played and stepping back out again
+       announced it as solved: "Done for today" over an empty board, and the
+       whole site told the day was finished until midnight. That was harmless
+       while Unlimited could only be reached after finishing the day, and became
+       reachable the moment it turned into a tab of its own. */
+    const freshDay = A.manifest.days[9];
+    useDay(freshDay.date);
+    w.TODAY.set('anagram', 'playing');
+    await wait(120);
+    check('a fresh day starts unplayed', A.progressFor().resolved === false);
+
+    modeBtn('practice').click();
+    await wait(250);
+    check('Unlimited opens from an unplayed day', A.inPractice() === true);
+
+    modeBtn('daily').click();
+    await wait(300);
+    check('coming back does not announce an unplayed day as finished',
+          d.getElementById('results').hidden === true &&
+          A.state.gameStatus !== 'dayComplete',
+          A.state.gameStatus);
+    check('and the day is left to play, not marked resolved',
+          A.progressFor().resolved === false);
+    check('and the rest of the site is not told it is done',
+          w.TODAY.read().anagram !== 'done', w.TODAY.read().anagram);
+
     /* ---------- the record opens where you are ---------- */
     const statTab = m => d.querySelector(`.stat-mode-btn[data-stat="${m}"]`);
     const pressed = m => statTab(m).getAttribute('aria-pressed') === 'true';
