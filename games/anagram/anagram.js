@@ -1156,18 +1156,31 @@ function renderAttempts() {
   wrap.appendChild(label);
 }
 
+/* The row of words that did not work, each struck through, which is what a
+   strikethrough is for: tried, and wrong.
+
+   The winning guess is kept in progress.guesses with the rest, because that is
+   the record of what was attempted and the count depends on it — but it has no
+   business in this row. It was being drawn here like the others, so the moment
+   you solved the puzzle the word you had just got right appeared crossed out. */
 function renderHistory() {
-  const guesses = progressFor().guesses;
+  const progress = progressFor();
+  const wrong = progress.solved
+    ? progress.guesses.filter(guess => guess !== wordFor())
+    : progress.guesses;
+
   historyEl.innerHTML = '';
 
-  guesses.forEach(guess => {
+  wrong.forEach(guess => {
     const item = document.createElement('span');
     item.className = 'past-guess';
     item.textContent = guess;
     historyEl.appendChild(item);
   });
-  /* Once both words are up, a list of one word's wrong guesses reads as noise. */
-  historyEl.hidden = guesses.length === 0 || state.gameStatus === 'dayComplete';
+
+  /* Once the day's word is up, a list of the guesses that missed reads as
+     noise — and solving first time leaves nothing to list at all. */
+  historyEl.hidden = wrong.length === 0 || state.gameStatus === 'dayComplete';
 }
 
 function shake() {

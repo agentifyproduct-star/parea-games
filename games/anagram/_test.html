@@ -231,6 +231,15 @@ document.getElementById('f').addEventListener('load', async () => {
     check('the answer and its definition are revealed',
           !el('reveal').hidden && el('reveal-word').textContent === A.wordFor().toUpperCase() &&
           el('reveal-def').textContent.length > 0);
+
+    /* The row under the board is the guesses that missed, each struck through.
+       The winning guess used to be drawn in it with the rest, so solving the
+       puzzle crossed out the word you had just got right. */
+    const struck = () => [...d.querySelectorAll('.past-guess')].map(x => x.textContent);
+    check('the word just solved is not crossed out with the misses',
+          !struck().includes(A.wordFor()), struck().join(', '));
+    check('and it is still counted as an attempt',
+          A.progressFor().guesses.includes(A.wordFor()));
     A.advance();
     check('solving the word ends the day', A.state.gameStatus === 'dayComplete',
           A.state.gameStatus);
