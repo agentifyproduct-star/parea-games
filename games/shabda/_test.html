@@ -70,6 +70,51 @@ document.getElementById('f').addEventListener('load', async () => {
     check('lexicon is a whole dictionary, not a word list',
           [4,5,6].every(n => OFF_POOL[n].every(x => w.WORDS.isValid(x))));
 
+    // ---------- what happens to a word the lexicon does not have ----------
+    /* None of this was covered, which is how QUDIO and GTYKL got played. The
+       dictionary is asked about anything outside the lexicon, and every answer
+       it can give — including no answer — has to land somewhere sensible.
+
+       fetch is stubbed rather than called: the real API is a third party, and a
+       suite that goes over the network fails for reasons that have nothing to do
+       with this code. */
+    w.localStorage.removeItem('arcade.shabda.dict');
+    const realFetch = w.fetch;
+    const reply = res => { w.fetch = async () => (res instanceof Error ? Promise.reject(res) : res); };
+
+    reply(new Error('offline'));
+    check('a word in the lexicon is accepted without asking anyone',
+          await w.checkGuess('planet', 0) === 'accept');
+
+    reply({ status: 200, ok: true });
+    check('a real word outside the lexicon is accepted once the dictionary says so',
+          await w.checkGuess('qudio', 0) === 'accept');
+
+    reply({ status: 404, ok: false });
+    check('a word the dictionary rejects outright is refused',
+          await w.checkGuess('vundo', 0) === 'reject');
+
+    /* The one that mattered. This API does not 404 a word it does not know — the
+       origin hangs and Cloudflare returns 522 nineteen seconds later. That used
+       to count as "could not check", and could-not-check used to mean accept. */
+    reply({ status: 522, ok: false });
+    check('a word the dictionary cannot answer for is refused, not waved through',
+          await w.checkGuess('gtykl', 0) === 'reject');
+
+    reply(new Error('offline'));
+    check('and so is one nobody can be asked about at all',
+          await w.checkGuess('plarnu', 0) === 'reject');
+
+    /* Refusing on a failed lookup must not be remembered, or one bad minute
+       would blacklist a real word for good. */
+    check('a refusal made without an answer is not written down',
+          JSON.parse(w.localStorage.getItem('arcade.shabda.dict') || '{}').gtykl === undefined);
+    check('a refusal the dictionary actually gave is',
+          JSON.parse(w.localStorage.getItem('arcade.shabda.dict') || '{}').vundo === false);
+
+    w.fetch = realFetch;
+    w.state.busy = false;
+
     // ---------- six months of daily words, per board ----------
     /* The archive is the days a board was actually played, not a word invented
        for every date. Boards walk their running order a step per turn now, so a

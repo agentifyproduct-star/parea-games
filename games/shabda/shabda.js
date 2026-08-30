@@ -339,7 +339,13 @@ function handleKey(key) {
                                because the network is down. */
 
 const DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
-const LOOKUP_TIMEOUT_MS = 6000;
+/* A word the API knows comes back in under a tenth of a second — planet,
+   crane, jigsaw and picture all answer in 70-95ms. A word it does not know does
+   not 404: the origin hangs and Cloudflare gives up with a 522 after about
+   nineteen seconds. So anything still unanswered after a beat is a lookup that
+   is going to fail, and waiting six seconds for it only made every junk guess
+   feel like a hang. */
+const LOOKUP_TIMEOUT_MS = 2500;
 
 /* word -> true (real) | false (junk), carried across sessions so repeat guesses
    and offline play still work once a word has been checked. */
@@ -396,18 +402,25 @@ async function checkGuess(word, rowIndex) {
     return 'reject';
   }
 
-  /* Unverifiable. The guess is outside our list but may well be a real word, and
-     turning away a legitimate guess is the worse failure, so let it through and
-     spend the try. Deliberately not cached: the next lookup gets a fresh chance.
-     The exception is a string with no vowel in it. The lexicon already failed to
-     recognise it, and English words this short without a vowel are vanishingly
-     rare, so that is a mashed keyboard rather than a word we happen to be missing. */
-  if (!/[aeiouy]/.test(word)) {
-    shakeRow(rowIndex);
-    toast('Not a word — try another');
-    return 'reject';
-  }
-  return 'accept';
+  /* Unverifiable, which used to mean accepted.
+
+     The reasoning was that our list might be missing a real word and turning a
+     legitimate guess away is the worse failure. That held while "could not
+     check" meant a network problem. It does not any more: this API answers a
+     word it knows in under a tenth of a second and never answers one it does
+     not — the origin hangs and Cloudflare returns 522 after nineteen seconds.
+     So the unverifiable case is not the rare accident it was written for, it is
+     what every junk guess does, and QUDIO and GTYKL both walked straight in. A
+     vowel test was the only thing standing in the way, and both have one.
+
+     What is on the other side of the scale is a full ENABLE lexicon at every
+     length we deal — 8,650 five-letter words, 23,109 seven-letter. A word that
+     is not in that and cannot be confirmed is not a word we are missing.
+
+     Still not cached, so a lookup that works later can still let it through. */
+  shakeRow(rowIndex);
+  toast('Not a word we know — try another');
+  return 'reject';
 }
 
 async function submitGuess() {
