@@ -19,6 +19,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { containsProfanity } = require('./profanity.js');
 
 const OUT_DIR = __dirname;
 const FULL_MANIFEST_CACHE = path.join(os.tmpdir(), 'anagram-manifest-full.json');
@@ -60,6 +61,25 @@ function main() {
     console.error(`The full manifest has no entry for today (${today}) inside its own range ` +
       `(${full.days[0].date} to ${full.days[full.days.length - 1].date}).`);
     console.error('Re-run node _gen-puzzles.js to author further out, then publish again.');
+    process.exit(1);
+  }
+
+  /* _gen-puzzles.js already keeps every one of these out of the pool a word
+     is drawn from — this should never actually trip. It is here because this
+     script is meant to run unattended, on a schedule, with nobody reading the
+     window before it ships. Anything caught here is written nowhere: the
+     command exits non-zero instead, so an automated run surfaces it rather
+     than publishing over it.
+
+     The word only, not its definition — a dictionary definition is free text
+     about the word, and words on this list turn up in it entirely innocently
+     ("nursing: to feed at the breast"). Flagging prose written about a clean
+     word is not the thing being guarded against here. */
+  const flagged = [...days, ...full.practice].filter(entry => containsProfanity(entry.w));
+  if (flagged.length) {
+    console.error(`Refusing to publish: ${flagged.length} entr${flagged.length === 1 ? 'y' : 'ies'} ` +
+      'flagged by the profanity check:');
+    flagged.forEach(entry => console.error(`  ${entry.date || 'practice'}: "${entry.w}"`));
     process.exit(1);
   }
 

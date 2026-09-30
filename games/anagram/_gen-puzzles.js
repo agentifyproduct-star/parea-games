@@ -20,6 +20,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const SCRAMBLE = require('./scramble.js');
+const { PROFANITY } = require('./profanity.js');
 
 const DAYS = 400;                    // FR-1.5 wants at least a 180-day runway
 const PRACTICE_WORDS = 80;           // words available once the day's puzzle is done
@@ -64,9 +65,7 @@ const BLOCKLIST = `
   drug drugs cocaine heroin addict addicted overdose alcoholic
   hate hatred anger angry panic fear afraid grief mourning divorce
   bankrupt debt poverty homeless refugee refugees
-  piss pissing crap damn hell sexy naked nude breast breasts butt bitch bastard
-  whore slut porn stripper erotic drunk vomit
-`.split(/\s+/).filter(Boolean);
+`.split(/\s+/).filter(Boolean).concat([...PROFANITY]);
 
 /* A frequency list built from the web carries plenty that FR-1.7 rules out.
    ENABLE does not help here: it holds japan (a varnish), french (to cut into
@@ -110,11 +109,6 @@ const NOT_ANSWERS = `
   cisco intel xerox boeing disney pepsi nestle linux ubuntu firefox netscape
   myspace paypal twitter youtube facebook android iphone windows
 
-  crude:
-  fisting mistress lingerie orgasm condom brothel hooker nudity topless seduce
-  pussy vibrator boobs penis vagina nipple nipples orgy sperm incest molest
-  rape rapist pedophile abortion bestiality
-
   distressing, for the same reason as the blocklist above:
   obesity tsunami diabetes infected deviant alcohol smoking conflict warrior
   genocide massacre slaughter kidnap ransom stabbing shooting shooter gunman
@@ -122,7 +116,7 @@ const NOT_ANSWERS = `
 
   ambiguous spelling or a weak answer:
   licence quizzes peter smith martin shanghai
-`.split(/\s+/).filter(w => w && !w.endsWith(':'));
+`.split(/\s+/).filter(w => w && !w.endsWith(':')).concat([...PROFANITY]);
 
 /* ---------------- sources ---------------- */
 
