@@ -280,8 +280,7 @@ const HEADER_ASSETS = ['instrument-serif-400.woff2', 'instrument-sans-var.woff2'
   'index.html',
   'games/shabda/index.html',
   'games/snowman/index.html',
-  'games/anagram/index.html',
-  'games/shabda/[redacted]/index.html'
+  'games/anagram/index.html'
 ].forEach(file => {
   const html = read(file);
   const preloads = html.split('\n').filter(line => line.includes('rel="preload"'));
@@ -309,7 +308,7 @@ const HEADER_ASSETS = ['instrument-serif-400.woff2', 'instrument-sans-var.woff2'
 
 /* ---------------- pages kept out of the index ---------------- */
 
-['room/index.html', 'games/[redacted]/index.html'].forEach(file => {
+['room/index.html'].forEach(file => {
   const html = read(file);
   check(`${file} is noindex`, (meta(html, 'name', 'robots') || '').startsWith('noindex'));
   check(`${file} still previews when pasted into a chat`, !!meta(html, 'property', 'og:title'));
@@ -326,7 +325,6 @@ const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
 check('the sitemap lists the front page and every game', locs.length === live.length + 1);
 check('every sitemap URL resolves to a file that exists', locs.every(loc => fs.existsSync(localFor(loc))));
 check('the sitemap leaves rooms out', !locs.some(loc => loc.includes('/room')));
-check('the sitemap leaves the retired game out', !locs.some(loc => loc.includes('[redacted]')));
 
 const llms = read('llms.txt');
 check('llms.txt says what the site is', has(llms, SITE.summary.slice(0, 40)));

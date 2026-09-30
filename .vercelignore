@@ -13,9 +13,6 @@ _*
 # can read, and it is only an input to the generator.
 games/anagram/puzzles.json
 
-# A retired game, kept in the repository, not on the site.
-games/[redacted]/
-
 TODO.md
 
 # The room client has no server to reach until one is hosted. Kept in the

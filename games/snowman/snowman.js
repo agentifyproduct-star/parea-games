@@ -286,10 +286,10 @@ const WIN_WORDS = ['Flawless', 'Superb', 'Neat', 'Nicely done', 'Close one', 'By
 /* ---------------- the hint ----------------
 
    Snowman's words carry a category and nothing else, so there is no written
-   clue to hand out the way the [redacted] board has one. What there is instead is the
-   word itself: the hint names a letter that is in it and has not been found,
-   and leaves the player to go and press it. That is a nudge rather than a free
-   move, which is the difference between a hint and a gift.
+   clue to hand out. What there is instead is the word itself: the hint names
+   a letter that is in it and has not been found, and leaves the player to go
+   and press it. That is a nudge rather than a free move, which is the
+   difference between a hint and a gift.
 
    Held back until two guesses have actually cost something. Offered before that
    it would just be a faster way to play, and the category on its own is enough

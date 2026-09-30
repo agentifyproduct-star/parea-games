@@ -8,9 +8,9 @@ it.
 ## What ships
 
 Everything except what `.vercelignore` names: the room server, every file
-beginning with `_` (test harnesses, generators, the catalog), the retired [redacted]
-page, and `games/anagram/puzzles.json` — the page loads `puzzles.js`, so the
-readable copy of 200 days of answers has no reason to be on the internet.
+beginning with `_` (test harnesses, generators, the catalog), and
+`games/anagram/puzzles.json` — the page loads `puzzles.js`, so the readable
+copy of 200 days of answers has no reason to be on the internet.
 
 ## Phase 1 — the games, on Vercel
 

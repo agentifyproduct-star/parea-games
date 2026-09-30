@@ -357,8 +357,7 @@ function buildGame(game) {
 /* ---------------- pages that stay out of the index ---------------- */
 
 /* Rooms are made and thrown away in an evening and a code means nothing to
-   anyone who was not sent it; the retired [redacted] page is kept for the archive
-   but is not part of the site. Both still want a link preview, since both get
+   anyone who was not sent it. Still wants a link preview, since it gets
    pasted into a chat. */
 function buildUnlisted(file, { title, description, follow }) {
   const full = path.join(ROOT, file);
@@ -464,21 +463,6 @@ if (rooms) buildUnlisted('room/index.html', {
   title: 'Play with your friends — Parea Games',
   description: 'Start a room, send the code, and play the same puzzles at the same second.',
   follow: true
-});
-buildUnlisted(path.join('games', '[redacted]', 'index.html'), {
-  title: '[redacted] — Parea Games',
-  description: 'An earlier game, kept for the archive.',
-  follow: false
-});
-/* A board made for one evening's [redacted], opened only by a link with its code on
-   the end. Not on the front page, not in the sitemap, not in llms.txt — the
-   generator knows about it only so that its scripts get stamped like every
-   other page's. */
-buildUnlisted(path.join('games', 'shabda', '[redacted]', 'index.html'), {
-  title: 'Shabda — [redacted]',
-  description: 'Names from the Ramayan, the Mahabharat, and the stories of Krishna, Shiv and ' +
-    'Ganesh — six guesses each, and the story behind every one.',
-  follow: false
 });
 buildRobots();
 buildSitemap();
