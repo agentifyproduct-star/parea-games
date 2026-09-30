@@ -75,9 +75,15 @@ const COMPRESS_FLOOR = 1024;          // below this the header costs more than i
 /* How long a browser may keep a file before asking again. Everything carries an
    ETag as well, so "asking again" is usually a 304 with no body — which is what
    actually saves the bandwidth on a 103 KB word list. HTML revalidates every
-   time, so a deploy is never invisible. */
-function cacheFor(ext) {
+   time, so a deploy is never invisible.
+
+   A request carrying ?v=<hash>, the stamp _gen-site.js bakes into every local
+   script and stylesheet reference, names one immutable body forever — a new
+   version gets a new URL, not a new fetch of this one. Nothing else can make
+   that promise, since the same URL keeps being asked for as the file changes. */
+function cacheFor(ext, hashed) {
   if (ext === '.html') return 'no-cache';
+  if (hashed) return 'public, max-age=31536000, immutable';
   if (ext === '.png' || ext === '.svg' || ext === '.ico') return 'public, max-age=604800';
   return 'public, max-age=3600';
 }
@@ -102,9 +108,11 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  let rel;
+  let rel, hashed;
   try {
-    rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const url = new URL(req.url, 'http://localhost');
+    rel = decodeURIComponent(url.pathname);
+    hashed = url.searchParams.has('v');
   } catch {
     res.writeHead(400, { 'content-type': 'text/plain' }).end('Bad request');
     return;
@@ -133,7 +141,7 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(file);
     const stamp = `${stat.size}-${Math.round(stat.mtimeMs)}`;
     const etag = `W/"${stamp}"`;
-    const cacheControl = cacheFor(ext);
+    const cacheControl = cacheFor(ext, hashed);
 
     /* Unchanged since last time: no body at all. */
     if (req.headers['if-none-match'] === etag) {

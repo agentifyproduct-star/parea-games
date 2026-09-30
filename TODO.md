@@ -2,18 +2,23 @@
 
 ## Still to do
 
-1. **Stop the answers being readable from a URL.**
-   Every solo game ships its own answers, because a static site has nowhere else
-   to put them. `games/anagram/puzzles.json` is the sore one: 200 days of dates,
-   words and definitions in plain English — open the link and tomorrow is right
-   there. Shabda and Snowman are a step behind it (the pools are shipped and the
-   schedule is a seeded shuffle, so it takes reading the code to unroll).
-   Encoding the schedules turns "click a link" into "read the source and run
-   it", which stops it being shareable, not solvable. Also: keep `_test.html`
-   and `_gen-*.js` out of the deploy — they explain the shuffle exactly.
-   *Only becomes a real problem when standings between friends exist; at that
-   point the day's answer has to come from the server, the way rooms already
-   do it.*
+1. ~~**Stop the answers being readable from a URL.**~~ **Done for Anagram.**
+   `games/anagram/puzzles.json`/`puzzles.js` used to ship the full calendar —
+   400 days of dates, words and definitions in plain English, open the link
+   and next year is right there. Worse than a deploy setting could fix, too:
+   the repo itself is public now, so anything committed is readable in git
+   history regardless of what `.vercelignore` keeps off the live site.
+   `_gen-puzzles.js` now authors the full 400 days to the OS temp folder only
+   and never writes it into the repo; `_publish-puzzles.js` reads that and
+   commits just a short rolling window (today, a couple of days of slack
+   behind, a week ahead). Re-run `_publish-puzzles.js` before the window's far
+   edge arrives — it says the date on the way out.
+
+   Shabda and Snowman are a smaller version of the same shape (the pools are
+   shipped and the schedule is a seeded shuffle, so it takes reading the code
+   to unroll rather than reading a URL) and are not fixed by this. *Only
+   becomes a real problem when standings between friends exist; at that point
+   the day's answer has to come from the server, the way rooms already do it.*
 
 ## Fonts, and whether any need buying
 

@@ -608,6 +608,11 @@ async function hardeningTests() {
     revalidated.status === 304 && revalidated.body.length === 0,
     `${revalidated.status}, ${revalidated.body.length} bytes`);
 
+  const hashed = await httpGet('/styles.css?v=abc12345');
+  check('a hash-stamped reference is cached forever, not just an hour',
+    hashed.headers['cache-control'] === 'public, max-age=31536000, immutable',
+    hashed.headers['cache-control']);
+
   const page = await httpGet('/index.html');
   check('pages revalidate every time, so a deploy is never invisible',
     page.headers['cache-control'] === 'no-cache', page.headers['cache-control']);

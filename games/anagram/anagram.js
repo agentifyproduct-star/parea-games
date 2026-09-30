@@ -1332,8 +1332,12 @@ function init() {
     return;
   }
 
+  /* puzzles.js ships a short rolling window now, not the whole schedule — see
+     _publish-puzzles.js — so a handful of days left is the normal state, not
+     a warning sign. Only say something once the window is genuinely about to
+     run out from under a player mid-session. */
   const left = remainingDays(date);
-  if (left < 30) console.warn(`anagram: only ${left} days of puzzles remain — regenerate the manifest`);
+  if (left < 2) console.warn(`anagram: only ${left} day(s) of puzzles remain — run _publish-puzzles.js`);
 
   state.puzzleDate = date;
   state.day = day;

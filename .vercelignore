@@ -9,8 +9,8 @@ server/
 _*
 **/_*
 
-# The anagram page loads puzzles.js; this is the same data in the form a person
-# can read, and it is only an input to the generator.
+# The anagram page loads puzzles.js; puzzles.json is the same short window in
+# the form a person can read, and has no reason to be a URL of its own.
 games/anagram/puzzles.json
 
 TODO.md

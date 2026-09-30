@@ -45,6 +45,20 @@ document.getElementById('f').addEventListener('load', async () => {
     return day;
   }
 
+  /* puzzles.js now ships only a short window around today (see
+     _publish-puzzles.js), so a test that needs a word with a specific shape —
+     a repeated letter, a particular length — cannot count on finding one in
+     whatever few real days happen to be in it. These build a day to order and
+     drop it into the live manifest so useDay() still works unchanged. */
+  let nextTestN = 90000;
+  function makeDay(word, dateSuffix) {
+    const date = `test-${dateSuffix}`;
+    const { attempt } = w.SCRAMBLE.scramble(word, date);
+    const day = { n: nextTestN++, date, w: word, s: attempt, d: 'test fixture' };
+    A.manifest.days.push(day);
+    return day;
+  }
+
   const typeWord = word => [...word].forEach(c => A.typeLetter(c));
 
   /* A different wrong guess every time. Rotating the scramble keeps exactly the
@@ -69,8 +83,16 @@ document.getElementById('f').addEventListener('load', async () => {
 
   try {
     // ---------- the manifest ----------
+    /* puzzles.js ships a short rolling window now (_publish-puzzles.js), not
+       the whole calendar, so the 180-day-runway and all-four-lengths
+       guarantees are swept at authoring time instead — see verify() in
+       _gen-puzzles.js, which runs against the full manifest every time it is
+       generated. What is worth checking here is that the window itself is
+       intact. */
     const days = A.manifest.days;
-    check('manifest carries at least a 180-day runway', days.length >= 180, days.length + ' days');
+    const realDayCount = days.length;   // before makeDay() starts appending fixtures below
+    check('the shipped window covers today with days to spare',
+          days.length >= 5, days.length + ' days');
     check('manifest is dated, not indexed by timestamp',
           days.every(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date)));
     check('a day is one word, not a pair',
@@ -78,14 +100,8 @@ document.getElementById('f').addEventListener('load', async () => {
     check('every word is 5 to 8 letters', days.every(x => x.w.length >= 5 && x.w.length <= 8),
           JSON.stringify(days.reduce((o, x) => (o[x.w.length] = (o[x.w.length] || 0) + 1, o), {})));
 
-    /* The range is only worth having if it is used. A pool that says 5 to 8 and
-       deals nothing but fives is a five-letter game with a wider promise. */
-    const lengths = new Set(days.map(x => x.w.length));
-    check('and all four lengths actually turn up', [5, 6, 7, 8].every(n => lengths.has(n)),
-          [...lengths].sort().join(', '));
-
     check('every word is lowercase alphabetic', days.every(x => /^[a-z]+$/.test(x.w)));
-    check('no word repeats across the calendar', new Set(days.map(x => x.w)).size === days.length);
+    check('no word repeats across the window', new Set(days.map(x => x.w)).size === days.length);
     check('every day ships a definition', days.every(x => x.d && x.d.length > 5));
 
     // ---------- scrambling, swept across the whole manifest (acceptance 7) ----------
@@ -115,7 +131,7 @@ document.getElementById('f').addEventListener('load', async () => {
           A.puzzleFor(day0.date).w === day0.w && A.puzzleFor('1999-01-01') === null);
 
     // ---------- tiles, including repeated letters ----------
-    const repeatDay = A.manifest.days.find(x => new Set(x.w).size < x.w.length);
+    const repeatDay = makeDay('stress', 'repeat');
     useDay(repeatDay.date);
     const answer = A.wordFor();
     check('tiles match the scrambled word', tiles().length === answer.length, answer.length + ' tiles');
@@ -207,7 +223,7 @@ document.getElementById('f').addEventListener('load', async () => {
        word has 120 arrangements, so a few hundred presses would land on the
        answer several times over if nothing were stopping it. The cap is lifted
        between presses because it is the guard being tested here, not the limit. */
-    const shuffleDay = A.manifest.days.find(x => x.w.length === 5 && new Set(x.w).size === 5);
+    const shuffleDay = makeDay('chair', 'shuffle');
     useDay(shuffleDay.date);
     const trayText = () => tiles().map(t => t.textContent).join('');
     let spelledAnswer = 0, satStill = 0;
@@ -469,7 +485,7 @@ document.getElementById('f').addEventListener('load', async () => {
     // ---------- 360px layout (acceptance 8) ----------
     closeModals();
     el('reveal').hidden = true;
-    useDay(A.manifest.days.find(x => x.w.length === 8).date);
+    useDay(makeDay('sandwich', 'eight').date);
     await wait(60);
     check('the page does not scroll sideways at 360px',
           d.documentElement.scrollWidth <= 360, 'scrollWidth ' + d.documentElement.scrollWidth);
@@ -697,7 +713,7 @@ document.getElementById('f').addEventListener('load', async () => {
        whole site told the day was finished until midnight. That was harmless
        while Unlimited could only be reached after finishing the day, and became
        reachable the moment it turned into a tab of its own. */
-    const freshDay = A.manifest.days[9];
+    const freshDay = A.manifest.days[realDayCount - 1];
     useDay(freshDay.date);
     w.TODAY.set('anagram', 'playing');
     await wait(120);
