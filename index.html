@@ -159,6 +159,16 @@
 (function () {
   var el = document.documentElement;
 
+  /* The compact layout folds About and Questions into buttons styled for a
+     phone, and hides the games grid and hero extras the same way — all of it
+     under rules scoped to max-width: 860px, because the whole point was
+     shortening a phone's scroll. A returning visitor on a wide screen earning
+     the class by visit count alone got the folding behaviour with none of the
+     styling meant to go with it: a toggle with no button chrome, sitting in a
+     panel that never shrank to fit it. Compact mode is a phone layout; it
+     should only ever apply on a phone. */
+  var phone = !!(window.matchMedia && matchMedia('(max-width: 860px)').matches);
+
   /* Distinct days rather than page loads, so a refresh or a back-navigation
      cannot promote anybody early.
 
@@ -182,7 +192,7 @@
       visits.last = today;
       localStorage.setItem('parea_visits', JSON.stringify(visits));
     }
-    if (visits.count >= 4) el.classList.add('compact-home');
+    if (visits.count >= 4 && phone) el.classList.add('compact-home');
   } catch (e) { /* no storage: everybody is a first-time visitor, which is the full page */ }
 
   /* The other way in. Somebody three rounds deep in any one game knows what
@@ -206,7 +216,7 @@
     ];
     for (var i = 0; i < PLAYED.length; i++) {
       var record = JSON.parse(localStorage.getItem(PLAYED[i][0]) || 'null');
-      if (record && (PLAYED[i][1](record) || 0) >= 3) {
+      if (record && (PLAYED[i][1](record) || 0) >= 3 && phone) {
         el.classList.add('compact-home');
         break;
       }
@@ -216,7 +226,6 @@
   /* The splash: once a session, and only on a phone. Marked seen at the moment
      it is decided rather than when it finishes, so a tap through to a game two
      hundred milliseconds in does not earn a second one on the way back. */
-  var phone = !!(window.matchMedia && matchMedia('(max-width: 860px)').matches);
   try {
     if (phone && !sessionStorage.getItem('parea_splash_seen')) {
       sessionStorage.setItem('parea_splash_seen', '1');
