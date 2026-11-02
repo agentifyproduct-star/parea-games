@@ -3,338 +3,238 @@
  "launchDate": "2026-08-18",
  "days": [
   {
-   "n": 42,
-   "date": "2026-09-28",
-   "w": "sharing",
+   "n": 75,
+   "date": "2026-10-31",
+   "w": "focus",
    "s": 1,
-   "d": "(verb) To give part of what one has to somebody else to use or consume."
+   "d": "(noun) A point at which reflected or refracted rays of light converge."
   },
   {
-   "n": 43,
-   "date": "2026-09-29",
-   "w": "location",
-   "s": 1,
-   "d": "(noun) A particular point or place in physical space."
-  },
-  {
-   "n": 44,
-   "date": "2026-09-30",
-   "w": "delete",
+   "n": 76,
+   "date": "2026-11-01",
+   "w": "positive",
    "s": 2,
-   "d": "(noun) A key that may be pressed to delete something (such as text or files) from a computer."
+   "d": "(noun) A thing capable of being affirmed; something real or actual."
   },
   {
-   "n": 45,
-   "date": "2026-10-01",
-   "w": "market",
+   "n": 77,
+   "date": "2026-11-02",
+   "w": "finally",
    "s": 1,
-   "d": "(noun) A gathering of people for the purchase and sale of merchandise at a set time, often periodic."
+   "d": "(adverb) At the end or conclusion; ultimately."
   },
   {
-   "n": 46,
-   "date": "2026-10-02",
-   "w": "screen",
+   "n": 78,
+   "date": "2026-11-03",
+   "w": "build",
    "s": 1,
-   "d": "(noun) A physical divider intended to block an area from view, or provide shelter from something dangerous."
+   "d": "(noun) The physique of a human body; constitution or structure of a human body."
   },
   {
-   "n": 47,
-   "date": "2026-10-03",
-   "w": "running",
+   "n": 79,
+   "date": "2026-11-04",
+   "w": "purpose",
    "s": 2,
-   "d": "(verb) To move swiftly."
+   "d": "(noun) An objective to be reached; a target; an aim; a goal."
   },
   {
-   "n": 48,
-   "date": "2026-10-04",
-   "w": "nuclear",
+   "n": 80,
+   "date": "2026-11-05",
+   "w": "plant",
    "s": 1,
-   "d": "(noun) Nuclear power"
+   "d": "(noun) An organism that is not an animal, especially an organism capable of photosynthesis. Typically a small or herbaceous..."
   },
   {
-   "n": 49,
-   "date": "2026-10-05",
-   "w": "critical",
+   "n": 81,
+   "date": "2026-11-06",
+   "w": "century",
    "s": 1,
-   "d": "(noun) A critical value, factor, etc."
+   "d": "(noun) A period of 100 consecutive years; often specifically a numbered period with conventional start and end dates, e.g..."
   },
   {
-   "n": 50,
-   "date": "2026-10-06",
-   "w": "planning",
+   "n": 82,
+   "date": "2026-11-07",
+   "w": "income",
+   "s": 1,
+   "d": "(noun) Money one earns by working or by capitalising on the work of others."
+  },
+  {
+   "n": 83,
+   "date": "2026-11-08",
+   "w": "workshop",
+   "s": 1,
+   "d": "(noun) A room, especially one which is not particularly large, used for manufacturing or other light industrial work."
+  },
+  {
+   "n": 84,
+   "date": "2026-11-09",
+   "w": "located",
+   "s": 1,
+   "d": "(verb) To place; to set in a particular spot or position."
+  },
+  {
+   "n": 85,
+   "date": "2026-11-10",
+   "w": "train",
+   "s": 1,
+   "d": "(noun) Elongated portion."
+  },
+  {
+   "n": 86,
+   "date": "2026-11-11",
+   "w": "woman",
+   "s": 1,
+   "d": "(noun) An adult female human."
+  },
+  {
+   "n": 87,
+   "date": "2026-11-12",
+   "w": "funny",
+   "s": 1,
+   "d": "(noun) A joke."
+  },
+  {
+   "n": 88,
+   "date": "2026-11-13",
+   "w": "mother",
    "s": 2,
-   "d": "(verb) To design (a building, machine, etc.)."
+   "d": "(noun) A (human) female who has given birth to a baby"
   },
   {
-   "n": 51,
-   "date": "2026-10-07",
-   "w": "reality",
+   "n": 89,
+   "date": "2026-11-14",
+   "w": "effect",
    "s": 1,
-   "d": "(noun) The state of being actual or real."
+   "d": "(noun) The result or outcome of a cause."
   },
   {
-   "n": 52,
-   "date": "2026-10-08",
-   "w": "random",
+   "n": 90,
+   "date": "2026-11-15",
+   "w": "senate",
    "s": 1,
-   "d": "(noun) A roving motion; course without definite direction; lack of rule or method; chance."
+   "d": "(noun) In some bicameral legislative systems, the upper house or chamber."
   },
   {
-   "n": 53,
-   "date": "2026-10-09",
-   "w": "reserved",
+   "n": 91,
+   "date": "2026-11-16",
+   "w": "diamond",
    "s": 1,
-   "d": "(verb) To keep back; to retain."
+   "d": "(noun) A glimmering glass-like mineral that is an allotrope of carbon in which each atom is surrounded by four others in the..."
   },
   {
-   "n": 54,
-   "date": "2026-10-10",
-   "w": "minimum",
+   "n": 92,
+   "date": "2026-11-17",
+   "w": "vehicle",
    "s": 1,
-   "d": "(noun) The lowest limit."
+   "d": "(noun) A conveyance; a device for carrying or transporting substances, objects or individuals."
   },
   {
-   "n": 55,
-   "date": "2026-10-11",
-   "w": "joined",
+   "n": 93,
+   "date": "2026-11-18",
+   "w": "submit",
    "s": 1,
-   "d": "(verb) To connect or combine into one; to put together."
+   "d": "(verb) To yield or give way to another."
   },
   {
-   "n": 56,
-   "date": "2026-10-12",
-   "w": "property",
-   "s": 3,
-   "d": "(noun) Something that is owned."
-  },
-  {
-   "n": 57,
-   "date": "2026-10-13",
-   "w": "notice",
+   "n": 94,
+   "date": "2026-11-19",
+   "w": "starting",
    "s": 1,
-   "d": "(noun) The act of observing; perception."
+   "d": "(verb) To begin, commence, initiate."
   },
   {
-   "n": 58,
-   "date": "2026-10-14",
-   "w": "rural",
+   "n": 95,
+   "date": "2026-11-20",
+   "w": "serving",
+   "s": 1,
+   "d": "(verb) (personal) To provide a service (or, by extension, a product, especially food or drink)."
+  },
+  {
+   "n": 96,
+   "date": "2026-11-21",
+   "w": "ocean",
+   "s": 1,
+   "d": "(noun) One of the large bodies of water separating the continents."
+  },
+  {
+   "n": 97,
+   "date": "2026-11-22",
+   "w": "republic",
    "s": 2,
-   "d": "(noun) A person from the countryside; a rustic."
+   "d": "(noun) A state where sovereignty rests with the people or their representatives, rather than with a monarch or emperor; a..."
   },
   {
-   "n": 59,
-   "date": "2026-10-15",
-   "w": "amount",
+   "n": 98,
+   "date": "2026-11-23",
+   "w": "enough",
    "s": 1,
-   "d": "(noun) The total, aggregate or sum of material (not applicable to discrete numbers or units or items in standard English)."
+   "d": "(adverb) Sufficiently."
   },
   {
-   "n": 60,
-   "date": "2026-10-16",
-   "w": "cycle",
+   "n": 99,
+   "date": "2026-11-24",
+   "w": "economy",
    "s": 2,
-   "d": "(noun) An interval of space or time in which one set of events or phenomena is completed."
+   "d": "(noun) Effective management of a community or system, or especially its resources."
   },
   {
-   "n": 61,
-   "date": "2026-10-17",
-   "w": "achieve",
+   "n": 100,
+   "date": "2026-11-25",
+   "w": "congress",
+   "s": 1,
+   "d": "(noun) A coming together of two or more people; a meeting."
+  },
+  {
+   "n": 101,
+   "date": "2026-11-26",
+   "w": "hardware",
+   "s": 1,
+   "d": "(noun) Fixtures, equipment, tools and devices used for general-purpose construction and repair of a structure or object. Also..."
+  },
+  {
+   "n": 102,
+   "date": "2026-11-27",
+   "w": "guess",
+   "s": 1,
+   "d": "(verb) To reach a partly (or totally) unqualified conclusion."
+  },
+  {
+   "n": 103,
+   "date": "2026-11-28",
+   "w": "fashion",
+   "s": 1,
+   "d": "(noun) A current (constantly changing) trend, favored for frivolous rather than practical, logical, or intellectual reasons."
+  },
+  {
+   "n": 104,
+   "date": "2026-11-29",
+   "w": "parent",
+   "s": 1,
+   "d": "(noun) One of the two persons from whom one is immediately biologically descended; a mother or father."
+  },
+  {
+   "n": 105,
+   "date": "2026-11-30",
+   "w": "sexual",
+   "s": 1,
+   "d": "(noun) A species which reproduces by sexual rather than asexual reproduction, or a member of such a species."
+  },
+  {
+   "n": 106,
+   "date": "2026-12-01",
+   "w": "schedule",
    "s": 2,
-   "d": "(verb) To succeed in something, now especially in academic performance."
+   "d": "(noun) A slip of paper; a short note."
   },
   {
-   "n": 62,
-   "date": "2026-10-18",
-   "w": "false",
+   "n": 107,
+   "date": "2026-12-02",
+   "w": "status",
    "s": 2,
-   "d": "(noun) One of two options on a true-or-false test."
-  },
-  {
-   "n": 63,
-   "date": "2026-10-19",
-   "w": "series",
-   "s": 1,
-   "d": "(noun) A number of things that follow on one after the other or are connected one after the other."
-  },
-  {
-   "n": 64,
-   "date": "2026-10-20",
-   "w": "upper",
-   "s": 2,
-   "d": "(noun) A stimulant, such as amphetamine, that increases energy and decreases appetite."
-  },
-  {
-   "n": 65,
-   "date": "2026-10-21",
-   "w": "square",
-   "s": 1,
-   "d": "(noun) A polygon with four sides of equal length and four right angles; an equilateral rectangle; a regular quadrilateral."
-  },
-  {
-   "n": 66,
-   "date": "2026-10-22",
-   "w": "brown",
-   "s": 1,
-   "d": "(noun) A colour like that of chocolate or coffee."
-  },
-  {
-   "n": 67,
-   "date": "2026-10-23",
-   "w": "control",
-   "s": 1,
-   "d": "(noun) Influence or authority over something."
-  },
-  {
-   "n": 68,
-   "date": "2026-10-24",
-   "w": "basis",
-   "s": 2,
-   "d": "(noun) A physical base or foundation."
-  },
-  {
-   "n": 69,
-   "date": "2026-10-25",
-   "w": "physical",
-   "s": 1,
-   "d": "(noun) Physical examination."
-  },
-  {
-   "n": 70,
-   "date": "2026-10-26",
-   "w": "period",
-   "s": 1,
-   "d": "(noun) A length of time."
-  },
-  {
-   "n": 71,
-   "date": "2026-10-27",
-   "w": "morning",
-   "s": 1,
-   "d": "(noun) The part of the day from dawn to noon."
-  },
-  {
-   "n": 72,
-   "date": "2026-10-28",
-   "w": "battery",
-   "s": 1,
-   "d": "(noun) A device used to power electric devices, consisting of a set of electrically connected electrochemical or, archaically..."
-  },
-  {
-   "n": 73,
-   "date": "2026-10-29",
-   "w": "second",
-   "s": 1,
-   "d": "(noun) Something that is number two in a series."
-  },
-  {
-   "n": 74,
-   "date": "2026-10-30",
-   "w": "reach",
-   "s": 1,
-   "d": "(noun) The act of stretching or extending; extension."
+   "d": "(noun) A person’s condition, position or standing relative to that of others."
   }
  ],
  "practice": [
-  {
-   "w": "comment",
-   "s": 1,
-   "d": "(noun) A spoken or written remark."
-  },
-  {
-   "w": "medicine",
-   "s": 1,
-   "d": "(noun) A substance which specifically promotes healing when ingested or consumed in some way."
-  },
-  {
-   "w": "designer",
-   "s": 1,
-   "d": "(noun) A person who designs something, or who designs things as a profession."
-  },
-  {
-   "w": "variable",
-   "s": 1,
-   "d": "(noun) Something that is variable."
-  },
-  {
-   "w": "clinical",
-   "s": 1,
-   "d": "(noun) A medical student's session spent in a real-world nursing environment."
-  },
-  {
-   "w": "retail",
-   "s": 2,
-   "d": "(noun) The sale of goods directly to the consumer, encompassing the storefronts, mail-order, websites, etc., and the corporate..."
-  },
-  {
-   "w": "respect",
-   "s": 1,
-   "d": "(noun) An attitude of consideration or high regard"
-  },
-  {
-   "w": "dating",
-   "s": 1,
-   "d": "(verb) To note the time or place of writing or executing; to express in an instrument the time of its execution."
-  },
-  {
-   "w": "exposure",
-   "s": 1,
-   "d": "(noun) The condition of being exposed, uncovered, or unprotected."
-  },
-  {
-   "w": "require",
-   "s": 1,
-   "d": "(verb) To ask (someone) for something; to request."
-  },
-  {
-   "w": "session",
-   "s": 1,
-   "d": "(noun) An informal gathering of musicians to play music, especially improvised jazz or a similar genre."
-  },
-  {
-   "w": "court",
-   "s": 1,
-   "d": "(noun) An enclosed space; a courtyard; an uncovered area shut in by the walls of a building, or by different buildings; also..."
-  },
-  {
-   "w": "stated",
-   "s": 1,
-   "d": "(verb) To declare to be a fact."
-  },
-  {
-   "w": "fight",
-   "s": 2,
-   "d": "(verb) To contend in physical conflict, either singly or in war, battle etc."
-  },
-  {
-   "w": "ended",
-   "s": 4,
-   "d": "(verb) To come to an end"
-  },
-  {
-   "w": "table",
-   "s": 2,
-   "d": "(noun) Furniture with a top surface to accommodate a variety of uses."
-  },
-  {
-   "w": "first",
-   "s": 1,
-   "d": "(noun) The person or thing in the first position."
-  },
-  {
-   "w": "height",
-   "s": 1,
-   "d": "(noun) The distance from the base of something to the top."
-  },
-  {
-   "w": "variety",
-   "s": 2,
-   "d": "(noun) The quality of being varied; diversity."
-  },
-  {
-   "w": "security",
-   "s": 1,
-   "d": "(noun) The condition of not being threatened, especially physically, psychologically, emotionally, or financially."
-  },
   {
    "w": "world",
    "s": 1,
@@ -414,11 +314,6 @@
    "w": "going",
    "s": 2,
    "d": "(verb) To move:"
-  },
-  {
-   "w": "buyer",
-   "s": 1,
-   "d": "(noun) A person who makes one or more purchases."
   },
   {
    "w": "place",
@@ -516,11 +411,6 @@
    "d": "(noun) A public building or room for entertainment, especially gambling."
   },
   {
-   "w": "grant",
-   "s": 1,
-   "d": "(noun) The act of granting; a bestowing or conferring; concession; allowance; permission."
-  },
-  {
    "w": "factor",
    "s": 1,
    "d": "(noun) A doer, maker; a person who does things for another person or organization."
@@ -591,9 +481,9 @@
    "d": "(noun) A competitive sporting event such as a boxing meet, a baseball game, or a cricket match."
   },
   {
-   "w": "welcome",
-   "s": 1,
-   "d": "(noun) The act of greeting someone’s arrival, especially by saying \"Welcome!\"; reception."
+   "w": "flight",
+   "s": 2,
+   "d": "(noun) The act of flying."
   },
   {
    "w": "licensed",
@@ -626,14 +516,124 @@
    "d": "(verb) To perform the marriage ceremony for; to join in matrimony."
   },
   {
-   "w": "lower",
-   "s": 1,
-   "d": "(adjective) Situated close to, or even below, the ground or another normal reference plane; not high or lofty."
-  },
-  {
    "w": "window",
    "s": 2,
    "d": "(noun) The inedible parts of a grain-producing plant."
+  },
+  {
+   "w": "legal",
+   "s": 1,
+   "d": "(noun) The legal department of a company."
+  },
+  {
+   "w": "switch",
+   "s": 1,
+   "d": "(noun) A bundle of thin sticks, typically made of wood, sometimes bond in such a way that binding can be moved so that it..."
+  },
+  {
+   "w": "academy",
+   "s": 1,
+   "d": "(noun) (usually capitalized) The garden where Plato taught."
+  },
+  {
+   "w": "complex",
+   "s": 2,
+   "d": "(noun) A network of interconnected systems."
+  },
+  {
+   "w": "receive",
+   "s": 1,
+   "d": "(noun) An operation in which data is received."
+  },
+  {
+   "w": "ordering",
+   "s": 1,
+   "d": "(verb) To set in some sort of order."
+  },
+  {
+   "w": "asked",
+   "s": 1,
+   "d": "(verb) To request (information, or an answer to a question)."
+  },
+  {
+   "w": "viewed",
+   "s": 2,
+   "d": "(verb) To look at."
+  },
+  {
+   "w": "preview",
+   "s": 2,
+   "d": "(noun) An experience of something in advance."
+  },
+  {
+   "w": "reduce",
+   "s": 1,
+   "d": "(verb) To bring down the size, quantity, quality, value or intensity of something; to diminish, to lower."
+  },
+  {
+   "w": "digital",
+   "s": 1,
+   "d": "(noun) A digital option."
+  },
+  {
+   "w": "close",
+   "s": 1,
+   "d": "(noun) An end or conclusion."
+  },
+  {
+   "w": "discount",
+   "s": 1,
+   "d": "(noun) A reduction in price."
+  },
+  {
+   "w": "comfort",
+   "s": 1,
+   "d": "(noun) Contentment, ease."
+  },
+  {
+   "w": "after",
+   "s": 1,
+   "d": "(adjective) Later; second (of two); next, following, subsequent"
+  },
+  {
+   "w": "share",
+   "s": 2,
+   "d": "(noun) A portion of something, especially a portion given or allotted to someone."
+  },
+  {
+   "w": "coverage",
+   "s": 1,
+   "d": "(noun) An amount by which something or someone is covered."
+  },
+  {
+   "w": "speech",
+   "s": 1,
+   "d": "(noun) The faculty of uttering articulate sounds or words; the ability to speak or to use vocalizations to communicate."
+  },
+  {
+   "w": "faith",
+   "s": 1,
+   "d": "(noun) A trust or confidence in the intentions or abilities of a person, object, or ideal from prior empirical evidence."
+  },
+  {
+   "w": "powered",
+   "s": 1,
+   "d": "(verb) To provide power for (a mechanical or electronic device)."
+  },
+  {
+   "w": "leave",
+   "s": 2,
+   "d": "(verb) To have a consequence or remnant."
+  },
+  {
+   "w": "musical",
+   "s": 1,
+   "d": "(noun) A stage performance, show or film that involves singing, dancing and musical numbers performed by the cast as well as..."
+  },
+  {
+   "w": "theme",
+   "s": 1,
+   "d": "(noun) A subject of a talk or an artistic piece; a topic."
   }
  ]
 }
