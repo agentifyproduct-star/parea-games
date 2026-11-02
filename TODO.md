@@ -11,7 +11,7 @@
    `_gen-puzzles.js` now authors the full 400 days to the OS temp folder only
    and never writes it into the repo; `_publish-puzzles.js` reads that and
    commits just a short rolling window (today, a couple of days of slack
-   behind, a week ahead). Re-run `_publish-puzzles.js` before the window's far
+   behind, three months ahead). Re-run `_publish-puzzles.js` before the window's far
    edge arrives — it says the date on the way out. Then run `node _gen-site.js`
    from the repo root: `puzzles.js` is loaded through a content-hashed URL
    that is cached immutably for a year, and only `_gen-site.js` rewrites that

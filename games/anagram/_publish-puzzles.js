@@ -8,7 +8,7 @@
    script takes that full manifest and keeps only a window around today: a
    couple of days of slack behind (the game only ever reads today's date, but
    a clock a little behind the server's should still see a day it recognises)
-   and a month ahead, so the window does not need cutting again next week.
+   and three months ahead, so the window does not need cutting again soon.
 
    Run this again — no need to re-run _gen-puzzles.js — whenever the window's
    far edge is close. It says so on the way out. Each run reads the same
@@ -24,7 +24,7 @@ const OUT_DIR = __dirname;
 const FULL_MANIFEST_CACHE = path.join(os.tmpdir(), 'anagram-manifest-full.json');
 
 const PAST_DAYS = 2;       // slack only — nothing in the client reads a date but today's
-const FUTURE_DAYS = 30;    // the window; re-run before this runs out
+const FUTURE_DAYS = 90;    // the window; re-run before this runs out
 
 const ZONE = 'America/New_York';
 

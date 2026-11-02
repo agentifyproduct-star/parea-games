@@ -232,6 +232,426 @@
    "w": "status",
    "s": 2,
    "d": "(noun) A person’s condition, position or standing relative to that of others."
+  },
+  {
+   "n": 108,
+   "date": "2026-12-03",
+   "w": "update",
+   "s": 1,
+   "d": "(noun) An advisement providing more up-to-date information than currently known."
+  },
+  {
+   "n": 109,
+   "date": "2026-12-04",
+   "w": "foreign",
+   "s": 1,
+   "d": "(noun) A foreign person, particularly:"
+  },
+  {
+   "n": 110,
+   "date": "2026-12-05",
+   "w": "clearly",
+   "s": 1,
+   "d": "(adverb) (manner) In a clear manner."
+  },
+  {
+   "n": 111,
+   "date": "2026-12-06",
+   "w": "draft",
+   "s": 1,
+   "d": "(noun) A current of air, usually coming into a room or vehicle."
+  },
+  {
+   "n": 112,
+   "date": "2026-12-07",
+   "w": "shopping",
+   "s": 3,
+   "d": "(verb) To visit stores or shops to browse or explore merchandise, especially with the intention of buying such merchandise."
+  },
+  {
+   "n": 113,
+   "date": "2026-12-08",
+   "w": "catalog",
+   "s": 1,
+   "d": "(noun) A systematic list of names, books, pictures etc."
+  },
+  {
+   "n": 114,
+   "date": "2026-12-09",
+   "w": "defense",
+   "s": 2,
+   "d": "(noun) The action of defending or protecting from attack, danger, or injury."
+  },
+  {
+   "n": 115,
+   "date": "2026-12-10",
+   "w": "instead",
+   "s": 1,
+   "d": "(adverb) In the place of something (usually mentioned earlier); as a substitute or alternative."
+  },
+  {
+   "n": 116,
+   "date": "2026-12-11",
+   "w": "agree",
+   "s": 1,
+   "d": "(verb) To harmonize in opinion, statement, or action; to be in unison or concord; to be or become united or consistent; to concur."
+  },
+  {
+   "n": 117,
+   "date": "2026-12-12",
+   "w": "today",
+   "s": 2,
+   "d": "(noun) A current day or date."
+  },
+  {
+   "n": 118,
+   "date": "2026-12-13",
+   "w": "seeking",
+   "s": 1,
+   "d": "(verb) To try to find; to look for; to search for."
+  },
+  {
+   "n": 119,
+   "date": "2026-12-14",
+   "w": "allowed",
+   "s": 1,
+   "d": "(verb) To grant, give, admit, accord, afford, or yield; to let one have."
+  },
+  {
+   "n": 120,
+   "date": "2026-12-15",
+   "w": "storage",
+   "s": 1,
+   "d": "(noun) The act of storing goods; the state of being stored."
+  },
+  {
+   "n": 121,
+   "date": "2026-12-16",
+   "w": "northern",
+   "s": 2,
+   "d": "(noun) An inhabitant of the northern regions."
+  },
+  {
+   "n": 122,
+   "date": "2026-12-17",
+   "w": "business",
+   "s": 2,
+   "d": "(noun) A specific commercial enterprise or establishment."
+  },
+  {
+   "n": 123,
+   "date": "2026-12-18",
+   "w": "pressure",
+   "s": 2,
+   "d": "(noun) A pressing; a force applied to a surface."
+  },
+  {
+   "n": 124,
+   "date": "2026-12-19",
+   "w": "chairman",
+   "s": 1,
+   "d": "(noun) A person presiding over a meeting."
+  },
+  {
+   "n": 125,
+   "date": "2026-12-20",
+   "w": "finance",
+   "s": 1,
+   "d": "(noun) The management of money and other assets."
+  },
+  {
+   "n": 126,
+   "date": "2026-12-21",
+   "w": "reported",
+   "s": 3,
+   "d": "(verb) To relate details of (an event or incident); to recount, describe (something)."
+  },
+  {
+   "n": 127,
+   "date": "2026-12-22",
+   "w": "question",
+   "s": 1,
+   "d": "(noun) A sentence, phrase or word which asks for information, reply or response; an interrogative."
+  },
+  {
+   "n": 128,
+   "date": "2026-12-23",
+   "w": "printing",
+   "s": 3,
+   "d": "(verb) To produce one or more copies of a text or image on a surface, especially by machine; often used with out or off: print..."
+  },
+  {
+   "n": 129,
+   "date": "2026-12-24",
+   "w": "civil",
+   "s": 4,
+   "d": "(adjective) Having to do with people and government office as opposed to the military or religion."
+  },
+  {
+   "n": 130,
+   "date": "2026-12-25",
+   "w": "sequence",
+   "s": 3,
+   "d": "(noun) A set of things next to each other in a set order; a series"
+  },
+  {
+   "n": 131,
+   "date": "2026-12-26",
+   "w": "within",
+   "s": 1,
+   "d": "(adjective) In the context of which the present document or ruling is made."
+  },
+  {
+   "n": 132,
+   "date": "2026-12-27",
+   "w": "minor",
+   "s": 1,
+   "d": "(noun) A person who is below the age of majority, consent, criminal responsibility or other adult responsibilities and..."
+  },
+  {
+   "n": 133,
+   "date": "2026-12-28",
+   "w": "fantasy",
+   "s": 2,
+   "d": "(noun) That which comes from one's imagination."
+  },
+  {
+   "n": 134,
+   "date": "2026-12-29",
+   "w": "mobile",
+   "s": 1,
+   "d": "(noun) A kinetic sculpture or decorative arrangement made of items hanging so that they can move independently from each other."
+  },
+  {
+   "n": 135,
+   "date": "2026-12-30",
+   "w": "common",
+   "s": 1,
+   "d": "(noun) Mutual good, shared by more than one."
+  },
+  {
+   "n": 136,
+   "date": "2026-12-31",
+   "w": "informed",
+   "s": 1,
+   "d": "(verb) To instruct, train (usually in matters of knowledge)."
+  },
+  {
+   "n": 137,
+   "date": "2027-01-01",
+   "w": "children",
+   "s": 1,
+   "d": "(noun) A person who has not yet reached adulthood, whether natural (puberty), cultural (initiation), or legal (majority)"
+  },
+  {
+   "n": 138,
+   "date": "2027-01-02",
+   "w": "desktop",
+   "s": 1,
+   "d": "(noun) The top surface of a desk."
+  },
+  {
+   "n": 139,
+   "date": "2027-01-03",
+   "w": "football",
+   "s": 1,
+   "d": "(noun) (general) A sport played on foot in which teams attempt to get a ball into a goal or zone defended by the other team."
+  },
+  {
+   "n": 140,
+   "date": "2027-01-04",
+   "w": "called",
+   "s": 1,
+   "d": "(verb) (heading) To use one's voice."
+  },
+  {
+   "n": 141,
+   "date": "2027-01-05",
+   "w": "moved",
+   "s": 2,
+   "d": "(verb) To change place or posture; to go, in any manner, from one place or position to another."
+  },
+  {
+   "n": 142,
+   "date": "2027-01-06",
+   "w": "factory",
+   "s": 2,
+   "d": "(noun) A trading establishment, especially set up by merchants working in a foreign country."
+  },
+  {
+   "n": 143,
+   "date": "2027-01-07",
+   "w": "special",
+   "s": 1,
+   "d": "(noun) A reduction in consumer cost (usually for a limited time) for items or services rendered."
+  },
+  {
+   "n": 144,
+   "date": "2027-01-08",
+   "w": "couple",
+   "s": 1,
+   "d": "(noun) Two partners in a romantic or sexual relationship."
+  },
+  {
+   "n": 145,
+   "date": "2027-01-09",
+   "w": "small",
+   "s": 1,
+   "d": "(noun) Any part of something that is smaller or slimmer than the rest, now usually with anatomical reference to the back."
+  },
+  {
+   "n": 146,
+   "date": "2027-01-10",
+   "w": "estate",
+   "s": 2,
+   "d": "(noun) The collective property and liabilities of someone, especially a deceased person."
+  },
+  {
+   "n": 147,
+   "date": "2027-01-11",
+   "w": "surgery",
+   "s": 1,
+   "d": "(noun) A procedure involving major incisions to remove, repair, or replace a part of a body."
+  },
+  {
+   "n": 148,
+   "date": "2027-01-12",
+   "w": "obtained",
+   "s": 1,
+   "d": "(verb) To get hold of; to gain possession of, to procure; to acquire, in any way."
+  },
+  {
+   "n": 149,
+   "date": "2027-01-13",
+   "w": "exercise",
+   "s": 1,
+   "d": "(noun) Any activity designed to develop or hone a skill or ability."
+  },
+  {
+   "n": 150,
+   "date": "2027-01-14",
+   "w": "probably",
+   "s": 2,
+   "d": "(adverb) In all likelihood."
+  },
+  {
+   "n": 151,
+   "date": "2027-01-15",
+   "w": "extended",
+   "s": 1,
+   "d": "(verb) To increase in extent."
+  },
+  {
+   "n": 152,
+   "date": "2027-01-16",
+   "w": "clock",
+   "s": 1,
+   "d": "(noun) An instrument used to measure or keep track of time; a non-portable timepiece."
+  },
+  {
+   "n": 153,
+   "date": "2027-01-17",
+   "w": "accepted",
+   "s": 1,
+   "d": "(verb) To receive, especially with a consent, with favour, or with approval."
+  },
+  {
+   "n": 154,
+   "date": "2027-01-18",
+   "w": "posted",
+   "s": 1,
+   "d": "(verb) To hang (a notice) in a conspicuous manner for general review."
+  },
+  {
+   "n": 155,
+   "date": "2027-01-19",
+   "w": "another",
+   "s": 1,
+   "d": "(pronoun) An additional one of the same kind."
+  },
+  {
+   "n": 156,
+   "date": "2027-01-20",
+   "w": "waste",
+   "s": 1,
+   "d": "(noun) Excess of material, useless by-products or damaged, unsaleable products; garbage; rubbish."
+  },
+  {
+   "n": 157,
+   "date": "2027-01-21",
+   "w": "provider",
+   "s": 1,
+   "d": "(noun) One who, or that which, provides a service, commodity, or the means for subsistence."
+  },
+  {
+   "n": 158,
+   "date": "2027-01-22",
+   "w": "speaker",
+   "s": 1,
+   "d": "(noun) One who speaks."
+  },
+  {
+   "n": 159,
+   "date": "2027-01-23",
+   "w": "junior",
+   "s": 1,
+   "d": "(noun) A younger person."
+  },
+  {
+   "n": 160,
+   "date": "2027-01-24",
+   "w": "library",
+   "s": 1,
+   "d": "(noun) An institution which holds books and/or other forms of media for use by the public or qualified people often lending..."
+  },
+  {
+   "n": 161,
+   "date": "2027-01-25",
+   "w": "third",
+   "s": 1,
+   "d": "(noun) The person or thing in the third position."
+  },
+  {
+   "n": 162,
+   "date": "2027-01-26",
+   "w": "feeling",
+   "s": 1,
+   "d": "(verb) (heading) To use or experience the sense of touch."
+  },
+  {
+   "n": 163,
+   "date": "2027-01-27",
+   "w": "award",
+   "s": 1,
+   "d": "(noun) A judgment, sentence, or final decision. Specifically: The decision of arbitrators in a case submitted."
+  },
+  {
+   "n": 164,
+   "date": "2027-01-28",
+   "w": "remote",
+   "s": 1,
+   "d": "(noun) An element of broadcast programming originating away from the station's or show's control room."
+  },
+  {
+   "n": 165,
+   "date": "2027-01-29",
+   "w": "teacher",
+   "s": 1,
+   "d": "(noun) A person who teaches, especially one employed in a school."
+  },
+  {
+   "n": 166,
+   "date": "2027-01-30",
+   "w": "personal",
+   "s": 1,
+   "d": "(noun) An advertisement by which individuals attempt to meet others with similar interests."
+  },
+  {
+   "n": 167,
+   "date": "2027-01-31",
+   "w": "living",
+   "s": 1,
+   "d": "(verb) To be alive; to have life."
   }
  ],
  "practice": [
