@@ -103,6 +103,10 @@ function main() {
   console.log(`published ${days.length} days: ${from} to ${to} (today is ${today})`);
   console.log(`practice pool: ${manifest.practice.length} words`);
   console.log(`\nre-run this before ${to} — after that the client has no puzzle for the day.`);
+  console.log('\nnow run node _gen-site.js from the repo root — index.html stamps puzzles.js');
+  console.log('with a content hash cached immutably for a year, and this rewrite just');
+  console.log('changed the content behind the old hash. Skip that step and every browser');
+  console.log("that already cached the old URL keeps serving today's stale window forever.");
 }
 
 main();
